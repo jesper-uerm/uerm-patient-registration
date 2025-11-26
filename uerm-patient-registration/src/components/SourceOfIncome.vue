@@ -92,48 +92,42 @@
   </q-form>
 </template>
 <script>
-export default {
-  props: {
-    form: Object,
-    yesNoOptions: Array,
-    sourceIncomeOptions: Array,
-    ownershipOptions: Array
-  },
-  emits: ['update:form', 'next', 'prev'],
-
-  data() {
-    return {
-      localForm: {
-        ...this.form
+  export default {
+    props: {
+      form: Object,
+      yesNoOptions: Array,
+      sourceIncomeOptions: Array,
+      ownershipOptions: Array
+    },
+    emits: ['update:form', 'next', 'prev'],
+    data() {
+      return {
+        localForm: {
+          ...this.form
+        }
       }
-    }
-  },
-
-  watch: {
-    localForm: {
-      handler(val) {
-        this.$emit('update:form', val)
+    },
+    watch: {
+      localForm: {
+        handler(val) {
+          this.$emit('update:form', val)
+        },
+        deep: true
+      }
+    },
+    methods: {
+      onSubmit() {
+        this.$emit('next')
       },
-      deep: true
-    }
-  },
-
-  methods: {
-    onSubmit() {
-      this.$emit('next')
-    },
-
-    onBack() {
-      this.$emit('prev')
-    },
-
-    resetCarData(value) {
-      if (value === 'no') {
-        this.localForm.carOwnership = null
-        this.localForm.numberOfCars = ''
+      onBack() {
+        this.$emit('prev')
+      },
+      resetCarData(value) {
+        if (value === 'no') {
+          this.localForm.carOwnership = null
+          this.localForm.numberOfCars = ''
+        }
       }
     }
   }
-}
 </script>
-

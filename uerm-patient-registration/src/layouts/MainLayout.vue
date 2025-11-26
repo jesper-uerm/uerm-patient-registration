@@ -1,7 +1,7 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-header elevated>
-      <!-- <q-toolbar>
+    <!-- <q-header elevated>
+      <q-toolbar>
         <q-btn
           flat
           dense
@@ -16,8 +16,8 @@
         </q-toolbar-title>
 
         <div>Quasar v{{ $q.version }}</div>
-      </q-toolbar> -->
-    </q-header>
+      </q-toolbar>
+    </q-header> -->
 
     <!-- <q-drawer
       v-model="leftDrawerOpen"
