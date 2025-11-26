@@ -86,7 +86,8 @@
     </div>
     <q-stepper-navigation class="text-center q-gutter-sm">
       <q-btn flat color="primary" label="Back" @click="onBack" />
-      <q-btn type="submit" color="primary" label="Next" />
+      <!-- <q-btn type="submit" color="primary" label="Next" /> -->
+      <q-btn color="primary" label="Next" @click="onSubmit" />
     </q-stepper-navigation>
   </q-form>
 </template>
@@ -98,12 +99,13 @@ export default {
     sourceIncomeOptions: Array,
     ownershipOptions: Array
   },
-
   emits: ['update:form', 'next', 'prev'],
 
   data() {
     return {
-      localForm: { ...this.form }
+      localForm: {
+        ...this.form
+      }
     }
   },
 
@@ -120,9 +122,11 @@ export default {
     onSubmit() {
       this.$emit('next')
     },
+
     onBack() {
-      this.$emit('prev');
+      this.$emit('prev')
     },
+
     resetCarData(value) {
       if (value === 'no') {
         this.localForm.carOwnership = null
