@@ -1,18 +1,18 @@
 <template>
-  <div class="column flex-center q-gap-md">
+  <div class="col-12 column flex-center q-gap-md">
     <div v-if="signedImage" class="signature-preview q-pa-sm bg-grey-2 rounded-borders cursor-pointer" @click="showDialog = true">
       <img :src="signedImage" alt="Signature" style="max-width: 100%; height: 100px;" />
     </div>
-    <q-btn v-else label="Click to Sign" color="primary" icon="edit" outline @click="showDialog = true" />
+    <q-btn v-else class="text-center" label="Click to Sign" color="primary" icon="edit" outline @click="showDialog = true" />
     <q-dialog v-model="showDialog" persistent>
       <q-card style="min-width: 350px; width: 100%; max-width: 600px;">
         <q-card-section class="row items-center">
-          <div class="text-h6">Please Sign Below</div>
+          <div class="text-subtitle2 text-grey-9">Please provide your sign below: </div>
           <q-space />
           <q-btn icon="close" flat round dense v-close-popup />
         </q-card-section>
-        <q-card-section class="q-pa-none bg-grey-2 text-center">
-          <VueSignaturePad vlass="align-center" id="signature" width="100%" height="300px" ref="signaturePad" :options="{ penColor: 'rgb(0, 0, 0)'}" />
+        <q-card-section class="q-pa-none bg-grey-2 flex flex-center" style="overflow: hidden;">
+          <VueSignaturePad id="signature" width="100%" height="180px" ref="signaturePad" class="cursor-crosshair" :options="{ penColor: 'rgb(0, 0, 0)' }" />
         </q-card-section>
         <q-separator />
         <q-card-actions align="right" class="q-pa-md">
@@ -60,13 +60,13 @@
           data
         } = this.$refs.signaturePad.saveSignature();
         if (isEmpty) {
-      this.$q.notify({
-        type: 'warning',
-        message: 'Please provide a signature first.',
-        position: 'top'
-      });
-      return;
-    }
+          this.$q.notify({
+            type: 'warning',
+            message: 'Please provide a signature first.',
+            position: 'top'
+          });
+          return;
+        }
         this.signedImage = data;
         this.$emit('update:modelValue', data);
         this.$emit('save', data);

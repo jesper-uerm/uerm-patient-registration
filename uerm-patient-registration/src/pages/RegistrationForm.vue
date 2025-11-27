@@ -1,7 +1,7 @@
 <template>
-  <div class="row justify-center items-center q-my-xl" style="height: auto">
+  <div class="row justify-center items-center q-mx-xl" style="height: auto">
     <q-card class="my-card">
-      <q-card-section class="bg-primary text-white text-center">
+      <q-card-section class="bg-primary text-white text-center q-py-xs">
         <div class="text-h6">Patient Registration</div>
         <div class="text-subtitle2">Follow the steps below</div>
       </q-card-section>
@@ -62,10 +62,10 @@
   </div>
 </template>
 <script>
-import GuarantorDetails from "components/GuarantorDetails.vue";
-import PatientDetails from "components/PatientDetails.vue";
-import SourceOfIncome from "components/SourceOfIncome.vue";
-import ModeOfPayment from "../components/ModeOfPayment.vue";
+import GuarantorDetails from "src/components/InpatientForm/GuarantorDetails.vue";
+import PatientDetails from "src/components/InpatientForm/PatientDetails.vue";
+import SourceOfIncome from "src/components/InpatientForm/SourceOfIncome.vue";
+import ModeOfPayment from "../components/InpatientForm/ModeOfPayment.vue";
 export default {
   components: {
     GuarantorDetails,
