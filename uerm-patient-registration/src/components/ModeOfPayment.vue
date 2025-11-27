@@ -23,36 +23,70 @@
         <div class="col-12 col-md-12">
           <q-separator class="q-my-md" />
           <div class="text-subtitle1">I/We received the following items in good order and condition: </div>
-          <div class="row q-gutter-lg q-mt-xs">
+          <div class="row q-gutter-lg q-pt-xs">
             <q-checkbox v-model="localForm.items" val="UERM Brochure" label="UERM Brochure" />
             <q-checkbox v-model="localForm.items" val="Admission Kit" label="Admission Kit" />
             <q-checkbox v-model="localForm.items" val="Patient Satisfaction Survey" label="Patient Satisfaction Survey" />
           </div>
+          <q-separator class="q-my-md" />
         </div>
       </div>
       <div class="row col-12 q-col-gutter-md">
         <!-- CERTIFICATION AND SIGNATURE -->
+        <div class="col-12 text-center">
+          <div class="text-subtitle2">CERTIFICATION</div>
+        </div>
+        <div class="text-body2 text-justify text-grey-9">
+          1. I / We hereby certify that the information provided herein is true and correct to the best of my / our knowledge.
+        </div>
+        <div class="text-body2 text-justify text-grey-9">
+          2. I / We further agree to bind myself / ourselves to the terms of the attached memorandum of undertaking and terms and conditions for inpatients.
+        </div>
+        <div class="text-body2 text-justify text-grey-9">
+          3. I / We authorize the Center and its authorized personnel to process all information I / we provided, including collecting, recording, organizing, storing,
+          updating, modifying, retrieving, consolidating, sharing, or using the information and/or documents provided in any other way necessary to pursue its legitimate
+          interests in relation to the admission. I understand that the Center may keep my information for historical and statistical purposes.
+        </div>
+        <div class="row q-gutter-md">
+          <div class="col-12 items-center">
+            <SignaturePad v-model="localSignature" />
+          </div>
+        </div>
+        <div v-if="hasError" class="text-negative text-caption q-mt-sm row items-center">
+          <q-icon name="warning" class="q-mr-xs" /> Signature is required to proceed.
+        </div>
       </div>
     </div>
     <q-stepper-navigation class="text-center q-gutter-sm">
       <q-btn flat color="primary" label="Back" @click="onBack" />
-      <!-- <q-btn type="submit" color="primary" label="Next" /> -->
+      <q-btn type="submit" color="primary" label="Next" />
       <!-- <q-btn color="primary" label="Next" @click="onSubmit" /> -->
     </q-stepper-navigation>
   </q-form>
 </template>
 <script>
+  import SignaturePad from 'components/SignaturePad.vue';
   export default {
+    name: 'ModeOfPayment',
+    components: {
+      SignaturePad
+    },
     props: {
       form: Object,
       mopOptions: Array,
+      initialSignature: {
+        type: String,
+        default: null
+      }
     },
-    emits: ['update:form', 'next', 'prev'],
+    emits: ['update:form', 'next', 'prev', 'update:signature'],
     data() {
       return {
         localForm: {
-          ...this.form
-        }
+          ...this.form,
+        },
+        localSignature: this.initialSignature || null,
+        hasError: false
       }
     },
     watch: {
@@ -61,18 +95,29 @@
           this.$emit('update:form', val)
         },
         deep: true
+      },
+      localSignature(val) {
+        if (val) {
+          this.hasError = false;
+        }
+        this.$emit('update:signature', val);
       }
     },
     methods: {
       onSubmit() {
-        this.$emit('next')
+        if (!this.validate()) {
+          return;
+        }
+        this.$emit('next');
       },
       onBack() {
-        this.$emit('prev')
+        this.$emit('prev');
+      },
+      validate() {
+        this.hasError = true;
+        return false;
       },
     }
   }
 </script>
-<style scoped>
-
-</style>
+<style scoped></style>
