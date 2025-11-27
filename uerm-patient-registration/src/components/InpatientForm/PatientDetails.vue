@@ -99,9 +99,9 @@
         <q-input outlined type="number" v-model="localForm.motherContactNumber" label="Contact No:" />
       </div>
     </div>
-    <q-stepper-navigation class="text-center q-mt-sm">
+    <q-stepper-navigation class="text-right">
       <!-- <q-btn type="submit" color="primary" label="Next" /> -->
-      <q-btn color="primary" style="width: 100%; height: 45px; max-width: 200px;" label="Next" @click="onSubmit" />
+      <q-btn color="primary" style="width: 100%; height: 45px; max-width: 120px;" label="Next" @click="onSubmit" />
     </q-stepper-navigation>
   </q-form>
 </template>

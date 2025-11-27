@@ -57,9 +57,9 @@
         </div>
       </div>
     </div>
-    <q-stepper-navigation class="text-center q-gutter-sm q-mt-xs">
-      <q-btn style="width: 100%; height: 45px; max-width: 200px;" flat color="primary" label="Back" @click="onBack" />
-      <q-btn style="width: 100%; height: 45px; max-width: 200px;" type="submit" color="primary" label="Next" />
+    <q-stepper-navigation class="text-right q-gutter-sm">
+      <q-btn style="width: 100%; height: 45px; max-width: 120px;" flat color="primary" label="Back" @click="onBack" />
+      <q-btn style="width: 100%; height: 45px; max-width: 120px;" type="submit" color="primary" label="Next" />
       <!-- <q-btn color="primary" label="Next" @click="onSubmit" /> -->
     </q-stepper-navigation>
   </q-form>
