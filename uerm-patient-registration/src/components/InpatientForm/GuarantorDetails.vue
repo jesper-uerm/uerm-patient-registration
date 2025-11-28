@@ -13,12 +13,26 @@
       <div class="col-12 col-md-4">
         <q-input outlined dense v-model="localForm.resp1_email" type="email" label="Email Address" />
       </div>
-      <div class="col-12 col-md-4">
+      <!-- <div class="col-12 col-md-4">
         <q-input outlined dense v-model="localForm.resp1_mobile" label="Mobile Number *" mask="####-###-####" :rules="[val => !!val || 'Required']"/>
-      </div>
-      <div class="col-12 col-md-4">
+      </div> -->
+      <!-- <div class="col-12 col-md-4">
         <q-input outlined dense v-model="localForm.resp1_landline" label="Landline" />
-      </div>
+      </div> -->
+      <div class="col-12 col-md-4">
+      <q-input outlined dense v-model="localForm.resp1_mobile" label="Mobile Number *" mask="####-###-####" :rules="[val => !!val || 'Required']">
+        <template v-slot:append>
+          <q-icon name="smartphone" />
+        </template>
+      </q-input>
+    </div>
+    <div class="col-12 col-md-4">
+      <q-input outlined dense v-model="localForm.resp1_landline" label="Landline" mask="(##) ####-####">
+        <template v-slot:append>
+          <q-icon name="phone" />
+        </template>
+      </q-input>
+    </div>
     </div>
     <div class="row">
       <div class="col-12 ">

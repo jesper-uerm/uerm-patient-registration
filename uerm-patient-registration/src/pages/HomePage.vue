@@ -1,5 +1,5 @@
 <template>
-  <div class="column flex-center q-pa-md" style="min-height: 50vh;">
+  <div class="column flex-center q-pa-md" style="min-height: 85vh;">
     <div class="column flex-center q-mb-xl">
       <img
         src="~assets/uermmc-white-logo.png"
@@ -12,7 +12,7 @@
         <div class="text-subtitle1 text-white text-weight-regular">Please select your patient type to continue.</div>
       </div>
     </div>
-    <div class="row flex-center q-pa-md q-gutter-xl">
+    <div :class="$q.screen.gt.md ? 'row' : 'column'" class="row flex-center q-pa-md q-gutter-xl">
       <q-card
       class="cursor-pointer hover-card animate-card delay-1"
       style="width: 300px;"

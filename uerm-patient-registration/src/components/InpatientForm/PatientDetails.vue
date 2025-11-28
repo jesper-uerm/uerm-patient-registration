@@ -27,11 +27,25 @@
       </div>
     </div>
     <div class="row q-col-gutter-md">
-      <div class="col-12 col-md-4">
+      <!-- <div class="col-12 col-md-4">
         <q-input outlined dense type="number" v-model="localForm.landline" label="Landline No." />
+      </div> -->
+      <!-- <div class="col-12 col-md-4">
+        <q-input outlined dense type="number" v-model="localForm.mobile" label=" Mobile No. *" :rules="[val => !!val || 'Please input mobile number']"/>
+      </div> -->
+      <div class="col-12 col-md-4">
+        <q-input outlined dense v-model="localForm.landline" label="Landline No." mask="(##) ####-####" unmasked-value>
+          <template v-slot:append>
+            <q-icon name="phone" />
+          </template>
+        </q-input>
       </div>
       <div class="col-12 col-md-4">
-        <q-input outlined dense type="number" v-model="localForm.mobile" label=" Mobile No. *" :rules="[val => !!val || 'Please input mobile number']"/>
+        <q-input outlined dense v-model="localForm.mobile" label="Mobile No. *" mask="####-###-####" unmasked-value :rules="[val => !!val || 'Please input mobile number', val => val.length === 11 || 'Must be 11 digits']">
+          <template v-slot:append>
+            <q-icon name="smartphone" />
+          </template>
+        </q-input>
       </div>
       <div class="col-12 col-md-4">
         <q-input outlined dense type="email" v-model="localForm.email" label="Email Address"/>
