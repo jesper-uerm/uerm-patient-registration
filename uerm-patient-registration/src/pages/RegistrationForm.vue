@@ -1,18 +1,18 @@
 <template>
   <q-dialog v-model="dialogVisible" persistent transition-show="scale" transition-hide="scale">
 
-    <q-card class="column no-wrap" style="width: 1300px; max-width: 95vw; max-height: 85vh; border-radius: 20px;">
+    <q-card class="column no-wrap" style="width: 1300px; max-width: 95vw; max-height: 95vh; border-radius: 20px;">
 
       <q-card-section class="column text-center text-white q-py-md relative-position" style="background-color: #004aad;">
-          <div class="text-h6">Inpatient Registration Form</div>
+          <div class="text-h6 text-bold">INPATIENT FORM</div>
           <div class="text-caption text-white-7" style="line-height: 1.2;">Please complete the steps below</div>
         <q-btn icon="close" flat round dense v-close-popup class="absolute-right q-ma-lg" />
       </q-card-section>
 
       <q-card-section class="col scroll">
-        <q-stepper v-model="step" ref="stepper" color="primary" animated flat>
+        <q-stepper v-model="step" ref="stepper" color="primary" done-color="positive" animated flat alternative-labels>
 
-          <q-step :name="1" title="Personal Info" icon="person" :done="step > 1">
+          <q-step :name="1" title="Personal Info" icon="person" :done="step > 1" >
             <patient-details
               :form="formData.personalInfo"
               :civilStatusOptions="civilStatusOptions"
@@ -36,7 +36,7 @@
             />
           </q-step>
 
-          <q-step :name="3" title="Guarantor Details" icon="call" :done="step > 3">
+          <q-step :name="3" title="Guarantor Details" icon="person" :done="step > 3">
             <guarantor-details
               :form="formData.guarantorInfo"
               :relationshipOptions="relationshipOptions"
@@ -127,3 +127,33 @@ export default {
   }
 };
 </script>
+<style scoped>
+:deep(.q-stepper__title) {
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+:deep(.q-stepper__dot) {
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+}
+
+@media (max-width: 900px) {
+  :deep(.q-stepper__title) {
+    font-size: 12px;
+    letter-spacing: 0px;
+    line-height: 1.2;
+  }
+  :deep(.q-stepper__dot) {
+    width: 25px;
+    height: 25px;
+    font-size: 15px;
+  }
+  :deep(.q-stepper__tab) {
+    padding: 4px;
+  }
+}
+</style>

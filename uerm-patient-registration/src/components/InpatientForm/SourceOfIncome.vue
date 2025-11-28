@@ -1,15 +1,15 @@
 <template>
   <q-form @submit="onSubmit">
-    <div class="text-subtitle1 q-mb-md">Source of Income</div>
+    <div class="text-subtitle1 text-bold">Source of Income:</div>
     <div class="row q-col-gutter-md">
       <div class="col-12 col-md-12">
         <q-option-group v-model="localForm.sourceOfIncome" :options="sourceIncomeOptions" color="primary" inline />
         <q-slide-transition>
           <div v-if="localForm.sourceOfIncome === 'Others'" class="q-mt-sm">
-            <q-input outlined v-model="localForm.specificSourceOfIncome" label="Please specify source *" dense :rules="[val => !!val || 'Please specify']" />
+            <q-input outlined dense v-model="localForm.specificSourceOfIncome" label="Please specify source *" :rules="[val => !!val || 'Please specify']" />
           </div>
         </q-slide-transition>
-        <q-separator class="q-my-md" />
+        <q-separator class="q-my-xs" />
       </div>
       <div class="col-12 col-sm-6 col-md-4">
         <div class="text-subtitle2 text-grey-8">Gross Income</div>
@@ -36,58 +36,58 @@
         </div>
       </div>
       <div class="col-12 col-md-12">
-        <q-separator class="q-my-md" />
+        <q-separator class="q-my-sm" />
         <div class="text-subtitle2 q-mb-xs">Do you have a car?</div>
         <q-option-group v-model="localForm.pthasCar" :options="yesNoOptions" color="primary" inline @update:model-value="resetCarData" />
-        <q-separator class="q-my-md" />
+        <q-separator class="q-my-sm" />
       </div>
       <div class="col-12 col-md-12" v-if="localForm.pthasCar === 'yes'">
-        <q-select outlined v-model="localForm.carOwnership" :options="ownershipOptions" label="Ownership Type *" lazy-rules :rules="[val => !!val || 'Required']" />
+        <q-select outlined dense v-model="localForm.carOwnership" :options="ownershipOptions" label="Ownership Type *" lazy-rules :rules="[val => !!val || 'Required']" />
       </div>
       <div class="col-12 col-md-12" v-if="localForm.pthasCar === 'yes'">
-        <q-input outlined type="number" v-model.number="localForm.numberOfCars" label="Number of Cars *" lazy-rules :rules="[
+        <q-input outlined dense type="number" v-model.number="localForm.numberOfCars" label="Number of Cars *" lazy-rules :rules="[
                     val => val !== null && val !== '' || 'Required',
                     val => val > 0 || 'Min 1'
                   ]" />
-        <q-separator class="q-my-md" />
+        <q-separator class="q-my-sm" />
       </div>
     </div>
     <div class="row q-col-gutter-md">
       <div class="col-12 col-md-4">
-        <q-input outlined v-model="localForm.seniorpwd" type="number" label="Senior/PWD No." />
+        <q-input outlined dense v-model="localForm.seniorpwd" type="number" label="Senior/PWD No." />
       </div>
       <div class="col-12 col-md-4">
-        <q-input outlined v-model="localForm.philhealth" type="number" label="PhilHealth No." />
+        <q-input outlined dense v-model="localForm.philhealth" type="number" label="PhilHealth No." />
       </div>
       <div class="col-12 col-md-4">
-        <q-input outlined v-model="localForm.sssgsis" type="number" label="SSS/GSIS No." />
+        <q-input outlined dense v-model="localForm.sssgsis" type="number" label="SSS/GSIS No." />
       </div>
       <div class="col-12 col-md-4">
-        <q-input outlined v-model="localForm.tin" type="number" label="TIN No." />
+        <q-input outlined dense v-model="localForm.tin" type="number" label="TIN No." />
       </div>
       <div class="col-12 col-md-4">
-        <q-input outlined v-model="localForm.others" type="number" label="Others" />
+        <q-input outlined dense v-model="localForm.others" type="number" label="Others" />
       </div>
     </div>
-    <q-separator class="q-my-md" />
+    <q-separator class="q-my-sm" />
     <div class="row q-col-gutter-md">
       <div class="col-12">
-        <div class="text-subtitle2 q-mb-xs">Spouse Details</div>
+        <div class="text-subtitle2">Spouse Details</div>
       </div>
       <div class="col-12 col-md-4">
-        <q-input outlined v-model="localForm.SpouseName" label="Spouse's Full Name *" :rules="[val => !!val || 'Required']" />
+        <q-input outlined dense v-model="localForm.SpouseName" label="Spouse's Full Name"/>
       </div>
       <div class="col-12 col-md-4">
-        <q-input outlined v-model="localForm.spouseOccupation" label="Occupation/Employer" />
+        <q-input outlined dense v-model="localForm.spouseOccupation" label="Occupation/Employer" />
       </div>
       <div class="col-12 col-md-4">
-        <q-input outlined type="number" v-model="localForm.spouseEmployerContact" label="Employer Contact" />
+        <q-input outlined dense type="number" v-model="localForm.spouseEmployerContact" label="Employer Contact" />
       </div>
     </div>
-    <q-stepper-navigation class="text-right q-gutter-md" >
-      <q-btn style="width: 100%; height: 45px; max-width: 120px;" flat color="primary" label="Back" @click="onBack" />
+    <q-stepper-navigation class="text-center q-gutter-md" >
+      <q-btn style="width: 100%; height: 45px; max-width: 120px;"  color="amber-14" icon="arrow_back" label="Back" @click="onBack" />
       <!-- <q-btn type="submit" color="primary" label="Next" /> -->
-      <q-btn style="width: 100%; height: 45px; max-width: 120px;" color="primary" label="Next" @click="onSubmit" />
+      <q-btn style="width: 100%; height: 45px; max-width: 120px;" color="blue-10" icon-right="arrow_forward" label="Next" @click="onSubmit" />
     </q-stepper-navigation>
   </q-form>
 </template>

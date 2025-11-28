@@ -32,7 +32,7 @@
       v-ripple
     >
       <q-card-section class="text-center q-py-lg">
-        <q-icon name="directions_walk" size="70px" class="q-mb-sm" />
+        <q-icon name="directions_walk" size="70px" class="q-mb-sm"/>
         <div class="text-h5 text-weight-bold">OUTPATIENT</div>
       </q-card-section>
     </q-card>
@@ -76,7 +76,7 @@
   }
 
   .hover-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-10px) !important;
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
     background-color: #004aad;
     color: white;

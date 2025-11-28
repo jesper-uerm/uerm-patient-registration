@@ -1,6 +1,6 @@
 <template>
   <q-form @submit="onSubmit">
-    <div class="text-subtitle1 q-mb-sm">Mode of Payment</div>
+    <div class="text-subtitle1 text-bold">Mode of Payment:</div>
     <div class="row q-col-gutter-md">
       <div class="col-12 col-md-12">
         <q-option-group v-model="localForm.mop" :options="mopOptions" color="primary" inline />
@@ -9,20 +9,20 @@
             <q-input outlined v-model="localForm.specificmop" label="Please specify mode of payment *" dense :rules="[val => !!val || 'Please specify']" />
           </div>
         </q-slide-transition>
-        <q-separator class="q-my-md" />
+        <q-separator class="q-my-sm" />
       </div>
       <div class="row col-12 q-col-gutter-md">
         <div class="col-12 col-md-6">
-          <q-input outlined v-model="localForm.creditCard" type="number" label="No. of Credit Cards owned" />
+          <q-input outlined dense v-model="localForm.creditCard" type="number" label="No. of Credit Cards owned" />
         </div>
         <div class="col-12 col-md-6">
-          <q-input outlined v-model="localForm.bank" label="Bank Affliations" />
+          <q-input outlined dense v-model="localForm.bank" label="Bank Affliations" />
         </div>
       </div>
       <div class="row col-12 q-col-gutter-md">
         <div class="col-12 col-md-12">
-          <q-separator class="q-my-md" />
-          <div class="text-subtitle1">I/We received the following items in good order and condition: </div>
+          <q-separator class="q-my-sm" />
+          <div class="text-subtitle1 text-bold">I / We received the following items in good order and condition: </div>
           <div class="row q-gutter-lg q-pt-xs">
             <q-checkbox v-model="localForm.items" val="UERM Brochure" label="UERM Brochure" />
             <q-checkbox v-model="localForm.items" val="Admission Kit" label="Admission Kit" />
@@ -32,7 +32,6 @@
         </div>
       </div>
       <div class="row col-12 q-col-gutter-md">
-        <!-- CERTIFICATION AND SIGNATURE -->
         <div class="col-12 text-center">
           <div class="text-subtitle2">CERTIFICATION</div>
         </div>
@@ -57,9 +56,9 @@
         </div>
       </div>
     </div>
-    <q-stepper-navigation class="text-right q-gutter-sm">
-      <q-btn style="width: 100%; height: 45px; max-width: 120px;" flat color="primary" label="Back" @click="onBack" />
-      <q-btn style="width: 100%; height: 45px; max-width: 120px;" type="submit" color="primary" label="Next" />
+    <q-stepper-navigation class="text-center q-gutter-md">
+      <q-btn style="width: 100%; height: 45px; max-width: 120px;"  color="amber-14" icon="arrow_back" label="Back" @click="onBack" />
+      <q-btn style="width: 100%; height: 45px; max-width: 120px;" type="submit" color="blue-10" icon="arrow_forward" label="Next" />
       <!-- <q-btn color="primary" label="Next" @click="onSubmit" /> -->
     </q-stepper-navigation>
   </q-form>
