@@ -12,7 +12,10 @@
         <div class="text-subtitle1 text-white text-weight-regular">Please select your patient type to continue.</div>
       </div>
     </div>
-    <div :class="$q.screen.gt.md ? 'row' : 'column'" class="row flex-center q-pa-md q-gutter-xl">
+    <!-- SAMSUNG TAB
+    <div :class="$q.screen.gt.xs ? 'row' : 'column'" class="row flex-center q-pa-md q-gutter-xl"> -->
+      <!-- IPAD PRO -->
+      <div :class="$q.screen.gt.md ? 'row' : 'column'" class="row flex-center q-pa-md q-gutter-xl">
       <q-card
       class="cursor-pointer hover-card animate-card delay-1"
       style="width: 300px;"
