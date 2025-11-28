@@ -1,13 +1,12 @@
 <template>
   <q-dialog v-model="dialogVisible" persistent transition-show="scale" transition-hide="scale">
 
-    <q-card class="column no-wrap" style="width: 1300px; max-width: 95vw; max-height: 85vh;">
+    <q-card class="column no-wrap" style="width: 1300px; max-width: 95vw; max-height: 85vh; border-radius: 20px;">
 
-      <q-card-section class="bg-primary text-white text-center q-py-xs relative-position">
-        <div class="text-h6">Patient Registration</div>
-        <div class="text-subtitle2">Follow the steps below</div>
-
-        <q-btn icon="close" flat round dense v-close-popup class="absolute-right q-ma-md" />
+      <q-card-section class="column text-center text-white q-py-md relative-position" style="background-color: #004aad;">
+          <div class="text-h6">Inpatient Registration Form</div>
+          <div class="text-caption text-white-7" style="line-height: 1.2;">Please complete the steps below</div>
+        <q-btn icon="close" flat round dense v-close-popup class="absolute-right q-ma-lg" />
       </q-card-section>
 
       <q-card-section class="col scroll">

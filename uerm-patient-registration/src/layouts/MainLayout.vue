@@ -3,9 +3,8 @@
 
     <!-- <q-header elevated class="bg-white text-primary">
       <q-toolbar class="q-py-sm"> <q-avatar square size="42px" class="q-mr-md">
-          <img src="https://cdn.quasar.dev/logo-v2/svg/logo.svg">
+          <img src="~assets/uermmc-white-logo.png">
         </q-avatar>
-
         <q-toolbar-title class="text-weight-bold">
           UERM Admission Portal
           <div class="text-caption text-grey-7" style="line-height: 1.2;">
@@ -17,13 +16,13 @@
           <q-tooltip>Need Help?</q-tooltip>
         </q-btn>
       </q-toolbar>
-    </q-header>
+    </q-header> -->
 
-    <q-footer class="bg-transparent text-grey-7 text-center q-pa-md">
+    <q-footer class="bg-transparent text-white text-center q-pb-md">
       <div class="text-caption">
         &copy; 2025 UERM Memorial Medical Center. All rights reserved.
       </div>
-    </q-footer> -->
+    </q-footer>
 
     <q-page-container>
       <router-view />
@@ -41,9 +40,10 @@ export default defineComponent({
 </script>
 <style scoped>
 .main-background {
-  background-color:#f5f5f5;
+  min-height: 100vh;
+  background-color:#004aad;
   background-image:
-    linear-gradient(to bottom, rgba(25, 118, 210, 0.8), rgba(255, 255, 255, 0.9)),
+    linear-gradient(to bottom, rgba(0, 74, 173, 0.9), rgba(20, 74, 173, 0.7)),
     url('/bg-images/uermmmc_bg.jpg');
   background-position: center;
   background-attachment: fixed;
