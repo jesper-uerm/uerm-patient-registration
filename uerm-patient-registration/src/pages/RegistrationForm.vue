@@ -219,22 +219,29 @@ export default {
       this.step = 1;
       this.regFormdialogVisible = true;
     },
-
     async validateFinalStep() {
-      const isPaymentValid = await this.$refs.modeOfPayment.validate();
+      if (this.$refs.modeOfPayment) {
+        const isPaymentValid = await this.$refs.modeOfPayment.validate();
 
-      let isSignatureValid = !!this.formData.signature;
+        const isSignatureValid = !!this.formData.signature;
 
-      if (!isPaymentValid) {
-        this.$q.notify({
-          type: "warning",
-          message: "Please correct errors in Payment Details.",
-        });
-      } else if (!isSignatureValid) {
-        this.$q.notify({ type: "warning", message: "Patient signature is required." });
+        if (!isPaymentValid) {
+          this.$q.notify({
+            type: "warning",
+            position: "top",
+            message: "Please correct errors in Payment Details.",
+          });
+          return false;
+        }
+
+        if (!isSignatureValid) {
+          return false;
+        }
+
+        return true;
       }
 
-      return isPaymentValid && isSignatureValid;
+      return false;
     },
 
     async onSubmit() {

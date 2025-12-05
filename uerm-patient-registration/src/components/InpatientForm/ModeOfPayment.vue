@@ -102,8 +102,6 @@
             class="col-12 text-center text-negative text-caption q-mt-sm"
           >
             <q-icon name="warning" class="q-mr-xs" /> Signature is required to proceed.
-
-            <q-icon name="warning" class="q-mr-xs" /> Signature is required to proceed.
           </div>
         </div>
       </div>
@@ -170,7 +168,13 @@ export default {
   },
   methods: {
     async validate() {
-      return await this.$refs.modeOfPayment.validate();
+      const isFormValid = await this.$refs.modeOfPayment.validate();
+
+      const isSignatureValid = !!this.localSignature;
+
+      this.hasError = !isSignatureValid;
+
+      return isFormValid && isSignatureValid;
     },
 
     onBack() {

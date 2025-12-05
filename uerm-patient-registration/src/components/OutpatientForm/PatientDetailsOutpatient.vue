@@ -367,7 +367,7 @@ export default {
 
       if (!isValid) {
         this.$q.notify({
-          type: "negative",
+          type: "warning",
           message: "Please fill all required fields.",
           position: "top",
         });

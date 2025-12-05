@@ -72,7 +72,7 @@ import PatientDetailsOutpatient from "../components/OutpatientForm/PatientDetail
 import axios from "axios";
 
 export default {
-  name: "RegistrationForm",
+  name: "RegistrationFormOutpatient",
   components: {
     PatientDetailsOutpatient,
     ContactPerson,

@@ -172,6 +172,7 @@ export default {
       } else {
         this.$q.notify({
           type: "warning",
+          position: "top",
           message: "Please fill all fields and provide a signature.",
         });
       }
