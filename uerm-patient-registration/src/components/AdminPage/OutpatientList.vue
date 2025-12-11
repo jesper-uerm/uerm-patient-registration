@@ -1,7 +1,7 @@
 <template>
   <q-page class="q-pa-md bg-grey-1">
     <q-card
-      class="column fit shadow-1"
+      class="column shadow-1"
       style="border-radius: 12px; border: 1px solid #e0e0e0"
     >
       <q-card-section class="col-auto q-py-md q-px-lg">
@@ -26,7 +26,7 @@
           dense
           v-model="searchQuery"
           placeholder="Enter Name or ID"
-          @keyup.enter="searchPatients"
+          @keyup.enter="handleSearch"
           :disable="loading"
           class="search-input"
           bg-color="white"
@@ -40,16 +40,16 @@
               color="blue-10"
               label="Search"
               class="q-px-lg"
-              @click="searchPatients"
+              @click="handleSearch"
+              @keyup.enter="handleSearch"
+              @input="debouncedSearch"
               :loading="loading"
               style="border-top-left-radius: 0; border-bottom-left-radius: 0"
             />
           </template>
         </q-input>
       </q-card-section>
-      <q-card-section
-        class="col q-pa-none relative-position overflow-hidden q-mx-lg q-mb-lg"
-      >
+      <q-card-section class="col q-pa-none overflow-hidden q-mx-lg q-mb-lg">
         <q-table
           :rows="patientList"
           :columns="columns"
@@ -61,7 +61,7 @@
           :dense="$q.screen.lt.xl"
           :grid="$q.screen.lt.sm"
           virtual-scroll
-          :rows-per-page-options="[0]"
+          :rows-per-page-options="[13]"
           class="clean-table fit"
         >
           <template v-slot:item="props">
@@ -137,6 +137,11 @@
               </q-btn>
             </q-td>
           </template>
+          <template v-slot:loading>
+            <q-inner-loading showing>
+              <q-spinner-gears size="80px" color="blue-10" />
+            </q-inner-loading>
+          </template>
 
           <template v-slot:no-data>
             <div class="full-width column flex-center text-grey q-pa-xl">
@@ -156,9 +161,10 @@
 <script>
 import { date } from "quasar";
 import axios from "axios";
+import _ from "lodash";
 
 export default {
-  name: "InpatientList",
+  name: "OutpatientList",
   data() {
     return {
       searchQuery: "",
@@ -171,7 +177,7 @@ export default {
           name: "patient_id",
           label: "ID NO.",
           field: "patient_id",
-          align: "center",
+          align: "left",
           sortable: true,
           style: "width: 100px",
         },
@@ -179,9 +185,26 @@ export default {
           name: "fullName",
           label: "FULL NAME",
           field: "fullName",
-          align: "center",
+          align: "left",
           sortable: true,
+          classes: "col-2",
         },
+        // {
+        //   name: "firstName",
+        //   label: "FIRST NAME",
+        //   field: "firstName",
+        //   align: "left",
+        //   sortable: true,
+        //   style: "width: 100px",
+        // },
+        // {
+        //   name: "lastName",
+        //   label: "LAST NAME",
+        //   field: "lastName",
+        //   align: "left",
+        //   sortable: true,
+        //   style: "width: 100px",
+        // },
         {
           name: "birthdate",
           label: "BIRTHDATE",
@@ -189,33 +212,50 @@ export default {
           align: "center",
           format: (val) => (val ? date.formatDate(val, "MMM D, YYYY") : "-"),
         },
-        {
-          name: "gender",
-          label: "SEX",
-          field: "gender",
-          align: "center",
-          style: "width: 60px",
-        },
+        { name: "gender", label: "SEX", field: "gender", align: "center" },
         {
           name: "presentAddress",
           label: "ADDRESS",
           field: "addressPresent",
           align: "left",
           classes: "ellipsis text-grey-7",
-          style: "max-width: 250px",
         },
-        {
-          name: "actions",
-          label: "ACTION",
-          field: "actions",
-          align: "center",
-        },
+        { name: "actions", label: "ACTION", field: "actions", align: "center" },
       ],
     };
   },
+
+  mounted() {
+    this.loadInitialData();
+  },
+
   methods: {
-    async searchPatients() {
+    async loadInitialData() {
+      this.loading = true;
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/auth/fetchOutpatient"
+        );
+        this.patientList = response.data;
+      } catch (error) {
+        console.error(error);
+        this.$q.notify({
+          type: "negative",
+          message: "Failed to load inpatients",
+          position: "top",
+        });
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    handleSearch() {
       if (!this.searchQuery || this.searchQuery.length < 2) {
+        if (this.searchQuery === "") {
+          this.loadInitialData();
+          this.hasSearched = false;
+          return;
+        }
         this.$q.notify({
           type: "warning",
           message: "Please enter at least 2 characters",
@@ -223,14 +263,28 @@ export default {
         });
         return;
       }
+      this.performSearch();
+    },
+
+    debouncedSearch: _.debounce(function () {
+      if (this.searchQuery && this.searchQuery.length >= 2) {
+        this.performSearch();
+      }
+    }, 400),
+
+    async performSearch() {
       this.loading = true;
       try {
         const response = await axios.get(
           "http://localhost:3000/api/auth/searchOutpatient",
-          { params: { query: this.searchQuery } }
+          {
+            params: { query: this.searchQuery },
+          }
         );
+
         this.patientList = response.data;
         this.hasSearched = true;
+
         if (this.patientList.length === 0) {
           this.$q.notify({
             type: "info",
@@ -241,15 +295,12 @@ export default {
         }
       } catch (error) {
         console.error(error);
-        this.$q.notify({
-          type: "negative",
-          message: "Database Connection Failed",
-          position: "top",
-        });
+        this.$q.notify({ type: "negative", message: "Search Failed", position: "top" });
       } finally {
         this.loading = false;
       }
     },
+
     viewPatient(row) {
       this.$q.notify({ type: "primary", message: `Viewing details for ${row.lastName}` });
     },

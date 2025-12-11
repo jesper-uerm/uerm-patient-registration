@@ -3,8 +3,9 @@
     <q-header elevated class="bg-uerm-blue text-white">
       <q-toolbar class="q-py-md">
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
-        <q-toolbar-title>
-          <div class="text-h6 text-uppercase opacity-fade">
+        <q-toolbar-title class="text-weight-bold">
+          UERM Admission Portal
+          <div class="text-caption text-grey-4" style="line-height: 1.2">
             Patient Registration System
           </div>
         </q-toolbar-title>
@@ -25,7 +26,7 @@
       </div>
 
       <q-list padding>
-        <q-item clickable v-ripple to="/admin/" active-class="bg-blue-9">
+        <q-item clickable v-ripple to="/admin/" active-class="">
           <q-item-section avatar>
             <q-icon name="dashboard" color="white" />
           </q-item-section>
@@ -64,14 +65,12 @@ import { defineComponent } from "vue";
 export default defineComponent({
   name: "AdminLayout",
 
-  // State variables go here
   data() {
     return {
       leftDrawerOpen: false,
     };
   },
 
-  // Functions go here
   methods: {
     toggleLeftDrawer() {
       this.leftDrawerOpen = !this.leftDrawerOpen;

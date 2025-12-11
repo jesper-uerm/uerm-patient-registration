@@ -99,10 +99,6 @@ const columns = [
   { name: "type", label: "Type", field: "type", align: "left" },
   { name: "dept", label: "Department", field: "dept", align: "left" },
   { name: "time", label: "Time In", field: "time", align: "right" },
-  { name: "time", label: "Time In", field: "time", align: "right" },
-  { name: "time", label: "Time In", field: "time", align: "right" },
-  { name: "time", label: "Time In", field: "time", align: "right" },
-  { name: "time", label: "Time In", field: "time", align: "right" },
 ];
 
 const rows = ref([
