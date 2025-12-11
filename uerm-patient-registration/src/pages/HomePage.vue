@@ -1,12 +1,12 @@
 <template>
   <div class="column flex-center q-pa-md" style="min-height: 85vh">
     <div class="column flex-center q-mb-xl">
-      <img
+      <!-- <img
         src="~assets/uermmc-white-logo.png"
         alt="UERM Logo"
         class="q-mb-auto animate-logo"
         style="max-width: 100%; height: auto; max-height: 350px"
-      />
+      /> -->
       <div class="animate-text text-center">
         <div class="text-h4 text-white text-weight-bold q-mb-sm">
           Welcome to UERMMC Patient Registration Portal
@@ -16,52 +16,60 @@
         </div>
       </div>
     </div>
-    <!-- SAMSUNG TAB
-    <div :class="$q.screen.gt.xs ? 'row' : 'column'" class="row flex-center q-pa-md q-gutter-xl"> -->
-    <!-- IPAD PRO -->
+
     <div
       :class="$q.screen.gt.md ? 'row' : 'column'"
-      class="row flex-center q-pa-md q-gutter-xl"
+      class="flex-center q-pa-md q-gutter-xl"
     >
       <q-card
         class="cursor-pointer hover-card animate-card delay-1"
-        style="width: 300px"
         @click="openInpatientForm"
         v-ripple
       >
-        <q-card-section class="text-center q-py-lg">
-          <q-icon name="airline_seat_flat" size="70px" class="q-mb-sm" />
+        <q-card-section class="col column flex-center full-height">
+          <q-icon name="airline_seat_flat" size="70px" class="q-mb-md transition-icon" />
           <div class="text-h5 text-weight-bold">INPATIENT</div>
+          <div class="text-caption text-uppercase q-mt-sm opacity-fade">
+            Admit Patient
+          </div>
         </q-card-section>
       </q-card>
-      <RegistrationForm ref="registrationFormDialog" />
+
       <q-card
         class="cursor-pointer hover-card animate-card delay-2"
-        style="width: 300px"
         @click="openOutpatientForm"
         v-ripple
       >
-        <q-card-section class="text-center q-py-lg">
-          <q-icon name="directions_walk" size="70px" class="q-mb-sm" />
+        <q-card-section class="col column flex-center full-height">
+          <q-icon name="directions_walk" size="70px" class="q-mb-md transition-icon" />
           <div class="text-h5 text-weight-bold">OUTPATIENT</div>
+          <div class="text-caption text-uppercase q-mt-sm opacity-fade">
+            Consultation / Check-up
+          </div>
         </q-card-section>
       </q-card>
-      <RegistrationFormOutpatient ref="OutpatientregistrationFormDialog" />
+
       <q-card
         class="cursor-pointer hover-card animate-card delay-3"
-        style="width: 300px"
         @click="openReturningPatientForm"
         v-ripple
       >
-        <q-card-section class="text-center q-py-lg">
-          <q-icon name="assignment_return" size="70px" class="q-mb-sm" />
-          <div class="text-h5 text-weight-bold">RETURNING PATIENT</div>
+        <q-card-section class="col column flex-center full-height">
+          <q-icon name="assignment_return" size="70px" class="q-mb-md transition-icon" />
+          <div class="text-h5 text-weight-bold">RETURNING</div>
+          <div class="text-caption text-uppercase q-mt-sm opacity-fade">
+            Update Patient Record
+          </div>
         </q-card-section>
       </q-card>
-      <ReturningPatient ref="ReturningPatientFormDialog" />
     </div>
+
+    <RegistrationForm ref="registrationFormDialog" />
+    <RegistrationFormOutpatient ref="OutpatientregistrationFormDialog" />
+    <ReturningPatient ref="ReturningPatientFormDialog" />
   </div>
 </template>
+
 <script>
 import RegistrationForm from "pages/RegistrationForm.vue";
 import RegistrationFormOutpatient from "./RegistrationFormOutpatient.vue";
@@ -76,29 +84,31 @@ export default {
   },
   methods: {
     openInpatientForm() {
-      if (this.$refs.registrationFormDialog) {
-        this.$refs.registrationFormDialog.show();
-      }
+      this.$refs.registrationFormDialog?.show();
     },
     openOutpatientForm() {
-      if (this.$refs.OutpatientregistrationFormDialog) {
-        this.$refs.OutpatientregistrationFormDialog.show();
-      }
+      this.$refs.OutpatientregistrationFormDialog?.show();
     },
     openReturningPatientForm() {
-      if (this.$refs.ReturningPatientFormDialog) {
-        this.$refs.ReturningPatientFormDialog.show();
-      }
+      this.$refs.ReturningPatientFormDialog?.show();
     },
   },
 };
 </script>
+
 <style scoped>
 .hover-card {
-  transition: all 0.3s ease;
-  border-radius: 20px;
   background: rgba(255, 255, 255, 0.95);
   color: #004aad;
+  width: 300px;
+  height: 220px;
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  border: 2px solid transparent;
+  box-shadow: 0 4px 15px rgba(0, 74, 173, 0.1);
+
+  display: flex;
+  flex-direction: column;
 }
 
 .hover-card:hover {
@@ -118,7 +128,6 @@ export default {
     transform: translateY(0);
   }
 }
-
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -129,7 +138,6 @@ export default {
     transform: translateY(0);
   }
 }
-
 @keyframes popIn {
   0% {
     opacity: 0;
@@ -144,13 +152,11 @@ export default {
 .animate-logo {
   animation: fadeInDown 0.8s ease-out forwards;
 }
-
 .animate-text {
   opacity: 0;
   animation: fadeInUp 0.8s ease-out forwards;
   animation-delay: 0.3s;
 }
-
 .animate-card {
   opacity: 0;
   animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;

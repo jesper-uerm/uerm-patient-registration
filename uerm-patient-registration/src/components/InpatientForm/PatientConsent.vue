@@ -1,8 +1,8 @@
 <template>
-  <q-form ref="modeOfPayment">
-    <div class="text-subtitle1 text-bold">Mode of Payment:</div>
+  <q-form ref="patientConsent">
+    <div class="text-subtitle1 text-bold">Patient Consent</div>
     <div class="row q-col-gutter-md">
-      <div class="col-12 col-md-12">
+      <!-- <div class="col-12 col-md-12">
         <q-field
           borderless
           :model-value="localForm.mop"
@@ -46,7 +46,7 @@
         <div class="col-12 col-md-6">
           <q-input outlined dense v-model="localForm.bank" label="Bank Affliations" />
         </div>
-      </div>
+      </div> -->
       <div class="row col-12 q-col-gutter-md">
         <div class="col-12 col-md-12">
           <q-separator class="q-my-sm" />
@@ -120,14 +120,13 @@
         color="blue-10"
         icon-right="upload"
         label="Submit"
-        @click="$emit('submit')"
+        @click="trySubmit"
       />
     </q-stepper-navigation>
   </q-form>
 </template>
 <script>
 import SignaturePad from "src/components/InpatientForm/SignaturePad.vue";
-// import axios from "axios";
 
 export default {
   name: "ModeOfPayment",
@@ -168,13 +167,27 @@ export default {
   },
   methods: {
     async validate() {
-      const isFormValid = await this.$refs.modeOfPayment.validate();
+      const isFormValid = await this.$refs.patientConsent.validate();
 
       const isSignatureValid = !!this.localSignature;
 
       this.hasError = !isSignatureValid;
 
       return isFormValid && isSignatureValid;
+    },
+
+    async trySubmit() {
+      const valid = await this.validate();
+
+      if (valid) {
+        this.$emit("submit");
+      } else {
+        this.$q.notify({
+          type: "warning",
+          position: "top",
+          message: "Please fill all fields and provide a signature.",
+        });
+      }
     },
 
     onBack() {

@@ -1,7 +1,7 @@
 <template>
-  <q-form ref="sourceOfIncomeForm" @submit="onNext">
-    <div class="text-subtitle1 text-bold">Source of Income:</div>
-    <div class="row q-col-gutter-md">
+  <q-form ref="contactDetails" @submit="onNext">
+    <div class="text-subtitle1 text-bold q-mb-md">Government ID's:</div>
+    <!-- <div class="row q-col-gutter-md">
       <div class="col-12 col-md-12">
         <q-field
           borderless
@@ -152,7 +152,7 @@
         />
         <q-separator class="q-my-sm" />
       </div>
-    </div>
+    </div> -->
     <div class="row q-col-gutter-md">
       <div class="col-12 col-md-4">
         <q-input
@@ -188,10 +188,10 @@
         <q-input outlined dense v-model="localForm.others" type="number" label="Others" />
       </div>
     </div>
-    <q-separator class="q-my-sm" />
+    <q-separator class="q-my-md" />
     <div class="row q-col-gutter-md">
       <div class="col-12">
-        <div class="text-subtitle2">Spouse Details</div>
+        <div class="text-subtitle2">Spouse Details:</div>
       </div>
       <div class="col-12 col-md-4">
         <q-input
@@ -220,6 +220,112 @@
         />
       </div>
     </div>
+
+    <q-separator class="q-my-md" />
+
+    <div class="row q-col-gutter-md">
+      <div class="col-12">
+        <div class="text-subtitle2">Contact Person:</div>
+      </div>
+      <div class="col-12 col-md-8">
+        <q-input
+          outlined
+          dense
+          v-model="localForm.contactPersonInpatient"
+          label="Full Name *"
+          :rules="[(val) => !!val || 'Required']"
+        />
+      </div>
+      <div class="col-12 col-md-4">
+        <q-select
+          outlined
+          dense
+          v-model="localForm.contactPersonInpatientRelationship"
+          :options="relationshipOptions"
+          label="Relationship *"
+          :rules="[(val) => !!val || 'Required']"
+        />
+      </div>
+    </div>
+    <div class="row q-col-gutter-md">
+      <div class="col-12 col-md-4">
+        <q-input
+          outlined
+          dense
+          v-model="localForm.contactPersonInpatientEmail"
+          type="email"
+          label="Email Address"
+        />
+      </div>
+      <div class="col-12 col-md-4">
+        <q-input
+          outlined
+          dense
+          v-model="localForm.contactPersonInpatientMobile"
+          label="Mobile Number *"
+          mask="####-###-####"
+          :rules="[(val) => !!val || 'Required']"
+        >
+          <template v-slot:append>
+            <q-icon name="smartphone" />
+          </template>
+        </q-input>
+      </div>
+      <div class="col-12 col-md-4">
+        <q-input
+          outlined
+          dense
+          v-model="localForm.contactPersonInpatientLandline"
+          label="Landline"
+          mask="(##) ####-####"
+        >
+          <template v-slot:append>
+            <q-icon name="phone" />
+          </template>
+        </q-input>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12">
+        <q-input
+          outlined
+          dense
+          v-model="localForm.contactPersonInpatientAddress"
+          type="textarea"
+          rows="1"
+          label="Home Address *"
+          :rules="[(val) => !!val || 'Required']"
+        />
+      </div>
+    </div>
+    <div class="row q-col-gutter-md">
+      <div class="col-12 col-md-6">
+        <q-input
+          outlined
+          dense
+          v-model="localForm.contactPersonInpatientOccupation"
+          label="Occupation/Employer"
+        />
+      </div>
+      <div class="col-12 col-md-6">
+        <q-input
+          outlined
+          dense
+          v-model="localForm.contactPersonInpatientEmployerNumber"
+          mask="####-###-####"
+          unmasked-value
+          label="Employer Contact No"
+        />
+      </div>
+      <div class="col-12">
+        <q-input
+          outlined
+          dense
+          v-model="localForm.contactPersonInpatientEmployerAddress"
+          label="Employer Address"
+        />
+      </div>
+    </div>
     <q-stepper-navigation class="text-center q-gutter-md">
       <q-btn
         style="width: 100%; height: 45px; max-width: 120px"
@@ -245,6 +351,7 @@ export default {
     yesNoOptions: Array,
     sourceIncomeOptions: Array,
     ownershipOptions: Array,
+    relationshipOptions: Array,
   },
   emits: ["update:form", "next", "prev"],
   data() {
@@ -263,19 +370,19 @@ export default {
     },
   },
   methods: {
-    async validate() {
-      return await this.$refs.sourceOfIncomeForm.validate();
-    },
+    // async validate() {
+    //   return await this.$refs.contactDetails.validate();
+    // },
     async onNext() {
-      const isValid = await this.validate();
-      if (!isValid) {
-        this.$q.notify({
-          type: "warning",
-          message: "Please fill all required fields.",
-          position: "top",
-        });
-        return;
-      }
+      // const isValid = await this.validate();
+      // if (!isValid) {
+      //   this.$q.notify({
+      //     type: "warning",
+      //     message: "Please fill all required fields.",
+      //     position: "top",
+      //   });
+      //   return;
+      // }
       this.$emit("next");
     },
     onBack() {

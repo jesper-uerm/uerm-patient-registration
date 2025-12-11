@@ -358,19 +358,19 @@ export default {
   },
 
   methods: {
-    async validate() {
-      return await this.$refs.patientDetails.validate();
-    },
+    // async validate() {
+    //   return await this.$refs.patientDetails.validate();
+    // },
     async onNext() {
-      const isValid = await this.validate();
-      if (!isValid) {
-        this.$q.notify({
-          type: "warning",
-          message: "Please fill all required fields.",
-          position: "top",
-        });
-        return;
-      }
+      // const isValid = await this.validate();
+      // if (!isValid) {
+      //   this.$q.notify({
+      //     type: "warning",
+      //     message: "Please fill all required fields.",
+      //     position: "top",
+      //   });
+      //   return;
+      // }
       this.$emit("next");
     },
     onBack() {

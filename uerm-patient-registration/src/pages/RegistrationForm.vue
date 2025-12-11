@@ -7,7 +7,7 @@
   >
     <q-card
       class="column no-wrap"
-      style="width: 1300px; max-width: 95vw; max-height: 95vh; border-radius: 20px"
+      style="width: 1300px; max-width: 95vw; max-height: 90vh; border-radius: 20px"
     >
       <q-card-section
         class="column text-center text-white q-py-md relative-position"
@@ -49,24 +49,20 @@
             />
           </q-step>
 
-          <q-step
-            :name="2"
-            title="Occupation Details"
-            icon="business_center"
-            :done="step > 2"
-          >
-            <source-of-income
-              :form="formData.sourceOfIncome"
+          <q-step :name="2" title="Contact Details" icon="person" :done="step > 2">
+            <contact-details
+              :form="formData.contactDetails"
               :yesNoOptions="yesNoOptions"
               :ownershipOptions="ownershipOptions"
               :sourceIncomeOptions="sourceIncomeOptions"
-              @update:form="(val) => (formData.sourceOfIncome = val)"
+              :relationshipOptions="relationshipOptions"
+              @update:form="(val) => (formData.contactDetails = val)"
               @next="step = 3"
               @prev="step = 1"
             />
           </q-step>
 
-          <q-step :name="3" title="Guarantor Details" icon="person" :done="step > 3">
+          <!-- <q-step :name="3" title="Guarantor Details" icon="person" :done="step > 3">
             <guarantor-details
               :form="formData.guarantorInfo"
               :relationshipOptions="relationshipOptions"
@@ -76,17 +72,17 @@
               @next="step = 4"
               @prev="step = 2"
             />
-          </q-step>
+          </q-step> -->
 
-          <q-step :name="4" title="Mode of Payment" icon="payments" :done="step > 4">
+          <q-step :name="3" title="Patient Consent" icon="payments" :done="step > 3">
             <mode-of-payment
-              ref="modeOfPayment"
-              :form="formData.modeOfPayment"
+              ref="patientConsent"
+              :form="formData.patientConsent"
               :mopOptions="mopOptions"
               :initial-signature="formData.signature"
               @update:signature="(val) => (formData.signature = val)"
-              @update:form="(val) => (formData.modeOfPayment = val)"
-              @prev="step = 3"
+              @update:form="(val) => (formData.patientConsent = val)"
+              @prev="step = 2"
               @close="regFormdialogVisible = false"
               @submit="onSubmit"
             />
@@ -98,18 +94,17 @@
 </template>
 
 <script>
-import GuarantorDetails from "src/components/InpatientForm/GuarantorDetails.vue";
+import ContactDetails from "src/components/InpatientForm/ContactDetails.vue";
 import PatientDetails from "src/components/InpatientForm/PatientDetails.vue";
-import SourceOfIncome from "src/components/InpatientForm/SourceOfIncome.vue";
-import ModeOfPayment from "src/components/InpatientForm/ModeOfPayment.vue";
+import ModeOfPayment from "src/components/InpatientForm/PatientConsent.vue";
+
 import axios from "axios";
 
 export default {
   name: "RegistrationForm",
   components: {
-    GuarantorDetails,
     PatientDetails,
-    SourceOfIncome,
+    ContactDetails,
     ModeOfPayment,
   },
   data() {
@@ -168,24 +163,22 @@ export default {
           mothersAddress: "",
           motherContactNumber: "",
         },
-        sourceOfIncome: {
-          sourceOfIncome: "",
-          specificSourceOfIncome: "",
+        contactDetails: {
+          // sourceOfIncome: "",
+          // specificSourceOfIncome: "",
+          // pt_gross_income: "",
+          // pt_home_ownership: "",
+          // pt_years_of_stay: "",
+          // pthasCar: "",
+          // carOwnership: "",
           seniorpwd: "",
           philhealth: "",
           sssgsis: "",
           tin: "",
           others: "",
-          pt_gross_income: "",
-          pt_home_ownership: "",
-          pt_years_of_stay: "",
           spouseName: "",
           spouseOccupation: "",
           spouseEmployerContact: "",
-          pthasCar: "",
-          carOwnership: "",
-        },
-        guarantorInfo: {
           contactPersonInpatient: "",
           contactPersonInpatientRelationship: null,
           contactPersonInpatientLandline: "",
@@ -195,15 +188,17 @@ export default {
           contactPersonInpatientOccupation: "",
           contactPersonInpatientEmployerNumber: "",
           contactPersonInpatientEmployerAddress: "",
-          contactPersonInpatientIncome: "",
-          contactPersonInpatientGross: "",
-          contactPersonInpatientHome: "",
-          contactPersonInpatientHomeStay: "",
-          contactPersonInpatienthasCar: "",
-          contactPersonInpatientcarOwnership: null,
-          contactPersonInpatientnumberOfCars: "",
         },
-        modeOfPayment: {
+        // guarantorInfo: {
+        //   contactPersonInpatientIncome: "",
+        //   contactPersonInpatientGross: "",
+        //   contactPersonInpatientHome: "",
+        //   contactPersonInpatientHomeStay: "",
+        //   contactPersonInpatienthasCar: "",
+        //   contactPersonInpatientcarOwnership: null,
+        //   contactPersonInpatientnumberOfCars: "",
+        // },
+        patientConsent: {
           mop: "",
           specificmop: "",
           creditCard: "",
@@ -220,8 +215,8 @@ export default {
       this.regFormdialogVisible = true;
     },
     async validateFinalStep() {
-      if (this.$refs.modeOfPayment) {
-        const isPaymentValid = await this.$refs.modeOfPayment.validate();
+      if (this.$refs.patientConsent) {
+        const isPaymentValid = await this.$refs.patientConsent.validate();
 
         const isSignatureValid = !!this.formData.signature;
 
@@ -255,9 +250,9 @@ export default {
 
       const finalData = {
         ...this.formData.personalInfo,
-        ...this.formData.sourceOfIncome,
-        ...this.formData.guarantorInfo,
-        ...this.formData.modeOfPayment,
+        ...this.formData.contactDetails,
+        ...this.formData.patientConsent,
+        // ...this.formData.guarantorInfo,
 
         signature: this.formData.signature,
         patientType: "Inpatient",
