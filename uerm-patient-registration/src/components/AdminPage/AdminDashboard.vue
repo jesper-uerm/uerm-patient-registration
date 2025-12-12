@@ -49,8 +49,16 @@
             <div class="text-h6">Weekly Registration Trends</div>
           </q-card-section>
           <q-card-section>
-            <div class="flex flex-center text-grey">
-              [Line Chart Placeholder: Inpatient vs Outpatient]
+            <div class="row justify-center">
+              <div class="col-12 col-md-12 text-grey">
+                <apexchart
+                  width="100%"
+                  height="350"
+                  type="line"
+                  :options="chartOptions"
+                  :series="series"
+                ></apexchart>
+              </div>
             </div>
           </q-card-section>
         </q-card>
@@ -62,7 +70,15 @@
             <div class="text-h6">By Department</div>
           </q-card-section>
           <q-card-section>
-            <div class="flex flex-center text-grey">[Donut Chart Placeholder]</div>
+            <div class="flex flex-center text-grey">
+              <apexchart
+                width="100%"
+                height="300"
+                type="pie"
+                :options="chartOptionsPie"
+                :series="seriesPie"
+              ></apexchart>
+            </div>
           </q-card-section>
         </q-card>
       </div>
@@ -91,27 +107,95 @@
   </q-page>
 </template>
 
-<script setup>
-import { ref } from "vue";
+<script>
+export default {
+  name: "DashboardPage",
+  data() {
+    return {
+      chartOptions: {
+        chart: {
+          id: "vuechart-example",
+        },
+        xaxis: {
+          categories: [1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998],
+        },
+        colors: ["#1976D2", "#26A69A", "#9C27B0"],
+      },
+      series: [
+        {
+          name: "Admitted",
+          data: [3000, 4000, 4500, 5000, 4900, 6000, 7000, 9111],
+        },
+        {
+          name: "OPD",
+          data: [9000, 1200, 3350, 5500, 2470, 2180, 2810, 3500],
+        },
+        {
+          name: "ER",
+          data: [6000, 5120, 3135, 4150, 6147, 5180, 4210, 5350],
+        },
+      ],
+      seriesPie: [44, 55, 13],
 
-const columns = [
-  { name: "name", label: "Patient Name", field: "name", align: "left" },
-  { name: "type", label: "Type", field: "type", align: "left" },
-  { name: "dept", label: "Department", field: "dept", align: "left" },
-  { name: "time", label: "Time In", field: "time", align: "right" },
-];
+      chartOptionsPie: {
+        chart: {
+          id: "my-pie-chart",
+        },
+        labels: ["Team A", "Team B", "Team C"],
 
-const rows = ref([
-  { id: 1, name: "Juan Dela Cruz", type: "Inpatient", dept: "Surgery", time: "09:15 AM" },
-  {
-    id: 2,
-    name: "Maria Santos",
-    type: "Outpatient",
-    dept: "Cardiology",
-    time: "09:20 AM",
+        colors: ["#1976D2", "#26A69A", "#9C27B0"],
+
+        legend: {
+          position: "bottom",
+        },
+
+        responsive: [
+          {
+            breakpoint: 480,
+            options: {
+              chart: {
+                width: 300,
+              },
+              legend: {
+                position: "bottom",
+              },
+            },
+          },
+        ],
+      },
+      columns: [
+        { name: "name", label: "Patient Name", field: "name", align: "left" },
+        { name: "type", label: "Type", field: "type", align: "left" },
+        { name: "dept", label: "Department", field: "dept", align: "left" },
+        { name: "time", label: "Time In", field: "time", align: "right" },
+      ],
+      rows: [
+        {
+          id: 1,
+          name: "Juan Dela Cruz",
+          type: "Inpatient",
+          dept: "Surgery",
+          time: "09:15 AM",
+        },
+        {
+          id: 2,
+          name: "Maria Santos",
+          type: "Outpatient",
+          dept: "Cardiology",
+          time: "09:20 AM",
+        },
+        {
+          id: 3,
+          name: "Pedro Penduko",
+          type: "Returning",
+          dept: "Rehab",
+          time: "09:45 AM",
+        },
+      ],
+    };
   },
-  { id: 3, name: "Pedro Penduko", type: "Returning", dept: "Rehab", time: "09:45 AM" },
-]);
+  methods: {},
+};
 </script>
 
 <style scoped>
