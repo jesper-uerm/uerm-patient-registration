@@ -5,7 +5,10 @@
         <q-card class="text-white bg-blue-9">
           <q-card-section horizontal>
             <q-card-section class="col">
-              <div class="text-h4 text-weight-bolder">213</div>
+              <div class="text-h4 text-weight-bolder">
+                <q-spinner v-if="loading" color="white" size="0.8em" />
+                <span v-else>{{ inpatientCount }}</span>
+              </div>
               <div class="text-subtitle2">Admitted</div>
             </q-card-section>
             <q-card-section class="col-auto flex flex-center">
@@ -18,7 +21,10 @@
         <q-card class="text-white bg-blue-9">
           <q-card-section horizontal>
             <q-card-section class="col">
-              <div class="text-h4 text-weight-bolder">86</div>
+              <div class="text-h4 text-weight-bolder">
+                <q-spinner v-if="loading" color="white" size="0.8em" />
+                <span v-else>{{ outpatientCount }}</span>
+              </div>
               <div class="text-subtitle2">OPD</div>
             </q-card-section>
             <q-card-section class="col-auto flex flex-center">
@@ -31,7 +37,10 @@
         <q-card class="text-white bg-blue-9">
           <q-card-section horizontal>
             <q-card-section class="col">
-              <div class="text-h4 text-weight-bolder">172</div>
+              <div class="text-h4 text-weight-bolder">
+                <q-spinner v-if="loading" color="white" size="0.8em" />
+                <span v-else>{{ erpatientCount }}</span>
+              </div>
               <div class="text-subtitle2">ER</div>
             </q-card-section>
             <q-card-section class="col-auto flex flex-center">
@@ -91,7 +100,6 @@
     </div>
     <q-card class="no-shadow" style="border: 1px solid #f0f0f0">
       <q-card-section class="row items-center q-pb-none q-mb-md">
-        <!-- <div class="text-h6 text-weight-bold">Real-time Admissions</div> -->
         <div class="text-h7 text-weight-bold text-center text-uppercase">
           Real-time Admissions
         </div>
@@ -168,6 +176,9 @@ export default {
     return {
       patientList: [],
       loading: false,
+      inpatientCount: 0,
+      outpatientCount: 0,
+
       columns: [
         {
           name: "patient_id",
@@ -282,6 +293,15 @@ export default {
           "http://localhost:3000/api/auth/fetchAllPatient"
         );
         this.patientList = response.data;
+        const inpatients = this.patientList.filter((p) => p.patientType === "Inpatient");
+        const outpatients = this.patientList.filter(
+          (p) => p.patientType === "Outpatient"
+        );
+        const erpatients = this.patientList.filter((p) => p.patientType === "Emergency");
+
+        this.inpatientCount = inpatients.length;
+        this.outpatientCount = outpatients.length;
+        this.erpatientCount = erpatients.length;
       } catch (error) {
         console.error(error);
         this.$q.notify({
