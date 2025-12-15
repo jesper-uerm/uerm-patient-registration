@@ -43,10 +43,12 @@
     </div>
 
     <div class="row q-col-gutter-md q-mb-md">
-      <div class="col-12 col-md-8">
+      <div class="col-12 col-md-7">
         <q-card class="fit">
           <q-card-section>
-            <div class="text-h6">Weekly Registration Trends</div>
+            <div class="text-h7 text-weight-bold text-center text-uppercase">
+              Monthly Registration Trends
+            </div>
           </q-card-section>
           <q-card-section>
             <div class="row justify-center">
@@ -64,40 +66,89 @@
         </q-card>
       </div>
 
-      <div class="col-12 col-md-4">
+      <div class="col-12 col-md-5">
         <q-card class="fit">
           <q-card-section>
-            <div class="text-h6">By Department</div>
+            <div class="text-h7 text-weight-bold text-center text-uppercase">
+              By Patient Type
+            </div>
           </q-card-section>
           <q-card-section>
-            <div class="flex flex-center text-grey">
-              <apexchart
-                width="100%"
-                height="300"
-                type="pie"
-                :options="chartOptionsPie"
-                :series="seriesPie"
-              ></apexchart>
+            <div class="row justify-center">
+              <div class="col-12 col-md-12 text-grey">
+                <apexchart
+                  width="100%"
+                  height="320"
+                  type="pie"
+                  :options="chartOptionsPie"
+                  :series="seriesPie"
+                ></apexchart>
+              </div>
             </div>
           </q-card-section>
         </q-card>
       </div>
     </div>
-
-    <q-card>
-      <q-card-section class="row items-center q-pb-none">
-        <div class="text-h6">Real-time Admissions</div>
+    <q-card class="no-shadow" style="border: 1px solid #f0f0f0">
+      <q-card-section class="row items-center q-pb-none q-mb-md">
+        <!-- <div class="text-h6 text-weight-bold">Real-time Admissions</div> -->
+        <div class="text-h7 text-weight-bold text-center text-uppercase">
+          Real-time Admissions
+        </div>
         <q-space />
-        <q-btn icon="file_download" flat round dense tooltip="Export CSV" />
+        <q-btn
+          icon="file_download"
+          flat
+          round
+          dense
+          color="grey-7"
+          tooltip="Export CSV"
+        />
       </q-card-section>
 
-      <q-card-section>
-        <q-table :rows="rows" :columns="columns" row-key="id" flat bordered>
+      <q-card-section class="q-pa-none">
+        <q-table
+          :rows="patientList"
+          :columns="columns"
+          row-key="patient_id"
+          :loading="loading"
+          flat
+          :rows-per-page-options="[5, 10]"
+          class="clean-table"
+          header-class="bg-grey-1 text-grey-8 text-weight-bold text-uppercase"
+        >
+          <template v-slot:body-cell-patient_id="props">
+            <q-td :props="props">
+              <span class="text-grey-8">#{{ props.value }}</span>
+            </q-td>
+          </template>
+
+          <template v-slot:body-cell-fullName="props">
+            <q-td :props="props">
+              <div class="text-weight-medium">{{ props.value }}</div>
+            </q-td>
+          </template>
+
           <template v-slot:body-cell-type="props">
             <q-td :props="props">
               <q-badge
-                :color="props.row.type === 'Inpatient' ? 'red-8' : 'green-8'"
-                :label="props.row.type"
+                rounded
+                class="q-px-sm q-py-xs"
+                :color="
+                  props.row.patientType === 'Emergency' || props.row.patientType === 'ER'
+                    ? 'red-1'
+                    : props.row.patientType === 'Inpatient'
+                    ? 'green-1'
+                    : 'blue-1'
+                "
+                :text-color="
+                  props.row.patientType === 'Emergency' || props.row.patientType === 'ER'
+                    ? 'red-9'
+                    : props.row.patientType === 'Inpatient'
+                    ? 'green-9'
+                    : 'blue-9'
+                "
+                :label="props.row.patientType"
               />
             </q-td>
           </template>
@@ -108,93 +159,141 @@
 </template>
 
 <script>
+import { date } from "quasar";
+import axios from "axios";
+
 export default {
   name: "DashboardPage",
   data() {
     return {
-      chartOptions: {
-        chart: {
-          id: "vuechart-example",
+      patientList: [],
+      loading: false,
+      columns: [
+        {
+          name: "patient_id",
+          label: "Patient ID",
+          field: "patient_id",
+          align: "center",
+          sortable: true,
+          style: "width: 100px",
         },
+        {
+          name: "fullName",
+          label: "Name",
+          field: "fullName",
+          align: "center",
+          sortable: true,
+        },
+        {
+          name: "type",
+          label: "Type",
+          field: "patientType",
+          align: "center",
+        },
+        {
+          name: "createdAt",
+          label: "Date",
+          field: "createdAt",
+          align: "center",
+          format: (val) => (val ? date.formatDate(val, "MMM D, YYYY") : "-"),
+        },
+      ],
+
+      series: [],
+      chartOptions: {
+        chart: { id: "weekly-trend" },
         xaxis: {
-          categories: [1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998],
+          categories: [],
+          labels: {
+            formatter: function (value) {
+              const date = new Date(value + "-01");
+              return date.toLocaleDateString("en-US", {
+                month: "short",
+                year: "numeric",
+              });
+            },
+          },
         },
         colors: ["#1976D2", "#26A69A", "#9C27B0"],
       },
-      series: [
-        {
-          name: "Admitted",
-          data: [3000, 4000, 4500, 5000, 4900, 6000, 7000, 9111],
-        },
-        {
-          name: "OPD",
-          data: [9000, 1200, 3350, 5500, 2470, 2180, 2810, 3500],
-        },
-        {
-          name: "ER",
-          data: [6000, 5120, 3135, 4150, 6147, 5180, 4210, 5350],
-        },
-      ],
-      seriesPie: [44, 55, 13],
 
+      seriesPie: [],
       chartOptionsPie: {
         chart: {
-          id: "my-pie-chart",
+          id: "patient-type-pie",
         },
-        labels: ["Team A", "Team B", "Team C"],
-
+        labels: [],
         colors: ["#1976D2", "#26A69A", "#9C27B0"],
-
         legend: {
           position: "bottom",
         },
-
-        responsive: [
-          {
-            breakpoint: 480,
-            options: {
-              chart: {
-                width: 300,
-              },
-              legend: {
-                position: "bottom",
-              },
-            },
-          },
-        ],
+        noData: {
+          text: "Loading...",
+        },
       },
-      columns: [
-        { name: "name", label: "Patient Name", field: "name", align: "left" },
-        { name: "type", label: "Type", field: "type", align: "left" },
-        { name: "dept", label: "Department", field: "dept", align: "left" },
-        { name: "time", label: "Time In", field: "time", align: "right" },
-      ],
-      rows: [
-        {
-          id: 1,
-          name: "Juan Dela Cruz",
-          type: "Inpatient",
-          dept: "Surgery",
-          time: "09:15 AM",
-        },
-        {
-          id: 2,
-          name: "Maria Santos",
-          type: "Outpatient",
-          dept: "Cardiology",
-          time: "09:20 AM",
-        },
-        {
-          id: 3,
-          name: "Pedro Penduko",
-          type: "Returning",
-          dept: "Rehab",
-          time: "09:45 AM",
-        },
-      ],
     };
   },
-  methods: {},
+  mounted() {
+    this.loadPieData();
+    this.loadTrendData();
+    this.loadInitialData();
+  },
+  methods: {
+    async loadPieData() {
+      try {
+        const response = await this.$axios.get(
+          "http://localhost:3000/api/auth/fetchPieChartData"
+        );
+
+        this.seriesPie = response.data.series;
+
+        this.chartOptionsPie = {
+          ...this.chartOptionsPie,
+          labels: response.data.labels,
+        };
+      } catch (error) {
+        console.error("Chart Load Error:", error);
+      }
+    },
+
+    async loadTrendData() {
+      try {
+        const response = await this.$axios.get(
+          "http://localhost:3000/api/auth/fetchLineChartData"
+        );
+
+        this.chartOptions = {
+          ...this.chartOptions,
+          xaxis: {
+            ...this.chartOptions.xaxis,
+            categories: response.data.categories,
+          },
+        };
+
+        this.series = response.data.series;
+      } catch (error) {
+        console.error("Error loading trends:", error);
+      }
+    },
+    async loadInitialData() {
+      this.loading = true;
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/auth/fetchAllPatient"
+        );
+        this.patientList = response.data;
+      } catch (error) {
+        console.error(error);
+        this.$q.notify({
+          type: "negative",
+          message: "Failed to load Patients",
+          position: "top",
+        });
+      } finally {
+        this.loading = false;
+      }
+    },
+  },
 };
 </script>
 

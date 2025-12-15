@@ -1,11 +1,11 @@
 <template>
   <q-page class="q-pa-md bg-grey-1">
     <q-card
-      class="column shadow-1"
-      style="border-radius: 12px; border: 1px solid #e0e0e0"
+      class="column no-shadow"
+      style="border: 1px solid #e0e0e0; border-radius: 8px"
     >
-      <q-card-section class="col-auto q-py-md q-px-lg">
-        <div class="row items-center text-center justify-center text-uppercase">
+      <q-card-section class="col-auto q-py-md q-px-lg border-bottom">
+        <div class="row items-center justify-between">
           <div>
             <div
               class="text-h6 text-blue-10 text-weight-bold"
@@ -20,7 +20,7 @@
         </div>
       </q-card-section>
 
-      <q-card-section class="col-auto q-pt-none q-pb-md q-px-lg">
+      <q-card-section class="col-auto q-py-md q-px-lg bg-grey-1">
         <q-input
           outlined
           dense
@@ -28,8 +28,7 @@
           placeholder="Enter Name or ID"
           @keyup.enter="handleSearch"
           :disable="loading"
-          class="search-input"
-          bg-color="white"
+          class="bg-white"
         >
           <template v-slot:prepend>
             <q-icon name="search" class="text-grey-5" />
@@ -41,73 +40,44 @@
               label="Search"
               class="q-px-lg"
               @click="handleSearch"
-              @keyup.enter="handleSearch"
-              @input="debouncedSearch"
               :loading="loading"
-              style="border-top-left-radius: 0; border-bottom-left-radius: 0"
             />
           </template>
         </q-input>
       </q-card-section>
-      <q-card-section class="col q-pa-none overflow-hidden q-mx-lg q-mb-lg">
+
+      <q-card-section class="col q-pa-none">
         <q-table
           :rows="patientList"
           :columns="columns"
           row-key="patient_id"
           :loading="loading"
           flat
-          bordered
-          separator="horizontal"
           :dense="$q.screen.lt.xl"
           :grid="$q.screen.lt.sm"
           virtual-scroll
           :rows-per-page-options="[13]"
           class="clean-table fit"
+          header-class="bg-grey-1 text-grey-8 text-weight-bold text-uppercase"
         >
-          <template v-slot:item="props">
-            <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
-              <q-card flat bordered class="q-pa-sm">
-                <q-item>
-                  <q-item-section>
-                    <q-item-label class="text-weight-bold text-blue-10">
-                      {{ props.row.lastName }}, {{ props.row.firstName }}
-                    </q-item-label>
-                    <q-item-label caption>ID: {{ props.row.patient_id }}</q-item-label>
-                  </q-item-section>
-                  <q-item-section side>
-                    <q-btn size="sm" flat round color="grey" icon="more_vert" />
-                  </q-item-section>
-                </q-item>
-                <q-separator />
-                <q-card-section class="q-pt-sm">
-                  <div class="row items-center justify-between">
-                    <span class="text-caption text-grey">Address</span>
-                    <span
-                      class="text-caption text-right ellipsis"
-                      style="max-width: 150px"
-                    >
-                      {{ props.row.addressPresent }}
-                    </span>
-                  </div>
-                  <div class="row items-center justify-between q-mt-sm">
-                    <q-btn
-                      color="blue-10"
-                      outline
-                      label="View"
-                      size="sm"
-                      class="full-width"
-                      @click="viewPatient(props.row)"
-                    />
-                  </div>
-                </q-card-section>
-              </q-card>
-            </div>
+          <template v-slot:body-cell-patient_id="props">
+            <q-td :props="props">
+              <span class="text-grey-8">#{{ props.value }}</span>
+            </q-td>
+          </template>
+
+          <template v-slot:body-cell-fullName="props">
+            <q-td :props="props">
+              <div class="text-weight-medium text-blue-10">{{ props.value }}</div>
+            </q-td>
           </template>
 
           <template v-slot:body-cell-presentAddress="props">
-            <q-td :props="props" class="ellipsis" style="max-width: 250px">
-              {{ props.row.addressPresent }}
-              <q-tooltip>{{ props.row.addressPresent }}</q-tooltip>
+            <q-td :props="props" style="max-width: 250px">
+              <div class="ellipsis text-grey-7">
+                {{ props.row.addressPresent }}
+                <q-tooltip>{{ props.row.addressPresent }}</q-tooltip>
+              </div>
             </q-td>
           </template>
 
@@ -137,16 +107,37 @@
               </q-btn>
             </q-td>
           </template>
+
+          <template v-slot:item="props">
+            <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
+              <q-card flat bordered class="q-pa-sm">
+                <q-item>
+                  <q-item-section>
+                    <q-item-label class="text-weight-bold text-blue-10">
+                      {{ props.row.lastName }}, {{ props.row.firstName }}
+                    </q-item-label>
+                    <q-item-label caption>ID: {{ props.row.patient_id }}</q-item-label>
+                  </q-item-section>
+                  <q-item-section side>
+                    <q-btn size="sm" flat round color="grey" icon="more_vert" />
+                  </q-item-section>
+                </q-item>
+              </q-card>
+            </div>
+          </template>
+
           <template v-slot:loading>
             <q-inner-loading showing>
-              <q-spinner-gears size="80px" color="blue-10" />
+              <q-spinner-gears size="50px" color="blue-10" />
             </q-inner-loading>
           </template>
 
           <template v-slot:no-data>
-            <div class="full-width column flex-center text-grey q-pa-xl">
+            <div class="full-width column flex-center text-grey-5 q-pa-xl">
               <q-icon size="4em" name="person_search" class="q-mb-md" />
-              <div class="text-h6" v-if="!hasSearched">Ready to Search</div>
+              <div class="text-subtitle1" v-if="!hasSearched">
+                Ready to Search Inpatients
+              </div>
               <div class="text-subtitle1" v-else>
                 No patients found matching "{{ searchQuery }}"
               </div>
@@ -175,7 +166,7 @@ export default {
       columns: [
         {
           name: "patient_id",
-          label: "ID NO.",
+          label: "ID",
           field: "patient_id",
           align: "left",
           sortable: true,
@@ -183,44 +174,42 @@ export default {
         },
         {
           name: "fullName",
-          label: "FULL NAME",
+          label: "Patient Name",
           field: "fullName",
           align: "left",
           sortable: true,
-          classes: "col-2",
         },
-        // {
-        //   name: "firstName",
-        //   label: "FIRST NAME",
-        //   field: "firstName",
-        //   align: "left",
-        //   sortable: true,
-        //   style: "width: 100px",
-        // },
-        // {
-        //   name: "lastName",
-        //   label: "LAST NAME",
-        //   field: "lastName",
-        //   align: "left",
-        //   sortable: true,
-        //   style: "width: 100px",
-        // },
         {
           name: "birthdate",
-          label: "BIRTHDATE",
+          label: "Birthdate",
           field: "birthdate",
-          align: "center",
+          align: "right",
           format: (val) => (val ? date.formatDate(val, "MMM D, YYYY") : "-"),
+          classes: "text-grey-7",
+          style: "width: 140px",
         },
-        { name: "gender", label: "SEX", field: "gender", align: "center" },
+        {
+          name: "gender",
+          label: "Sex",
+          field: "gender",
+          align: "center",
+          style: "width: 200px",
+        },
         {
           name: "presentAddress",
-          label: "ADDRESS",
+          label: "Address",
           field: "addressPresent",
           align: "left",
-          classes: "ellipsis text-grey-7",
+          classes: "ellipsis",
+          style: "max-width: 250px; min-width: 150px",
         },
-        { name: "actions", label: "ACTION", field: "actions", align: "center" },
+        {
+          name: "actions",
+          label: "Actions",
+          field: "actions",
+          align: "center",
+          style: "width: 150px",
+        },
       ],
     };
   },
@@ -239,7 +228,7 @@ export default {
         console.error(error);
         this.$q.notify({
           type: "negative",
-          message: "Failed to load inpatients",
+          message: "Failed to load Inpatients",
           position: "top",
         });
       } finally {
@@ -293,14 +282,21 @@ export default {
         }
       } catch (error) {
         console.error(error);
-        this.$q.notify({ type: "negative", message: "Search Failed", position: "top" });
+        this.$q.notify({
+          type: "negative",
+          message: "Search Failed",
+          position: "top",
+        });
       } finally {
         this.loading = false;
       }
     },
 
     viewPatient(row) {
-      this.$q.notify({ type: "primary", message: `Viewing details for ${row.lastName}` });
+      this.$q.notify({
+        type: "primary",
+        message: `Viewing details for ${row.lastName}`,
+      });
     },
     printPatient(row) {
       this.$q.notify({
@@ -312,38 +308,39 @@ export default {
 };
 </script>
 
-<style scoped lang="scss">
-.search-input :deep(.q-field__control) {
-  border-radius: 8px 0 0 8px;
+<style scoped>
+.clean-table :deep(.q-table__top),
+.clean-table :deep(.q-table__bottom),
+.clean-table :deep(thead tr:first-child th) {
+  border-bottom: 1px solid #f0f0f0;
 }
 
-.clean-table :deep(thead tr:first-child th) {
-  background-color: $blue-grey-8;
-  color: white;
-  font-weight: 500;
-  font-size: 0.75rem;
-  padding: 15px;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+.clean-table :deep(thead tr th) {
   position: sticky;
-  top: 0;
   z-index: 1;
+  background-color: #f8f9fa;
 }
 
 .clean-table :deep(tbody tr:hover) {
-  background-color: #f0f7ff;
-  transition: background-color 0.2s;
+  background: #fafafa !important;
+}
+
+.clean-table :deep(td),
+.clean-table :deep(th) {
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.border-bottom {
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .hover-blue:hover {
   color: #1976d2 !important;
   background-color: #e3f2fd;
 }
+
 .hover-green:hover {
   color: #388e3c !important;
   background-color: #e8f5e9;
-}
-.opacity-50 {
-  opacity: 0.5;
 }
 </style>
