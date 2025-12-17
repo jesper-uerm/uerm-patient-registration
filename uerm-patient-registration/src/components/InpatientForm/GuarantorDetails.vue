@@ -278,7 +278,6 @@
         label="Back"
         @click="onBack"
       />
-      <!-- <q-btn type="submit" color="primary" label="Next" /> -->
       <q-btn
         style="width: 100%; height: 45px; max-width: 120px"
         color="blue-10"
@@ -314,19 +313,19 @@ export default {
     },
   },
   methods: {
-    // async validate() {
-    //   return await this.$refs.contactPerson.validate();
-    // },
+    async validate() {
+      return await this.$refs.contactPerson.validate();
+    },
     async onNext() {
-      // const isValid = await this.validate();
-      // if (!isValid) {
-      //   this.$q.notify({
-      //     type: "warning",
-      //     message: "Please fill all required fields.",
-      //     position: "top",
-      //   });
-      //   return;
-      // }
+      const isValid = await this.validate();
+      if (!isValid) {
+        this.$q.notify({
+          type: "warning",
+          message: "Please fill all required fields.",
+          position: "top",
+        });
+        return;
+      }
       this.$emit("next");
     },
     onBack() {

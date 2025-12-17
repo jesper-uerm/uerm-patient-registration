@@ -1,7 +1,24 @@
 <template>
   <q-form ref="contactDetails" @submit="onNext">
-    <div class="text-subtitle1 text-bold q-mb-md">Government ID's:</div>
-    <!-- <div class="row q-col-gutter-md">
+    <q-card bordered flat class="bg-grey-1 q-mb-lg">
+      <q-card-section>
+        <div class="row q-col-gutter-sm text-grey-9">
+          <div class="col-12 col-md-4">
+            <span class="text-weight-bold">Patient ID:</span>
+            {{ localPatient?.patient_id || "N/A" }}
+          </div>
+          <div class="col-12 col-md-4">
+            <span class="text-weight-bold">Name:</span> {{ localPatient?.lastName }},
+            {{ localPatient?.firstName }}
+          </div>
+          <div class="col-12 col-md-4">
+            <span class="text-weight-bold">Birthdate:</span>
+            {{ formatDate(localPatient?.birthdate) }}
+          </div>
+        </div>
+      </q-card-section>
+    </q-card>
+    <div class="row q-col-gutter-md">
       <div class="col-12 col-md-12">
         <q-field
           borderless
@@ -152,216 +169,66 @@
         />
         <q-separator class="q-my-sm" />
       </div>
-    </div> -->
-    <div class="row q-col-gutter-md">
-      <div class="col-12 col-md-4">
-        <q-input
-          outlined
-          dense
-          v-model="localForm.seniorpwd"
-          type="number"
-          label="Senior/PWD No."
-        />
-      </div>
-      <div class="col-12 col-md-4">
-        <q-input
-          outlined
-          dense
-          v-model="localForm.philhealth"
-          type="number"
-          label="PhilHealth No."
-        />
-      </div>
-      <div class="col-12 col-md-4">
-        <q-input
-          outlined
-          dense
-          v-model="localForm.sssgsis"
-          type="number"
-          label="SSS/GSIS No."
-        />
-      </div>
-      <div class="col-12 col-md-4">
-        <q-input outlined dense v-model="localForm.tin" type="number" label="TIN No." />
-      </div>
-      <div class="col-12 col-md-4">
-        <q-input outlined dense v-model="localForm.others" type="number" label="Others" />
-      </div>
     </div>
-    <q-separator class="q-my-md" />
-    <div class="row q-col-gutter-md">
-      <div class="col-12">
-        <div class="text-subtitle2">Spouse Details:</div>
-      </div>
-      <div class="col-12 col-md-4">
-        <q-input
-          outlined
-          dense
-          v-model="localForm.spouseName"
-          label="Spouse's Full Name"
-        />
-      </div>
-      <div class="col-12 col-md-4">
-        <q-input
-          outlined
-          dense
-          v-model="localForm.spouseOccupation"
-          label="Occupation/Employer"
-        />
-      </div>
-      <div class="col-12 col-md-4">
-        <q-input
-          outlined
-          dense
-          mask="####-###-####"
-          unmasked-value
-          v-model="localForm.spouseEmployerContact"
-          label="Employer Contact"
-        />
-      </div>
-    </div>
-
-    <q-separator class="q-my-md" />
-
-    <div class="row q-col-gutter-md">
-      <div class="col-12">
-        <div class="text-subtitle2">Contact Person:</div>
-      </div>
-      <div class="col-12 col-md-8">
-        <q-input
-          outlined
-          dense
-          v-model="localForm.contactPersonInpatient"
-          label="Full Name *"
-          :rules="[(val) => !!val || 'Required']"
-        />
-      </div>
-      <div class="col-12 col-md-4">
-        <q-select
-          outlined
-          dense
-          v-model="localForm.contactPersonInpatientRelationship"
-          :options="relationshipOptions"
-          label="Relationship *"
-          :rules="[(val) => !!val || 'Required']"
-        />
-      </div>
-    </div>
-    <div class="row q-col-gutter-md">
-      <div class="col-12 col-md-4">
-        <q-input
-          outlined
-          dense
-          v-model="localForm.contactPersonInpatientEmail"
-          type="email"
-          label="Email Address"
-        />
-      </div>
-      <div class="col-12 col-md-4">
-        <q-input
-          outlined
-          dense
-          v-model="localForm.contactPersonInpatientMobile"
-          label="Mobile Number *"
-          mask="####-###-####"
-          :rules="[(val) => !!val || 'Required']"
-        >
-          <template v-slot:append>
-            <q-icon name="smartphone" />
-          </template>
-        </q-input>
-      </div>
-      <div class="col-12 col-md-4">
-        <q-input
-          outlined
-          dense
-          v-model="localForm.contactPersonInpatientLandline"
-          label="Landline"
-          mask="(##) ####-####"
-        >
-          <template v-slot:append>
-            <q-icon name="phone" />
-          </template>
-        </q-input>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-12">
-        <q-input
-          outlined
-          dense
-          v-model="localForm.contactPersonInpatientAddress"
-          type="textarea"
-          rows="1"
-          label="Home Address *"
-          :rules="[(val) => !!val || 'Required']"
-        />
-      </div>
-    </div>
-    <div class="row q-col-gutter-md">
-      <div class="col-12 col-md-6">
-        <q-input
-          outlined
-          dense
-          v-model="localForm.contactPersonInpatientOccupation"
-          label="Occupation/Employer"
-        />
-      </div>
-      <div class="col-12 col-md-6">
-        <q-input
-          outlined
-          dense
-          v-model="localForm.contactPersonInpatientEmployerNumber"
-          mask="####-###-####"
-          unmasked-value
-          label="Employer Contact No"
-        />
-      </div>
-      <div class="col-12">
-        <q-input
-          outlined
-          dense
-          v-model="localForm.contactPersonInpatientEmployerAddress"
-          label="Employer Address"
-        />
-      </div>
-    </div>
-    <q-stepper-navigation class="text-center q-gutter-md">
+    <div class="row justify-center q-mt-xl">
       <q-btn
-        style="width: 100%; height: 45px; max-width: 120px"
-        color="orange-10"
-        icon="arrow_back"
-        label="Back"
-        @click="onBack"
-      />
-      <q-btn
-        style="width: 100%; height: 45px; max-width: 120px"
+        style="width: 120px"
         color="blue-10"
         icon-right="arrow_forward"
         label="Next"
-        @click="onNext"
+        type="submit"
       />
-    </q-stepper-navigation>
+    </div>
   </q-form>
 </template>
+
 <script>
+import { date } from "quasar";
+
 export default {
   props: {
     form: Object,
+    localPatient: {
+      type: Object,
+      default: () => ({}),
+    },
     yesNoOptions: Array,
     sourceIncomeOptions: Array,
     ownershipOptions: Array,
-    relationshipOptions: Array,
   },
   emits: ["update:form", "next", "prev"],
   data() {
     return {
-      localForm: {
-        ...this.form,
-      },
+      localForm: { ...this.form },
+      grossIncomeOptions: [
+        { label: "Below 20k", value: "Below 20k" },
+        { label: "20k - 50k", value: "20k - 50k" },
+        { label: "Above 50k", value: "Above 50k" },
+      ],
+      mopOptions: [
+        { label: "Cash", value: "Cash" },
+        { label: "Credit Card", value: "Credit Card" },
+        { label: "Others", value: "Others" },
+      ],
+      homeOwnershipOptions: [
+        { label: "Owned", value: "Owned" },
+        { label: "Rented", value: "Rented" },
+        { label: "Mortgaged", value: "Mortgaged" },
+      ],
+      yearsOfStayOptions: [
+        { label: "0-1 Year", value: "0-1 Year" },
+        { label: "1-5 Years", value: "1-5 Years" },
+        { label: "5+ Years", value: "5+ Years" },
+      ],
     };
   },
   watch: {
+    form: {
+      handler(newVal) {
+        this.localForm = { ...newVal };
+      },
+      deep: true,
+    },
     localForm: {
       handler(val) {
         this.$emit("update:form", val);
@@ -385,14 +252,15 @@ export default {
       }
       this.$emit("next");
     },
-    onBack() {
-      this.$emit("prev");
-    },
     resetCarData(value) {
       if (value === "no") {
         this.localForm.carOwnership = null;
         this.localForm.numberOfCars = "";
       }
+    },
+    formatDate(val) {
+      if (!val) return "-";
+      return date.formatDate(val, "MMM D, YYYY");
     },
   },
 };

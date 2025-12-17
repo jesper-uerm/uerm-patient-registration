@@ -27,13 +27,19 @@ const routes = [
     },
     {
       path: 'InpatientList',
-      name: 'patient-list',
+      name: 'in-patient-list',
       component: () => import('src/components/AdminPage/InpatientList.vue')
     },
     {
       path: 'OutpatientList',
-      name: 'settings',
+      name: 'out-patient-list',
       component: () => import('src/components/AdminPage/OutpatientList.vue')
+    },
+
+    {
+      path: 'EmergencyList',
+      name: 'emergency-patient-list',
+      component: () => import('src/components/AdminPage/EmergencyList.vue')
     }
   ]
 },

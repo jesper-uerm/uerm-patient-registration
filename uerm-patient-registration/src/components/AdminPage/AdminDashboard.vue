@@ -178,6 +178,7 @@ export default {
       loading: false,
       inpatientCount: 0,
       outpatientCount: 0,
+      erpatientCount: 0,
 
       columns: [
         {

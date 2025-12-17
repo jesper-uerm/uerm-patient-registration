@@ -11,10 +11,10 @@
               class="text-h6 text-white text-weight-bold"
               style="letter-spacing: -0.5px"
             >
-              Inpatient Search
+              Emergency List Search
             </div>
             <div class="text-caption text-grey-5">
-              Search database for admitted patient records
+              Search database for emergency patient records
             </div>
           </div>
         </div>
@@ -149,7 +149,7 @@
       </q-card-section>
     </q-card>
     <q-dialog v-model="viewDialog" transition-show="scale" transition-hide="scale">
-      <q-card style="width: 900px; max-width: 80vw" class="rounded-borders">
+      <q-card style="width: 700px; max-width: 80vw" class="rounded-borders">
         <q-card-section class="bg-gradient-primary text-white q-pa-md">
           <div class="row items-center text-center justify-center justify-between">
             <div class="row items-center text-uppercase">
@@ -183,7 +183,7 @@
               </q-item-section>
               <q-item-section>
                 <q-item-label caption>Full Name</q-item-label>
-                <q-item-label class="text-body1 text-weight-medium">
+                <q-item-label class="text-body2 text-weight-medium">
                   {{ selectedPatient.lastName }}, {{ selectedPatient.firstName }}
                 </q-item-label>
               </q-item-section>
@@ -198,7 +198,7 @@
               </q-item-section>
               <q-item-section>
                 <q-item-label caption>Gender</q-item-label>
-                <q-item-label class="text-body1">
+                <q-item-label class="text-body2">
                   {{ selectedPatient.gender }}
                 </q-item-label>
               </q-item-section>
@@ -210,7 +210,7 @@
               </q-item-section>
               <q-item-section>
                 <q-item-label caption>Birthdate</q-item-label>
-                <q-item-label class="text-body1">
+                <q-item-label class="text-body2">
                   {{ formatDate(selectedPatient.birthdate) }}
                 </q-item-label>
               </q-item-section>
@@ -227,7 +227,7 @@
               </q-item-section>
               <q-item-section>
                 <q-item-label caption>Present Address</q-item-label>
-                <q-item-label class="text-body1">
+                <q-item-label class="text-body2">
                   {{ selectedPatient.addressPresent || "N/A" }}
                 </q-item-label>
               </q-item-section>
@@ -239,7 +239,7 @@
               </q-item-section>
               <q-item-section>
                 <q-item-label caption>Mobile Number</q-item-label>
-                <q-item-label class="text-body1">
+                <q-item-label class="text-body2">
                   {{ selectedPatient.mobile || "N/A" }}
                 </q-item-label>
               </q-item-section>
@@ -254,9 +254,7 @@
               <div class="col-12 col-sm-4">
                 <span class="text-weight-bold block q-mb-xs">Status:</span>
                 <q-badge
-                  :color="
-                    selectedPatient.patientType === 'Inpatient' ? 'green' : 'orange'
-                  "
+                  :color="selectedPatient.patientType === 'Outpatient' ? 'green' : 'red'"
                 >
                   {{ selectedPatient.patientType || "N/A" }}
                 </q-badge>
@@ -282,15 +280,14 @@
           <q-btn flat label="Close" color="grey-8" v-close-popup />
           <q-btn
             unelevated
-            label="Update Financial Statement"
-            icon-right="update"
+            label="Print Record"
+            icon="print"
             color="blue-10"
             @click="printPatient(selectedPatient)"
           />
         </q-card-actions>
       </q-card>
     </q-dialog>
-    <financial-statement ref="financialRef" />
   </q-page>
 </template>
 
@@ -299,13 +296,8 @@ import { date } from "quasar";
 import axios from "axios";
 import _ from "lodash";
 
-import FinancialStatement from "./FinancialStatement.vue";
-
 export default {
-  name: "InpatientList",
-  components: {
-    FinancialStatement,
-  },
+  name: "EmergencyList",
   data() {
     return {
       searchQuery: "",
@@ -353,7 +345,7 @@ export default {
           field: "addressPresent",
           align: "left",
           classes: "ellipsis",
-          style: "max-width: 25s0px; min-width: 150px",
+          style: "max-width: 250px; min-width: 150px",
         },
         {
           name: "actions",
@@ -374,7 +366,7 @@ export default {
     async loadInitialData() {
       this.loading = true;
       try {
-        const response = await axios.get("http://localhost:3000/api/auth/fetchInpatient");
+        const response = await axios.get("http://localhost:3000/api/auth/fetchErpatient");
         this.patientList = response.data;
       } catch (error) {
         console.error(error);
@@ -417,7 +409,7 @@ export default {
       this.loading = true;
       try {
         const response = await axios.get(
-          "http://localhost:3000/api/auth/searchInpatient",
+          "http://localhost:3000/api/auth/searchErpatient",
           {
             params: { query: this.searchQuery },
           }
@@ -456,8 +448,10 @@ export default {
       return date.formatDate(val, "MMM D, YYYY");
     },
     printPatient(row) {
-      this.$refs.financialRef.openFinancialDialog(row);
-      this.viewDialog = false;
+      this.$q.notify({
+        type: "positive",
+        message: `Generating PDF for ${row.lastName}...`,
+      });
     },
   },
 };
