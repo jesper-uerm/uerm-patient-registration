@@ -7,7 +7,7 @@
   >
     <q-card
       class="column no-wrap"
-      style="width: 1000px; max-width: 95vw; max-height: 90vh"
+      style="width: 1200px; max-width: 95vw; max-height: 95vh"
     >
       <q-card-section
         class="column text-center text-white q-py-md relative-position"
@@ -37,57 +37,32 @@
           flat
           alternative-labels
         >
-          <q-step :name="1" title="Source of Income" icon="person" :done="step > 1">
+          <q-step :name="1" title="Mode Of Payment" icon="person" :done="step > 1">
             <patient-source-of-income
               :form="formData.patientSourceOfIncome"
               :local-patient="localPatient"
               :yesNoOptions="yesNoOptions"
+              :mopOptions="mopOptions"
               :ownershipOptions="ownershipOptions"
               :sourceIncomeOptions="sourceIncomeOptions"
-              :relationshipOptions="relationshipOptions"
-              @update:form="(val) => (formData.contactDetails = val)"
+              :grossIncomeOptions="grossIncomeOptions"
+              :homeOwnershipOptions="homeOwnershipOptions"
+              :yearsOfStayOptions="yearsOfStayOptions"
+              @update:form="(val) => (formData.patientSourceOfIncome = val)"
               @next="step = 2"
             />
           </q-step>
-
-          <!-- <q-step :name="2" title="Contact Details" icon="person" :done="step > 2">
-            <contact-details
-              :form="formData.contactDetails"
-              :yesNoOptions="yesNoOptions"
-              :ownershipOptions="ownershipOptions"
-              :sourceIncomeOptions="sourceIncomeOptions"
-              :relationshipOptions="relationshipOptions"
-              @update:form="(val) => (formData.contactDetails = val)"
-              @next="step = 3"
-              @prev="step = 1"
-            />
-          </q-step> -->
-
-          <!-- <q-step :name="3" title="Guarantor Details" icon="person" :done="step > 3">
-            <guarantor-details
-              :form="formData.guarantorInfo"
-              :relationshipOptions="relationshipOptions"
-              :yesNoOptions="yesNoOptions"
-              :ownershipOptions="ownershipOptions"
-              @update:form="(val) => (formData.guarantorInfo = val)"
-              @next="step = 4"
-              @prev="step = 2"
-            />
-          </q-step> -->
-          <!--
-          <q-step :name="3" title="Patient Consent" icon="payments" :done="step > 3">
-            <mode-of-payment
-              ref="patientConsent"
-              :form="formData.patientConsent"
+          <q-step :name="2" title="HMO" icon="payments" :done="step > 2">
+            <accredited-h-m-o
+              ref="hmoForm"
+              :form="formData.hmoForm"
               :mopOptions="mopOptions"
-              :initial-signature="formData.signature"
-              @update:signature="(val) => (formData.signature = val)"
-              @update:form="(val) => (formData.patientConsent = val)"
-              @prev="step = 2"
-              @close="regFormdialogVisible = false"
+              @update:form="(val) => (formData.hmoForm = val)"
+              @prev="step = 1"
+              @close="financialDialog = false"
               @submit="onSubmit"
             />
-          </q-step> -->
+          </q-step>
         </q-stepper>
       </q-card-section>
     </q-card>
@@ -96,29 +71,43 @@
 
 <script>
 import PatientSourceOfIncome from "src/components/AdminPage/PatientSourceOfIncome.vue";
-// import axios from "axios";
+import AccreditedHMO from "src/components/AdminPage/AccreditedHMO.vue";
+
+import axios from "axios";
 
 export default {
   name: "FinancialStatement",
   components: {
     PatientSourceOfIncome,
+    AccreditedHMO,
   },
   data() {
     return {
       financialDialog: false,
       step: 1,
       submitting: false,
-      sameAsPresent: false,
-      sameAsFather: false,
-      civilStatusOptions: ["Single", "Married", "Widowed", "Separated", "Divorced"],
-      religionOptions: ["Roman Catholic", "Christian", "Islam", "Others"],
       ownershipOptions: ["Owned", "Company", "Mortgaged"],
-      relationshipOptions: ["Spouse", "Parent", "Sibling", "Child", "Co-Maker"],
+      grossIncomeOptions: [
+        { label: "Below 20k", value: "Below 20k" },
+        { label: "20k - 50k", value: "20k - 50k" },
+        { label: "Above 50k", value: "Above 50k" },
+      ],
       mopOptions: [
         { label: "Cash", value: "Cash" },
         { label: "Credit Card", value: "Credit Card" },
         { label: "Others", value: "Others" },
       ],
+      homeOwnershipOptions: [
+        { label: "Owned", value: "Owned" },
+        { label: "Rented", value: "Rented" },
+        { label: "Mortgaged", value: "Mortgaged" },
+      ],
+      yearsOfStayOptions: [
+        { label: "0-1 Year", value: "0-1 Year" },
+        { label: "1-5 Years", value: "1-5 Years" },
+        { label: "5+ Years", value: "5+ Years" },
+      ],
+
       yesNoOptions: [
         { label: "Yes", value: "yes" },
         { label: "No", value: "no" },
@@ -131,7 +120,7 @@ export default {
       ],
 
       formData: {
-        contactDetails: {
+        patientSourceOfIncome: {
           sourceOfIncome: "",
           specificSourceOfIncome: "",
           pt_gross_income: "",
@@ -139,25 +128,23 @@ export default {
           pt_years_of_stay: "",
           pthasCar: "",
           carOwnership: "",
+          numberOfCars: "",
+
+          mop: "",
+          specificmop: "",
+          creditCard: "",
+          bank: "",
         },
-        guarantorInfo: {
-          contactPersonInpatientIncome: "",
-          contactPersonInpatientGross: "",
-          contactPersonInpatientHome: "",
-          contactPersonInpatientHomeStay: "",
-          contactPersonInpatienthasCar: "",
-          contactPersonInpatientcarOwnership: null,
-          contactPersonInpatientnumberOfCars: "",
-          // },
-          patientConsent: {
-            mop: "",
-            specificmop: "",
-            creditCard: "",
-            bank: "",
-            items: [],
-          },
-          signature: null,
+        hmo: {
+          hmoName: "",
+          memberId: "",
+          validityDate: "",
+          desiredRoom: "",
+          informedIncrement: "",
+          hmoStaff: "",
+          hmoDateTime: "",
         },
+        // signature: null,
       },
     };
   },
@@ -167,79 +154,76 @@ export default {
       this.localPatient = patientData;
       this.financialDialog = true;
     },
-    //   async validateFinalStep() {
-    //     if (this.$refs.patientConsent) {
-    //       const isPaymentValid = await this.$refs.patientConsent.validate();
+    // async validateFinalStep() {
+    //   if (this.$refs.patientConsent) {
+    //     const isPaymentValid = await this.$refs.patientConsent.validate();
 
-    //       const isSignatureValid = !!this.formData.signature;
+    //     const isSignatureValid = !!this.formData.signature;
 
-    //       if (!isPaymentValid) {
-    //         this.$q.notify({
-    //           type: "warning",
-    //           position: "top",
-    //           message: "Please correct errors in Payment Details.",
-    //         });
-    //         return false;
-    //       }
-
-    //       if (!isSignatureValid) {
-    //         return false;
-    //       }
-
-    //       return true;
+    //     if (!isPaymentValid) {
+    //       this.$q.notify({
+    //         type: "warning",
+    //         position: "top",
+    //         message: "Please correct errors in Payment Details.",
+    //       });
+    //       return false;
     //     }
 
-    //     return false;
-    //   },
-
-    //   async onSubmit() {
-    //     if (this.submitting) return;
-
-    //     const isValid = await this.validateFinalStep();
-    //     if (!isValid) return;
-
-    //     this.submitting = true;
-    //     this.$q.loading.show({ message: "Submitting Registration..." });
-
-    //     const finalData = {
-    //       ...this.formData.personalInfo,
-    //       ...this.formData.contactDetails,
-    //       ...this.formData.patientConsent,
-    //       // ...this.formData.guarantorInfo,
-
-    //       signature: this.formData.signature,
-    //       patientType: "Inpatient",
-    //     };
-
-    //     try {
-    //       const response = await axios.post(
-    //         "http://localhost:3000/api/auth/register",
-    //         finalData
-    //       );
-
-    //       this.$q.notify({
-    //         type: "positive",
-    //         message: "Registration Successful! ID: " + (response.data.patientId || "Saved"),
-    //         position: "top",
-    //         timeout: 4000,
-    //       });
-    //       setTimeout(() => {
-    //         this.regFormdialogVisible = false;
-    //       }, 1500);
-    //     } catch (error) {
-    //       console.error(error);
-    //       const errorMsg = error.response?.data?.message || "Server Error: Could not save.";
-
-    //       this.$q.notify({
-    //         type: "negative",
-    //         message: errorMsg,
-    //         position: "top",
-    //       });
-    //     } finally {
-    //       this.submitting = false;
-    //       this.$q.loading.hide();
+    //     if (!isSignatureValid) {
+    //       return false;
     //     }
-    //   },
+
+    //     return true;
+    //   }
+
+    //   return false;
+    // },
+
+    async onSubmit() {
+      if (this.submitting) return;
+
+      const isValid = await this.validateFinalStep();
+      if (!isValid) return;
+
+      this.submitting = true;
+      this.$q.loading.show({ message: "Submitting Registration..." });
+
+      const finalData = {
+        ...this.formData.patientSourceOfIncome,
+        ...this.formData.hmo,
+
+        // patientType: "Inpatient", need to check if what type of patient is selected
+      };
+
+      try {
+        const response = await axios.post(
+          "http://localhost:3000/api/auth/register",
+          finalData
+        );
+
+        this.$q.notify({
+          type: "positive",
+          message: "Registration Successful! ID: " + (response.data.patientId || "Saved"),
+          position: "top",
+          timeout: 4000,
+        });
+        setTimeout(() => {
+          this.regFormdialogVisible = false;
+        }, 1500);
+      } catch (error) {
+        console.error(error);
+        const errorMsg = error.response?.data?.message || "Server Error: Could not save.";
+
+        this.$q.notify({
+          type: "negative",
+          message: errorMsg,
+          position: "top",
+        });
+      } finally {
+        this.submitting = false;
+        this.$q.loading.hide();
+      }
+    },
   },
 };
 </script>

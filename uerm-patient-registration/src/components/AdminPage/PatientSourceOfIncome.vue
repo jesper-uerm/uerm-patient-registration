@@ -1,30 +1,35 @@
 <template>
-  <q-form ref="contactDetails" @submit="onNext">
-    <q-card bordered flat class="bg-grey-1 q-mb-lg">
+  <q-form ref="patientSourceOfIncome" @submit="onNext">
+    <q-card bordered flat class="bg-grey-7 q-mb-lg">
       <q-card-section>
-        <div class="row q-col-gutter-sm text-grey-9">
-          <div class="col-12 col-md-4">
-            <span class="text-weight-bold">Patient ID:</span>
+        <div class="row q-col-gutter-sm text-white">
+          <div class="col-12 text-center col-md-4">
+            <span>Patient ID:</span>
             {{ localPatient?.patient_id || "N/A" }}
           </div>
-          <div class="col-12 col-md-4">
-            <span class="text-weight-bold">Name:</span> {{ localPatient?.lastName }},
-            {{ localPatient?.firstName }}
+          <div class="col-12 text-center col-md-4">
+            <span>Name:</span>
+            {{ localPatient?.lastName }}, {{ localPatient?.firstName }}
           </div>
-          <div class="col-12 col-md-4">
-            <span class="text-weight-bold">Birthdate:</span>
+          <div class="col-12 text-center col-md-4">
+            <span>Birthdate:</span>
             {{ formatDate(localPatient?.birthdate) }}
           </div>
         </div>
       </q-card-section>
     </q-card>
-    <div class="row q-col-gutter-md">
-      <div class="col-12 col-md-12">
+
+    <div class="row q-col-gutter-lg">
+      <div class="col-12">
+        <div class="text-subtitle2 text-weight-medium q-mb-xs">
+          Source of Income <span class="text-negative">*</span>
+        </div>
         <q-field
           borderless
-          :model-value="localForm.sourceOfIncome"
-          :rules="[(val) => !!val || 'Please provide source of income.']"
           dense
+          :model-value="localForm.sourceOfIncome"
+          :rules="[(val) => !!val || 'Please select a source of income']"
+          hide-bottom-space
         >
           <template v-slot:control>
             <q-option-group
@@ -32,151 +37,233 @@
               :options="sourceIncomeOptions"
               color="primary"
               inline
-              emit-value
-              map-options
+              class="q-ml-none"
             />
           </template>
         </q-field>
+
         <q-slide-transition>
-          <div v-if="localForm.sourceOfIncome === 'Others'" class="q-mt-sm">
+          <div
+            v-if="localForm.sourceOfIncome === 'Others'"
+            class="q-mt-sm"
+            style="max-width: 100%"
+          >
             <q-input
               outlined
               dense
               v-model="localForm.specificSourceOfIncome"
-              label="Please specify source *"
+              label="Please specify *"
+              :rules="[(val) => !!val || 'Please specify']"
+              bg-color="white"
+            />
+          </div>
+        </q-slide-transition>
+        <q-separator class="q-mt-md" />
+      </div>
+
+      <div class="col-12 col-md-4">
+        <div class="text-subtitle2 text-grey-8">
+          Gross Income <span class="text-negative">*</span>
+        </div>
+        <q-field
+          borderless
+          dense
+          :model-value="localForm.pt_gross_income"
+          :rules="[(val) => !!val || 'Please select a gross income']"
+        >
+          <template v-slot:control>
+            <q-btn-toggle
+              v-model="localForm.pt_gross_income"
+              :options="grossIncomeOptions"
+              class="my-custom-toggle rounded-borders full-width"
+              no-caps
+              unelevated
+              toggle-color="primary"
+              color="grey-3"
+              text-color="grey-9"
+              spread
+              padding="8px"
+            />
+          </template>
+        </q-field>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <div class="text-subtitle2 text-grey-8">
+          Home Ownership <span class="text-negative">*</span>
+        </div>
+        <q-field
+          borderless
+          dense
+          :model-value="localForm.pt_home_ownership"
+          :rules="[(val) => !!val || 'Please select home ownership']"
+        >
+          <template v-slot:control>
+            <q-btn-toggle
+              v-model="localForm.pt_home_ownership"
+              :options="homeOwnershipOptions"
+              class="my-custom-toggle full-width"
+              no-caps
+              unelevated
+              toggle-color="primary"
+              color="grey-3"
+              text-color="grey-9"
+              spread
+              padding="8px"
+            />
+          </template>
+        </q-field>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <div class="text-subtitle2 text-grey-8">
+          Years of Stay <span class="text-negative">*</span>
+        </div>
+        <q-field
+          borderless
+          dense
+          :model-value="localForm.pt_years_of_stay"
+          :rules="[(val) => !!val || 'Please select years of stay']"
+        >
+          <template v-slot:control>
+            <q-btn-toggle
+              v-model="localForm.pt_years_of_stay"
+              :options="yearsOfStayOptions"
+              class="my-custom-toggle full-width"
+              no-caps
+              unelevated
+              toggle-color="primary"
+              color="grey-3"
+              text-color="grey-9"
+              spread
+              padding="8px"
+            />
+          </template>
+        </q-field>
+      </div>
+
+      <div class="col-12">
+        <q-separator class="q-mb-sm" />
+
+        <div class="row items-center q-gutter-x-md">
+          <div class="text-subtitle2 text-weight-medium">
+            Do you have a car? <span class="text-negative">*</span>
+          </div>
+          <q-field
+            borderless
+            dense
+            :model-value="localForm.pthasCar"
+            :rules="[(val) => !!val || 'Required']"
+            hide-bottom-space
+            class="q-pb-none"
+          >
+            <template v-slot:control>
+              <q-btn-toggle
+                v-model="localForm.pthasCar"
+                :options="yesNoOptions"
+                @update:model-value="resetCarData"
+                no-caps
+                unelevated
+                toggle-color="primary"
+                color="grey-3"
+                text-color="grey-9"
+                padding="6px 20px"
+              />
+            </template>
+          </q-field>
+        </div>
+      </div>
+
+      <template v-if="localForm.pthasCar === 'yes'">
+        <div class="col-12 col-md-6">
+          <q-select
+            outlined
+            dense
+            v-model="localForm.carOwnership"
+            :options="ownershipOptions"
+            label="Ownership Type *"
+            :rules="[(val) => !!val || 'Please select a option']"
+            bg-color="white"
+          />
+        </div>
+        <div class="col-12 col-md-6">
+          <q-input
+            outlined
+            dense
+            type="number"
+            v-model="localForm.numberOfCars"
+            label="Number of Cars *"
+            inputmode="numeric"
+            :rules="[
+              (val) => (val !== null && val !== '') || 'Required',
+              (val) => val > 0 || 'Min 1',
+            ]"
+            bg-color="white"
+          />
+        </div>
+      </template>
+
+      <div class="col-12 q-mt-xs">
+        <q-separator class="q-mb-md" />
+
+        <div class="text-subtitle2 text-weight-medium q-mb-xs">
+          Mode of Payment <span class="text-negative">*</span>
+        </div>
+        <q-field
+          borderless
+          :model-value="localForm.mop"
+          :rules="[(val) => !!val || 'Please provide mode of payment.']"
+          dense
+          hide-bottom-space
+        >
+          <template v-slot:control>
+            <q-option-group
+              v-model="localForm.mop"
+              :options="mopOptions"
+              color="primary"
+              inline
+              class="q-ml-none"
+            />
+          </template>
+        </q-field>
+
+        <q-slide-transition>
+          <div v-if="localForm.mop === 'Others'" class="q-mt-sm" style="max-width: 100%">
+            <q-input
+              outlined
+              v-model="localForm.specificmop"
+              label="Please specify mode of payment *"
+              dense
               :rules="[(val) => !!val || 'Please specify']"
             />
           </div>
         </q-slide-transition>
-        <q-separator class="q-my-xs" />
+        <q-separator class="q-mt-xs" />
       </div>
-      <q-field
-        borderless
-        :model-value="localForm.pt_gross_income"
-        :rules="[(val) => !!val || 'Please select an income range.']"
-        dense
-        class="col-12 col-sm-6 col-md-4"
-      >
-        <template v-slot:control>
-          <div class="column">
-            <div class="text-subtitle2 text-grey-8">Gross Income</div>
 
-            <q-radio
-              v-model="localForm.pt_gross_income"
-              val="Below 20k"
-              label="Below 20k"
-            />
-            <q-radio
-              v-model="localForm.pt_gross_income"
-              val="20k - 50k"
-              label="20k - 50k"
-            />
-            <q-radio
-              v-model="localForm.pt_gross_income"
-              val="Above 50k"
-              label="Above 50k"
-            />
-          </div>
-        </template>
-      </q-field>
-      <q-field
-        class="col-12 col-sm-6 col-md-4"
-        :model-value="localForm.pt_home_ownership"
-        :rules="[(val) => !!val || 'Please select home ownership.']"
-        lazy-rules
-        dense
-        borderless
-      >
-        <template v-slot:control>
-          <div class="column">
-            <div class="text-subtitle2 text-grey-8">Home Ownership</div>
-
-            <q-radio v-model="localForm.pt_home_ownership" val="Owned" label="Owned" />
-            <q-radio v-model="localForm.pt_home_ownership" val="Rented" label="Rented" />
-            <q-radio
-              v-model="localForm.pt_home_ownership"
-              val="Mortgaged"
-              label="Mortgaged"
-            />
-          </div>
-        </template>
-      </q-field>
-      <q-field
-        class="col-12 col-sm-6 col-md-4"
-        :model-value="localForm.pt_years_of_stay"
-        :rules="[(val) => !!val || 'Please select years of stay.']"
-        lazy-rules
-        dense
-        borderless
-      >
-        <template v-slot:control>
-          <div class="column">
-            <div class="text-subtitle2 text-grey-8">Years of Stay</div>
-
-            <q-radio
-              v-model="localForm.pt_years_of_stay"
-              val="0-1 Year"
-              label="0-1 Year"
-            />
-            <q-radio
-              v-model="localForm.pt_years_of_stay"
-              val="1-5 Years"
-              label="1-5 Years"
-            />
-            <q-radio
-              v-model="localForm.pt_years_of_stay"
-              val="5+ Years"
-              label="5+ Years"
-            />
-          </div>
-        </template>
-      </q-field>
-      <div class="col-12 col-md-12">
-        <q-separator class="q-my-xs" />
-        <div class="text-subtitle2 q-mb-xs">Do you have a car?</div>
-        <q-option-group
-          v-model="localForm.pthasCar"
-          :options="yesNoOptions"
-          color="primary"
-          inline
-          @update:model-value="resetCarData"
-        />
-        <q-separator class="q-my-md" />
-      </div>
-      <div class="col-12 col-md-12" v-if="localForm.pthasCar === 'yes'">
-        <q-select
-          outlined
-          dense
-          v-model="localForm.carOwnership"
-          :options="ownershipOptions"
-          label="Ownership Type *"
-          lazy-rules
-          :rules="[(val) => !!val || 'Required']"
-        />
-      </div>
-      <div class="col-12 col-md-12" v-if="localForm.pthasCar === 'yes'">
+      <div class="col-12 col-md-6">
         <q-input
           outlined
           dense
+          v-model="localForm.creditCard"
           type="number"
-          v-model="localForm.numberOfCars"
-          label="Number of Cars *"
-          lazy-rules
-          :rules="[
-            (val) => (val !== null && val !== '') || 'Required',
-            (val) => val > 0 || 'Min 1',
-          ]"
+          label="No. of Credit Cards owned"
+          inputmode="numeric"
         />
-        <q-separator class="q-my-sm" />
+      </div>
+      <div class="col-12 col-md-6">
+        <q-input outlined dense v-model="localForm.bank" label="Bank Affiliations" />
       </div>
     </div>
-    <div class="row justify-center q-mt-xl">
+
+    <div class="row justify-center q-mt-lg">
       <q-btn
-        style="width: 120px"
+        unelevated
         color="blue-10"
         icon-right="arrow_forward"
         label="Next"
         type="submit"
+        style="height: 45px; max-width: 120px"
       />
     </div>
   </q-form>
@@ -188,44 +275,27 @@ import { date } from "quasar";
 export default {
   props: {
     form: Object,
-    localPatient: {
-      type: Object,
-      default: () => ({}),
-    },
+    localPatient: { type: Object, default: () => ({}) },
     yesNoOptions: Array,
     sourceIncomeOptions: Array,
     ownershipOptions: Array,
+    grossIncomeOptions: Array,
+    homeOwnershipOptions: Array,
+    yearsOfStayOptions: Array,
+    mopOptions: Array,
   },
-  emits: ["update:form", "next", "prev"],
+  emits: ["update:form", "next"],
   data() {
     return {
       localForm: { ...this.form },
-      grossIncomeOptions: [
-        { label: "Below 20k", value: "Below 20k" },
-        { label: "20k - 50k", value: "20k - 50k" },
-        { label: "Above 50k", value: "Above 50k" },
-      ],
-      mopOptions: [
-        { label: "Cash", value: "Cash" },
-        { label: "Credit Card", value: "Credit Card" },
-        { label: "Others", value: "Others" },
-      ],
-      homeOwnershipOptions: [
-        { label: "Owned", value: "Owned" },
-        { label: "Rented", value: "Rented" },
-        { label: "Mortgaged", value: "Mortgaged" },
-      ],
-      yearsOfStayOptions: [
-        { label: "0-1 Year", value: "0-1 Year" },
-        { label: "1-5 Years", value: "1-5 Years" },
-        { label: "5+ Years", value: "5+ Years" },
-      ],
     };
   },
   watch: {
     form: {
       handler(newVal) {
-        this.localForm = { ...newVal };
+        if (JSON.stringify(newVal) !== JSON.stringify(this.localForm)) {
+          this.localForm = { ...newVal };
+        }
       },
       deep: true,
     },
@@ -235,10 +305,20 @@ export default {
       },
       deep: true,
     },
+    "localForm.sourceOfIncome"(val) {
+      if (val !== "Others") {
+        this.localForm.specificSourceOfIncome = "";
+      }
+    },
+    "localForm.mop"(val) {
+      if (val !== "Others") {
+        this.localForm.specificmop = "";
+      }
+    },
   },
   methods: {
     async validate() {
-      return await this.$refs.contactDetails.validate();
+      return await this.$refs.patientSourceOfIncome.validate();
     },
     async onNext() {
       const isValid = await this.validate();
@@ -265,3 +345,9 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.my-custom-toggle {
+  border: 1px solid #e0e0e0;
+}
+</style>

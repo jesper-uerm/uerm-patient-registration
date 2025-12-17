@@ -254,6 +254,7 @@
               <div class="col-12 col-sm-4">
                 <span class="text-weight-bold block q-mb-xs">Status:</span>
                 <q-badge
+                  class="text-subtitle2 q-px-md q-py-sm"
                   :color="
                     selectedPatient.patientType === 'Inpatient' ? 'green' : 'orange'
                   "
@@ -278,12 +279,12 @@
 
         <q-separator />
 
-        <q-card-actions align="right" class="q-pa-md bg-grey-1">
+        <q-card-actions align="right" class="q-pa-lg bg-grey-1">
           <q-btn flat label="Close" color="grey-8" v-close-popup />
           <q-btn
             unelevated
             label="Update Financial Statement"
-            icon-right="update"
+            icon-right="arrow_forward"
             color="blue-10"
             @click="printPatient(selectedPatient)"
           />

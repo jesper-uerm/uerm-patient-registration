@@ -254,6 +254,7 @@
               <div class="col-12 col-sm-4">
                 <span class="text-weight-bold block q-mb-xs">Status:</span>
                 <q-badge
+                  class="text-subtitle2 q-px-md q-py-sm"
                   :color="
                     selectedPatient.patientType === 'Inpatient' ? 'green' : 'orange'
                   "
@@ -290,6 +291,7 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+    <financial-statement ref="financialRef" />
   </q-page>
 </template>
 
@@ -298,8 +300,13 @@ import { date } from "quasar";
 import axios from "axios";
 import _ from "lodash";
 
+import FinancialStatement from "./FinancialStatement.vue";
+
 export default {
   name: "OutpatientList",
+  components: {
+    FinancialStatement,
+  },
   data() {
     return {
       searchQuery: "",
@@ -438,7 +445,8 @@ export default {
       return date.formatDate(val, "MMM D, YYYY");
     },
     printPatient(row) {
-      this.$q.notify({ type: "positive", message: `Printing ${row.lastName}` });
+      this.$refs.financialRef.openFinancialDialog(row);
+      this.viewDialog = false;
     },
   },
 };
