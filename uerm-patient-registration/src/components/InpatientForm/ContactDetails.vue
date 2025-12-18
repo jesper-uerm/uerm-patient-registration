@@ -167,7 +167,7 @@
         <q-input
           outlined
           dense
-          v-model="localForm.philhealth"
+          v-model="localForm.philhealthId"
           type="number"
           label="PhilHealth No."
         />

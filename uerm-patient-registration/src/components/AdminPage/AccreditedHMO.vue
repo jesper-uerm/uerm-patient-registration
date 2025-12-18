@@ -125,23 +125,43 @@
         <q-input
           outlined
           v-model="localForm.hmoDateTime"
-          label="Date and Time of call to HMO *"
+          label="Date of call to HMO *"
           dense
-          :rules="[(val) => !!val || 'Plese input required field']"
-        />
+          mask="####-##-##"
+          :rules="[(val) => !!val || 'Please input required field']"
+        >
+          <template v-slot:append>
+            <q-icon name="event" class="cursor-pointer">
+              <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                <q-date v-model="localForm.hmoDateTime" mask="YYYY-MM-DD">
+                  <div class="row items-center justify-end">
+                    <q-btn v-close-popup label="Close" color="primary" flat />
+                  </div>
+                </q-date>
+              </q-popup-proxy>
+            </q-icon>
+          </template>
+        </q-input>
       </div>
     </div>
 
-    <div class="row justify-between q-mt-lg">
-      <q-btn flat color="grey-8" icon="arrow_back" label="Back" @click="onBack" />
+    <div class="row justify-center q-mt-lg">
+      <q-btn
+        flat
+        class="q-mr-sm"
+        color="grey-8"
+        icon="arrow_back"
+        label="Back"
+        @click="onBack"
+      />
 
       <q-btn
         unelevated
-        color="green-7"
+        color="blue-10"
         icon-right="check"
-        label="Submit Registration"
+        label="Submit"
         type="submit"
-        style="min-width: 150px"
+        style="height: 45px; max-width: 140px"
       />
     </div>
   </q-form>

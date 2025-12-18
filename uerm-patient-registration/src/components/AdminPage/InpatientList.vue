@@ -103,7 +103,7 @@
                 icon="print"
                 size="md"
                 class="hover-green"
-                @click="printPatient(props.row)"
+                @click="updateFinanceStatement(props.row)"
               >
                 <q-tooltip class="bg-green-8">Print Record</q-tooltip>
               </q-btn>
@@ -269,7 +269,7 @@
               <div class="col-12 col-sm-4">
                 <span class="text-weight-bold block q-mb-xs">Attending Physician:</span>
                 <div class="ellipsis">
-                  Dr. {{ selectedPatient.physician || "N/A" }}
+                  {{ selectedPatient.physician || "N/A" }}
                   <q-tooltip>{{ selectedPatient.physician }}</q-tooltip>
                 </div>
               </div>
@@ -279,14 +279,15 @@
 
         <q-separator />
 
-        <q-card-actions align="right" class="q-pa-lg bg-grey-1">
-          <q-btn flat label="Close" color="grey-8" v-close-popup />
+        <q-card-actions align="center" class="q-pa-lg bg-grey-1">
+          <!-- <q-btn flat label="Close" color="grey-8" v-close-popup /> -->
           <q-btn
             unelevated
-            label="Update Financial Statement"
             icon-right="arrow_forward"
+            label="Update Financial Statement"
             color="blue-10"
-            @click="printPatient(selectedPatient)"
+            style="width: 100%; height: 55px; max-width: 300px"
+            @click="updateFinanceStatement(selectedPatient)"
           />
         </q-card-actions>
       </q-card>
@@ -456,7 +457,7 @@ export default {
       if (!val) return "-";
       return date.formatDate(val, "MMM D, YYYY");
     },
-    printPatient(row) {
+    updateFinanceStatement(row) {
       this.$refs.financialRef.openFinancialDialog(row);
       this.viewDialog = false;
     },

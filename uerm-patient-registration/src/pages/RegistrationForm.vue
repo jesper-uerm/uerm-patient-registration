@@ -164,13 +164,6 @@ export default {
           motherContactNumber: "",
         },
         contactDetails: {
-          // sourceOfIncome: "",
-          // specificSourceOfIncome: "",
-          // pt_gross_income: "",
-          // pt_home_ownership: "",
-          // pt_years_of_stay: "",
-          // pthasCar: "",
-          // carOwnership: "",
           seniorpwd: "",
           philhealth: "",
           sssgsis: "",
@@ -189,15 +182,6 @@ export default {
           contactPersonInpatientEmployerNumber: "",
           contactPersonInpatientEmployerAddress: "",
         },
-        // guarantorInfo: {
-        //   contactPersonInpatientIncome: "",
-        //   contactPersonInpatientGross: "",
-        //   contactPersonInpatientHome: "",
-        //   contactPersonInpatientHomeStay: "",
-        //   contactPersonInpatienthasCar: "",
-        //   contactPersonInpatientcarOwnership: null,
-        //   contactPersonInpatientnumberOfCars: "",
-        // },
         patientConsent: {
           mop: "",
           specificmop: "",
@@ -216,11 +200,11 @@ export default {
     },
     async validateFinalStep() {
       if (this.$refs.patientConsent) {
-        const isPaymentValid = await this.$refs.patientConsent.validate();
+        const isFormValid = await this.$refs.patientConsent.validateFinalStep();
 
         const isSignatureValid = !!this.formData.signature;
 
-        if (!isPaymentValid) {
+        if (!isFormValid) {
           this.$q.notify({
             type: "warning",
             position: "top",
@@ -241,9 +225,6 @@ export default {
 
     async onSubmit() {
       if (this.submitting) return;
-
-      const isValid = await this.validateFinalStep();
-      if (!isValid) return;
 
       this.submitting = true;
       this.$q.loading.show({ message: "Submitting Registration..." });

@@ -60,7 +60,7 @@
               @update:form="(val) => (formData.hmoForm = val)"
               @prev="step = 1"
               @close="financialDialog = false"
-              @submit="onSubmit"
+              @submit="updateDetails"
             />
           </q-step>
         </q-stepper>
@@ -179,49 +179,24 @@ export default {
     //   return false;
     // },
 
-    async onSubmit() {
-      if (this.submitting) return;
-
-      const isValid = await this.validateFinalStep();
-      if (!isValid) return;
-
-      this.submitting = true;
-      this.$q.loading.show({ message: "Submitting Registration..." });
-
-      const finalData = {
-        ...this.formData.patientSourceOfIncome,
-        ...this.formData.hmo,
-
-        // patientType: "Inpatient", need to check if what type of patient is selected
-      };
-
+    async updateDetails() {
       try {
-        const response = await axios.post(
-          "http://localhost:3000/api/auth/register",
-          finalData
-        );
+        const payload = {
+          patientId: this.localPatient.patient_id,
+          formData: this.formData,
+        };
+
+        await axios.put("http://localhost:3000/api/auth/updatePatientDetails", payload);
 
         this.$q.notify({
           type: "positive",
-          message: "Registration Successful! ID: " + (response.data.patientId || "Saved"),
           position: "top",
-          timeout: 4000,
+          message: "Financial Statement updated successfully!",
         });
-        setTimeout(() => {
-          this.regFormdialogVisible = false;
-        }, 1500);
+        this.financialDialog = false;
       } catch (error) {
         console.error(error);
-        const errorMsg = error.response?.data?.message || "Server Error: Could not save.";
-
-        this.$q.notify({
-          type: "negative",
-          message: errorMsg,
-          position: "top",
-        });
-      } finally {
-        this.submitting = false;
-        this.$q.loading.hide();
+        this.$q.notify({ type: "negative", message: "Failed to save." });
       }
     },
   },

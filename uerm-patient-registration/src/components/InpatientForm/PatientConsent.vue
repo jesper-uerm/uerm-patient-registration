@@ -129,7 +129,7 @@
 import SignaturePad from "src/components/InpatientForm/SignaturePad.vue";
 
 export default {
-  name: "ModeOfPayment",
+  name: "PatientConsent",
   components: {
     SignaturePad,
   },
@@ -166,18 +166,16 @@ export default {
     },
   },
   methods: {
-    async validate() {
+    async validateFinalStep() {
       const isFormValid = await this.$refs.patientConsent.validate();
-
       const isSignatureValid = !!this.localSignature;
-
       this.hasError = !isSignatureValid;
 
       return isFormValid && isSignatureValid;
     },
 
     async trySubmit() {
-      const valid = await this.validate();
+      const valid = await this.validateFinalStep();
 
       if (valid) {
         this.$emit("submit");

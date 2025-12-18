@@ -267,7 +267,7 @@
               <div class="col-12 col-sm-4">
                 <span class="text-weight-bold block q-mb-xs">Attending Physician:</span>
                 <div class="ellipsis">
-                  Dr. {{ selectedPatient.physician || "N/A" }}
+                  {{ selectedPatient.physician || "N/A" }}
                   <q-tooltip>{{ selectedPatient.physician }}</q-tooltip>
                 </div>
               </div>
@@ -278,13 +278,12 @@
         <q-separator />
 
         <q-card-actions align="right" class="q-pa-md bg-grey-1">
-          <q-btn flat label="Close" color="grey-8" v-close-popup />
+          <!-- <q-btn flat label="Close" color="grey-8" v-close-popup /> -->
           <q-btn
             unelevated
-            label="Print Record"
-            icon="print"
+            label="Update Financial Statement"
             color="blue-10"
-            @click="printPatient(selectedPatient)"
+            @click="updateFinanceStatement(selectedPatient)"
           />
         </q-card-actions>
       </q-card>
@@ -454,7 +453,7 @@ export default {
       if (!val) return "-";
       return date.formatDate(val, "MMM D, YYYY");
     },
-    printPatient(row) {
+    updateFinanceStatement(row) {
       this.$refs.financialRef.openFinancialDialog(row);
       this.viewDialog = false;
     },
