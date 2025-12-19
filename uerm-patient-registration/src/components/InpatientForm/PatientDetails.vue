@@ -2,7 +2,7 @@
   <q-form ref="patientDetails" @submit="onNext">
     <div class="text-subtitle1 text-bold q-mb-md">Patient Information:</div>
     <div class="row q-col-gutter-md">
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-input
           outlined
           dense
@@ -11,7 +11,7 @@
           :rules="[(val) => !!val || 'Required']"
         />
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-input
           outlined
           dense
@@ -20,12 +20,12 @@
           :rules="[(val) => !!val || 'Required']"
         />
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-input outlined dense v-model="localForm.middleName" label="Middle Name" />
       </div>
     </div>
     <div class="row q-col-gutter-md">
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-input
           outlined
           dense
@@ -50,7 +50,7 @@
           </template>
         </q-input>
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-input
           outlined
           dense
@@ -61,12 +61,12 @@
           bg-color="grey-2"
         />
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-input outlined dense v-model="localForm.birthplace" label="Birthplace" />
       </div>
     </div>
     <div class="row q-col-gutter-md">
-      <div class="col-12 col-md-3">
+      <div class="col-3 col-md-3">
         <q-select
           outlined
           dense
@@ -77,7 +77,7 @@
           :rules="[(val) => !!val || 'Please select gender']"
         />
       </div>
-      <div class="col-12 col-md-3">
+      <div class="col-3 col-md-3">
         <q-select
           outlined
           dense
@@ -90,7 +90,7 @@
           map-options
         />
       </div>
-      <div class="col-12 col-md-3">
+      <div class="col-3 col-md-3">
         <q-select
           outlined
           dense
@@ -103,12 +103,12 @@
           map-options
         />
       </div>
-      <div class="col-12 col-md-3">
+      <div class="col-3 col-md-3">
         <q-input outlined dense v-model="localForm.nationality" label="Nationality" />
       </div>
     </div>
     <div class="row q-col-gutter-md">
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-input
           outlined
           dense
@@ -122,7 +122,7 @@
           </template>
         </q-input>
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-input
           outlined
           dense
@@ -140,7 +140,7 @@
           </template>
         </q-input>
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-input
           outlined
           dense
@@ -151,7 +151,7 @@
       </div>
     </div>
     <div class="row q-col-gutter-md">
-      <div class="col-12 col-md-3">
+      <div class="col-3 col-md-3">
         <q-select
           v-model="localForm.selectedRegion"
           :options="regionList"
@@ -166,7 +166,7 @@
           :rules="[(val) => !!val || 'Please select region']"
         />
       </div>
-      <div class="col-12 col-md-3">
+      <div class="col-3 col-md-3">
         <q-select
           v-model="localForm.selectedProvince"
           :options="provinceList"
@@ -180,7 +180,7 @@
           @update:model-value="loadCities"
         />
       </div>
-      <div class="col-12 col-md-3">
+      <div class="col-3 col-md-3">
         <q-select
           v-model="localForm.selectedCity"
           :options="cityList"
@@ -194,7 +194,7 @@
           @update:model-value="loadBarangays"
         />
       </div>
-      <div class="col-12 col-md-3">
+      <div class="col-3 col-md-3">
         <q-select
           v-model="localForm.selectedBarangay"
           :options="barangayList"
@@ -230,13 +230,13 @@
         <q-checkbox
           v-model="localSameAsPresent"
           label="Same as Present Address"
-          class="q-mt-sm text-grey-8"
+          class="q-mt-sm text-grey-8 text-caption"
         />
       </div>
     </div>
     <q-separator class="q-my-md" />
     <div class="row q-col-gutter-md">
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-input
           outlined
           dense
@@ -244,7 +244,7 @@
           label="Father's Full Name *"
         />
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-input
           outlined
           dense
@@ -254,7 +254,7 @@
           label="Complete Address"
         />
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-input
           outlined
           dense
@@ -269,8 +269,8 @@
         />
       </div>
     </div>
-    <div class="row q-col-gutter-md q-mt-xs">
-      <div class="col-12 col-md-4">
+    <div class="row q-col-gutter-md">
+      <div class="col-4 col-md-4">
         <q-input
           outlined
           dense
@@ -278,7 +278,7 @@
           label="Mother's Maiden Name *"
         />
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-input
           outlined
           dense
@@ -290,10 +290,10 @@
         <q-checkbox
           v-model="localSameAsFather"
           label="Same as Father's Address"
-          class="q-mt-sm text-grey-8"
+          class="q-mt-sm text-grey-8 text-caption"
         />
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-input
           outlined
           dense

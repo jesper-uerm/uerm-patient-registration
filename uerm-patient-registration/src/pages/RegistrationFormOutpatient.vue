@@ -214,7 +214,9 @@ export default {
   height: 40px;
   font-size: 20px;
 }
-
+:deep(.q-stepper__step-inner) {
+  padding-top: 0 !important;
+}
 @media (max-width: 900px) {
   :deep(.q-stepper__title) {
     font-size: 12px;
@@ -222,12 +224,12 @@ export default {
     line-height: 1.2;
   }
   :deep(.q-stepper__dot) {
-    width: 25px;
-    height: 25px;
+    width: 30px;
+    height: 30px;
     font-size: 15px;
   }
   :deep(.q-stepper__tab) {
-    padding: 4px;
+    padding: 12px;
   }
 }
 </style>

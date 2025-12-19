@@ -1,7 +1,7 @@
 <template>
   <q-page class="q-pa-lg bg-grey-2">
     <div class="row q-col-gutter-md q-mb-md">
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-card class="text-white bg-blue-9">
           <q-card-section horizontal>
             <q-card-section class="col">
@@ -17,7 +17,7 @@
           </q-card-section>
         </q-card>
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-card class="text-white bg-blue-9">
           <q-card-section horizontal>
             <q-card-section class="col">
@@ -33,7 +33,7 @@
           </q-card-section>
         </q-card>
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-card class="text-white bg-blue-9">
           <q-card-section horizontal>
             <q-card-section class="col">

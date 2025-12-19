@@ -100,7 +100,7 @@ export default {
 <style scoped>
 .signature-preview {
   border: 1px dashed #ccc;
-  min-width: 900px;
+  min-width: 500px;
   text-align: center;
 }
 </style>

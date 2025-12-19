@@ -186,8 +186,8 @@ export default defineComponent({
   },
 
   mounted() {
-    if (this.$q.screen.gt.sm) {
-      this.leftDrawerOpen = true;
+    if (this.$q.screen.lt.sm) {
+      this.leftDrawerOpen = false;
     }
     this.timer = setInterval(() => {
       this.now = Date.now();

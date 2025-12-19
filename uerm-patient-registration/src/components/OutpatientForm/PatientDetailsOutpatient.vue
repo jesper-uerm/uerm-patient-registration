@@ -2,7 +2,7 @@
   <q-form ref="personalInfoOutpatient" @submit="onNext">
     <div class="text-subtitle1 text-bold q-mb-md">Patient Information:</div>
     <div class="row q-col-gutter-md">
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-input
           outlined
           dense
@@ -11,7 +11,7 @@
           :rules="[(val) => !!val || 'Required']"
         />
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-input
           outlined
           dense
@@ -20,12 +20,12 @@
           :rules="[(val) => !!val || 'Required']"
         />
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-input outlined dense v-model="localForm.middleName" label="Middle Name" />
       </div>
     </div>
     <div class="row q-col-gutter-md">
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-input
           outlined
           dense
@@ -50,7 +50,7 @@
           </template>
         </q-input>
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-input
           outlined
           dense
@@ -61,7 +61,7 @@
           bg-color="grey-2"
         />
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-input
           outlined
           dense
@@ -72,7 +72,7 @@
       </div>
     </div>
     <div class="row q-col-gutter-md">
-      <div class="col-12 col-md-3">
+      <div class="col-3 col-md-3">
         <q-select
           outlined
           dense
@@ -83,7 +83,7 @@
           :rules="[(val) => !!val || 'Please select gender']"
         />
       </div>
-      <div class="col-12 col-md-3">
+      <div class="col-3 col-md-3">
         <q-select
           outlined
           dense
@@ -96,10 +96,10 @@
           map-options
         />
       </div>
-      <div class="col-12 col-md-3">
+      <div class="col-3 col-md-3">
         <q-input outlined dense v-model="localForm.nationality" label="Nationality" />
       </div>
-      <div class="col-12 col-md-3">
+      <div class="col-3 col-md-3">
         <q-select
           outlined
           dense
@@ -114,10 +114,10 @@
       </div>
     </div>
     <div class="row q-col-gutter-md">
-      <div class="col-12 col-md-3">
+      <div class="col-3 col-md-3">
         <q-input outlined dense v-model="localForm.hmoOutpatient" label="HMO " />
       </div>
-      <div class="col-12 col-md-3">
+      <div class="col-3 col-md-3">
         <q-input
           outlined
           dense
@@ -125,7 +125,7 @@
           label="SC ID No. / PWD ID No."
         />
       </div>
-      <div class="col-12 col-md-3">
+      <div class="col-3 col-md-3">
         <q-input
           outlined
           dense
@@ -139,7 +139,7 @@
           </template>
         </q-input>
       </div>
-      <div class="col-12 col-md-3">
+      <div class="col-3 col-md-3">
         <q-input
           outlined
           dense
@@ -164,7 +164,7 @@
     <div class="text-subtitle2 text-grey-8">PhilHealth (Check all that apply)</div>
     <div class="row q-col-gutter-md">
       <q-field
-        class="col-12 col-sm-6 col-md-3"
+        class="col-12 col-sm-3 col-md-3"
         borderless
         :model-value="localForm.outpatientPhilHealth"
         dense
@@ -177,7 +177,7 @@
           </div>
         </template>
       </q-field>
-      <q-field class="col-12 col-sm-6 col-md-3" borderless>
+      <q-field class="col-12 col-sm-3 col-md-3" borderless>
         <template v-slot:control>
           <div class="column">
             <q-checkbox v-model="localForm.outpatientPhilHealth" val="P/D" label="P/D" />
@@ -186,7 +186,7 @@
           </div>
         </template>
       </q-field>
-      <q-field class="col-12 col-sm-6 col-md-3" borderless>
+      <q-field class="col-12 col-sm-3 col-md-3" borderless>
         <template v-slot:control>
           <div class="column">
             <q-checkbox v-model="localForm.outpatientPhilHealth" val="I/M" label="I/M" />
@@ -203,7 +203,7 @@
           </div>
         </template>
       </q-field>
-      <q-field class="col-12 col-sm-6 col-md-3" borderless>
+      <q-field class="col-12 col-sm-3 col-md-3" borderless>
         <template v-slot:control>
           <div class="column">
             <q-checkbox v-model="localForm.outpatientPhilHealth" val="I/D" label="I/D" />
@@ -225,7 +225,7 @@
     <q-separator class="q-my-md" />
 
     <div class="row q-col-gutter-md">
-      <div class="col-12 col-md-3">
+      <div class="col-3 col-md-3">
         <q-select
           v-model="localForm.selectedRegion"
           :options="regionList"
@@ -240,7 +240,7 @@
           :rules="[(val) => !!val || 'Please select region']"
         />
       </div>
-      <div class="col-12 col-md-3">
+      <div class="col-3 col-md-3">
         <q-select
           v-model="localForm.selectedProvince"
           :options="provinceList"
@@ -254,7 +254,7 @@
           @update:model-value="loadCities"
         />
       </div>
-      <div class="col-12 col-md-3">
+      <div class="col-3 col-md-3">
         <q-select
           v-model="localForm.selectedCity"
           :options="cityList"
@@ -268,7 +268,7 @@
           @update:model-value="loadBarangays"
         />
       </div>
-      <div class="col-12 col-md-3">
+      <div class="col-3 col-md-3">
         <q-select
           v-model="localForm.selectedBarangay"
           :options="barangayList"
@@ -304,7 +304,7 @@
         <q-checkbox
           v-model="localSameAsPresent"
           label="Same as Present Address"
-          class="q-mt-sm text-grey-8"
+          class="q-mt-sm text-grey-8 text-caption"
         />
       </div>
     </div>

@@ -102,21 +102,21 @@ export default {
 <style scoped lang="scss">
 .selection-card {
   width: 300px;
-  height: 220px; /* Fixed height for consistency */
+  height: 220px;
   border-radius: 16px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 
   background: white;
   color: #004aad;
-  border: 2px solid transparent; /* Invisible border to prevent layout shift */
-  box-shadow: 0 4px 15px rgba(0, 74, 173, 0.1); /* Subtle blue shadow */
+  border: 2px solid transparent;
+  box-shadow: 0 4px 15px rgba(0, 74, 173, 0.1);
 }
 
 .selection-card:hover {
   transform: translateY(-8px);
   background: #004aad;
   color: white;
-  box-shadow: 0 15px 35px rgba(0, 74, 173, 0.4); /* Stronger shadow */
+  box-shadow: 0 15px 35px rgba(0, 74, 173, 0.4);
 }
 
 .opacity-fade {

@@ -6,7 +6,7 @@
           <img src="~assets/uermmc-white-logo.png" alt="UERM Logo" />
         </q-avatar>
 
-        <q-toolbar-title class="text-weight-bold">
+        <q-toolbar-title class="text-weight-bold header-title">
           UERM Admission Portal
           <div class="text-caption text-grey-4" style="line-height: 1.2">
             Patient Registration System
@@ -16,7 +16,7 @@
         <!-- change to login page once done -->
         <q-btn
           to="/admin"
-          class="bg-white text-blue-10 text-weight-bold q-py-sm q-mr-md"
+          class="bg-white text-blue-10 text-weight-bold q-py-sm q-mr-md header-btn"
           icon-right="login"
           label="Login As AIS"
         >
@@ -60,5 +60,14 @@ const currentYear = computed(() => new Date().getFullYear());
   background-position: center;
   background-attachment: fixed;
   background-size: cover;
+}
+@media (max-width: 900px) {
+  .header-title {
+    font-size: 17px;
+  }
+  .header-btn {
+    padding: 7px;
+    font-size: 11px;
+  }
 }
 </style>

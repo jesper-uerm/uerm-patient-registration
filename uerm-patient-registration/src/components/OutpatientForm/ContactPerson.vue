@@ -4,7 +4,7 @@
       Person to notify in case of emergency:
     </div>
     <div class="row q-col-gutter-md">
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-input
           outlined
           dense
@@ -13,7 +13,7 @@
           :rules="[(val) => !!val || 'Please input valid name']"
         />
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-input
           outlined
           dense
@@ -31,7 +31,7 @@
           </template>
         </q-input>
       </div>
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-select
           outlined
           dense
@@ -45,7 +45,7 @@
           <q-separator class="q-my-sm" />
           <div class="text-subtitle1 text-bold q-mb-md">Medical Details:</div>
           <div class="row q-col-gutter-md">
-            <div class="col-12 col-md-6">
+            <div class="col-6 col-md-6">
               <q-input
                 outlined
                 dense
@@ -53,7 +53,7 @@
                 label="Procedure"
               />
             </div>
-            <div class="col-12 col-md-6">
+            <div class="col-6 col-md-6">
               <q-input
                 outlined
                 dense

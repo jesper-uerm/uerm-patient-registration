@@ -17,10 +17,7 @@
       </div>
     </div>
 
-    <div
-      :class="$q.screen.gt.md ? 'row' : 'column'"
-      class="flex-center q-pa-md q-gutter-xl"
-    >
+    <div :class="$q.screen.gt.xs ? 'row' : 'row'" class="flex-center q-pa-md q-gutter-xl">
       <q-card
         class="cursor-pointer hover-card animate-card delay-1"
         @click="openInpatientForm"
@@ -42,7 +39,7 @@
       >
         <q-card-section class="col column flex-center full-height">
           <q-icon name="directions_walk" size="70px" class="q-mb-md transition-icon" />
-          <div class="text-h5 text-weight-bold">OUTPATIENT</div>
+          <div class="text-h5 text-weight-bold text-uppercase">OUTPATIENT</div>
           <div class="text-caption text-uppercase q-mt-sm opacity-fade">
             Consultation / Check-up
           </div>
@@ -56,9 +53,23 @@
       >
         <q-card-section class="col column flex-center full-height">
           <q-icon name="assignment_return" size="70px" class="q-mb-md transition-icon" />
-          <div class="text-h5 text-weight-bold">RETURNING</div>
+          <div class="text-h5 text-weight-bold text-uppercase">RETURNING</div>
           <div class="text-caption text-uppercase q-mt-sm opacity-fade">
             Update Patient Record
+          </div>
+        </q-card-section>
+      </q-card>
+
+      <q-card
+        class="cursor-pointer hover-card animate-card delay-3"
+        @click="personalInfoTriage"
+        v-ripple
+      >
+        <q-card-section class="row column flex-center full-height">
+          <q-icon name="medical_services" size="70px" class="q-mb-md transition-icon" />
+          <div class="text-h5 text-weight-bold text-uppercase">Triage Assessment</div>
+          <div class="text-caption text-uppercase q-mt-sm opacity-fade">
+            Initial Assessment
           </div>
         </q-card-section>
       </q-card>
@@ -67,6 +78,7 @@
     <RegistrationForm ref="registrationFormDialog" />
     <RegistrationFormOutpatient ref="OutpatientregistrationFormDialog" />
     <ReturningPatient ref="ReturningPatientFormDialog" />
+    <TriageAssessment ref="TraigeAssessmentFormDialog" />
   </div>
 </template>
 
@@ -74,6 +86,7 @@
 import RegistrationForm from "pages/RegistrationForm.vue";
 import RegistrationFormOutpatient from "./RegistrationFormOutpatient.vue";
 import ReturningPatient from "./ReturningPatient.vue";
+import TriageAssessment from "./TriageAssessment.vue";
 
 export default {
   name: "HomePage",
@@ -81,6 +94,7 @@ export default {
     RegistrationForm,
     RegistrationFormOutpatient,
     ReturningPatient,
+    TriageAssessment,
   },
   methods: {
     openInpatientForm() {
@@ -91,6 +105,9 @@ export default {
     },
     openReturningPatientForm() {
       this.$refs.ReturningPatientFormDialog?.show();
+    },
+    personalInfoTriage() {
+      this.$refs.TraigeAssessmentFormDialog?.show();
     },
   },
 };

@@ -279,14 +279,13 @@
 
         <q-separator />
 
-        <q-card-actions align="center" class="q-pa-lg bg-grey-1">
+        <q-card-actions align="center" class="q-pa-md bg-grey-1">
           <!-- <q-btn flat label="Close" color="grey-8" v-close-popup /> -->
           <q-btn
             unelevated
             icon-right="arrow_forward"
             label="Update Financial Statement"
             color="blue-10"
-            style="width: 100%; height: 55px; max-width: 300px"
             @click="updateFinanceStatement(selectedPatient)"
           />
         </q-card-actions>

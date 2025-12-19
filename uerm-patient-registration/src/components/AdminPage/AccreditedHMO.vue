@@ -4,7 +4,7 @@
       Accredited HMO Information <span class="text-negative">*</span>
     </div>
     <div class="row q-col-gutter-md">
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-input
           outlined
           dense
@@ -15,7 +15,7 @@
         />
       </div>
 
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-input
           outlined
           dense
@@ -25,7 +25,7 @@
         />
       </div>
 
-      <div class="col-12 col-md-4">
+      <div class="col-4 col-md-4">
         <q-input
           outlined
           dense
@@ -112,7 +112,7 @@
     <q-separator class="q-my-md" />
 
     <div class="row q-col-gutter-md">
-      <div class="col-12 col-md-6">
+      <div class="col-6 col-md-6">
         <q-input
           outlined
           v-model="localForm.hmoStaff"
@@ -121,7 +121,7 @@
           :rules="[(val) => !!val || 'Plese input required field']"
         />
       </div>
-      <div class="col-12 col-md-6">
+      <div class="col-6 col-md-6">
         <q-input
           outlined
           v-model="localForm.hmoDateTime"

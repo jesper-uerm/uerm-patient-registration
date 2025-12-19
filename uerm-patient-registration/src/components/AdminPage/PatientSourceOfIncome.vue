@@ -3,15 +3,15 @@
     <q-card bordered flat class="bg-grey-7 q-mb-lg">
       <q-card-section>
         <div class="row q-col-gutter-sm text-white">
-          <div class="col-12 text-center col-md-4">
+          <div class="col-4 text-center col-md-4">
             <span>Patient ID:</span>
             {{ localPatient?.patient_id || "N/A" }}
           </div>
-          <div class="col-12 text-center col-md-4">
+          <div class="col-4 text-center col-md-4">
             <span>Name:</span>
             {{ localPatient?.lastName }}, {{ localPatient?.firstName }}
           </div>
-          <div class="col-12 text-center col-md-4">
+          <div class="col-4 text-center col-md-4">
             <span>Birthdate:</span>
             {{ formatDate(localPatient?.birthdate) }}
           </div>
@@ -241,7 +241,7 @@
         <q-separator class="q-mt-xs" />
       </div>
 
-      <div class="col-12 col-md-6">
+      <div class="col-6 col-md-6">
         <q-input
           outlined
           dense
@@ -251,7 +251,7 @@
           inputmode="numeric"
         />
       </div>
-      <div class="col-12 col-md-6">
+      <div class="col-6 col-md-6">
         <q-input outlined dense v-model="localForm.bank" label="Bank Affiliations" />
       </div>
     </div>
