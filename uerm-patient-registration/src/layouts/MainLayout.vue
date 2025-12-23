@@ -45,7 +45,7 @@ const currentYear = computed(() => new Date().getFullYear());
 
 <style scoped>
 .bg-uerm-blue {
-  background-color: #004aad;
+  background-color: #0d47a1;
 }
 
 .main-background {

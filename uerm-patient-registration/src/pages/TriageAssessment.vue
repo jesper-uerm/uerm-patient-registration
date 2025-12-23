@@ -41,21 +41,9 @@
             <patient-details-triage
               :form="formData.personalInfoTriage"
               @update:form="(val) => (formData.personalInfoTriage = val)"
-              @next="step = 2"
-            />
-          </q-step>
-
-          <!-- <q-step :name="2" title="Contact Person" icon="person" :done="step > 2">
-            <contact-person
-              ref="contactPersonRef"
-              :form="formData.contactPersonOutpatient"
-              :relationshipOptions="relationshipOptions"
-              @update:form="(val) => (formData.contactPersonOutpatient = val)"
-              @update:signature="(val) => (formData.signatureOutpatient = val)"
-              @prev="step = 1"
               @submit="onSubmit"
             />
-          </q-step> -->
+          </q-step>
         </q-stepper>
       </q-card-section>
     </q-card>
@@ -64,7 +52,7 @@
 
 <script>
 import PatientDetailsTriage from "../components/TriageAssessment/PatientDetailsTriage.vue";
-// import axios from "axios";
+import axios from "axios";
 
 export default {
   name: "RegistrationFormOutpatient",
@@ -77,86 +65,145 @@ export default {
       step: 1,
 
       formData: {
-        personalInfoTriage: {},
+        personalInfoTriage: {
+          lastNameTriage: "",
+          firstNameTriage: "",
+          middleNameTriage: "",
+          birthdateTriage: "",
+          ageTriage: "",
+          genderTriage: "",
+
+          //new db column
+          chiefComplaintTriage: "",
+          tempTriage: "",
+          heartRateTriage: "",
+          oxygenTriage: "",
+          bpTriage: "",
+          respiRateTriage: "",
+          painScoreTriage: "",
+          avpuTriage: "",
+          contagiousTriage: "",
+          isolationPrecautionTriage: "",
+          cpdTriage: "",
+          levelTriage: "",
+          personnelTriage: "",
+          dateTriage: "", //Triage Accomplished Date
+        },
       },
     };
   },
+  // methods: {
+  //   show() {
+  //     this.step = 1;
+  //     this.TriageAssessmentFormDialog = true;
+  //   },
+  //   async validateFinalStep() {
+  //     if (this.$refs.contactPersonRef) {
+  //       const isContactValid = await this.$refs.contactPersonRef.validate();
+
+  //       if (!isContactValid) {
+  //         this.$q.notify({
+  //           type: "warning",
+  //           message: "Please input required details.",
+  //         });
+  //         return false;
+  //       }
+  //       return true;
+  //     }
+  //     return false;
+  //   },
+
+  //   async onSubmit() {
+  //     if (this.submitting) return;
+
+  //     const isValid = await this.validateFinalStep();
+  //     if (!isValid) return;
+
+  //     this.submitting = true;
+  //     this.$q.loading.show({ message: "Submitting Registration..." });
+
+  //     const finalData = {
+  //       ...this.formData.personalInfoTriage,
+
+  //       patientType: "Emergency",
+  //     };
+
+  //     try {
+  //       const response = await axios.post(
+  //         "http://localhost:3000/api/auth/registerTriage",
+  //         finalData
+  //       );
+
+  //       this.$q.notify({
+  //         type: "positive",
+  //         message: "Registration Successful! ID: " + (response.data.patientId || "Saved"),
+  //         position: "top",
+  //         timeout: 4000,
+  //       });
+  //       setTimeout(() => {
+  //         this.TriageAssessmentFormDialog = false;
+  //       }, 1500);
+  //     } catch (error) {
+  //       console.error(error);
+  //       const errorMsg = error.response?.data?.message || "Server Error: Could not save.";
+
+  //       this.$q.notify({
+  //         type: "negative",
+  //         message: errorMsg,
+  //         position: "top",
+  //       });
+  //     } finally {
+  //       this.submitting = false;
+  //       this.$q.loading.hide();
+  //     }
+  //   },
+  // },
   methods: {
     show() {
       this.step = 1;
       this.TriageAssessmentFormDialog = true;
     },
-    async validateFinalStep() {
-      if (this.$refs.contactPersonRef) {
-        const isContactValid = await this.$refs.contactPersonRef.validate();
 
-        const isSignatureValid = !!this.formData.signatureOutpatient;
+    async onSubmit() {
+      if (this.submitting) return;
+      this.submitting = true;
+      this.$q.loading.show({ message: "Submitting Registration..." });
 
-        if (!isContactValid) {
-          this.$q.notify({
-            type: "warning",
-            message: "Please correct errors in Contact Person details.",
-          });
-          return false;
-        }
-        if (!isSignatureValid) {
-          this.$q.notify({
-            type: "warning",
-            message: "Patient Signature is required.",
-          });
-          return false;
-        }
-        return true;
+      const finalData = {
+        ...this.formData.personalInfoTriage,
+        patientType: "Emergency",
+      };
+
+      try {
+        const response = await axios.post(
+          "http://localhost:3000/api/auth/registerTriage",
+          finalData
+        );
+
+        this.$q.notify({
+          type: "positive",
+          message: "Registration Successful! ID: " + (response.data.triageId || "Saved"),
+          position: "top",
+          timeout: 4000,
+        });
+
+        setTimeout(() => {
+          this.TriageAssessmentFormDialog = false;
+        }, 1500);
+      } catch (error) {
+        console.error(error);
+        const errorMsg = error.response?.data?.message || "Server Error: Could not save.";
+
+        this.$q.notify({
+          type: "negative",
+          message: errorMsg,
+          position: "top",
+        });
+      } finally {
+        this.submitting = false;
+        this.$q.loading.hide();
       }
-      return false;
     },
-
-    // async onSubmit() {
-    //   if (this.submitting) return;
-
-    //   const isValid = await this.validateFinalStep();
-    //   if (!isValid) return;
-
-    //   this.submitting = true;
-    //   this.$q.loading.show({ message: "Submitting Registration..." });
-
-    //   const finalData = {
-    //     ...this.formData.personalInfoOutpatient,
-    //     ...this.formData.contactPersonOutpatient,
-
-    //     signatureOutpatient: this.formData.signatureOutpatient,
-    //     patientType: "Outpatient",
-    //   };
-
-    //   try {
-    //     const response = await axios.post(
-    //       "http://localhost:3000/api/auth/register",
-    //       finalData
-    //     );
-
-    //     this.$q.notify({
-    //       type: "positive",
-    //       message: "Registration Successful! ID: " + (response.data.patientId || "Saved"),
-    //       position: "top",
-    //       timeout: 4000,
-    //     });
-    //     setTimeout(() => {
-    //       this.TriageAssessmentFormDialog = false;
-    //     }, 1500);
-    //   } catch (error) {
-    //     console.error(error);
-    //     const errorMsg = error.response?.data?.message || "Server Error: Could not save.";
-
-    //     this.$q.notify({
-    //       type: "negative",
-    //       message: errorMsg,
-    //       position: "top",
-    //     });
-    //   } finally {
-    //     this.submitting = false;
-    //     this.$q.loading.hide();
-    //   }
-    // },
   },
 };
 </script>

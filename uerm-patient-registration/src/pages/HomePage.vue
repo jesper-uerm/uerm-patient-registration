@@ -8,10 +8,16 @@
         style="max-width: 100%; height: auto; max-height: 350px"
       /> -->
       <div class="animate-text text-center">
-        <div class="text-h4 text-white text-weight-bold q-mb-sm">
+        <div
+          class="text-h4 text-white text-weight-bold q-mb-sm"
+          :style="{ fontSize: $q.screen.lt.md ? '25px' : '' }"
+        >
           Welcome to UERMMC Patient Registration Portal
         </div>
-        <div class="text-subtitle1 text-white text-weight-regular">
+        <div
+          class="text-subtitle1 text-white text-weight-regular"
+          :style="{ fontSize: $q.screen.lt.md ? '15px' : '' }"
+        >
           Please select your patient type to continue.
         </div>
       </div>
@@ -22,10 +28,35 @@
         class="cursor-pointer hover-card animate-card delay-1"
         @click="openInpatientForm"
         v-ripple
+        :class="{
+          row: $q.screen.lt.md,
+          column: !$q.screen.lt.md,
+        }"
+        :style="{
+          width: $q.screen.lt.md ? '250px' : '300px',
+          height: $q.screen.lt.md ? '160px' : '220px',
+        }"
       >
         <q-card-section class="col column flex-center full-height">
-          <q-icon name="airline_seat_flat" size="70px" class="q-mb-md transition-icon" />
-          <div class="text-h5 text-weight-bold">INPATIENT</div>
+          <q-icon
+            name="airline_seat_flat"
+            class="q-mb-md transition-icon card-icon"
+            :class="{
+              'q-mb-md': !$q.screen.lt.md,
+              'q-mb-xs': $q.screen.lt.md,
+            }"
+            :size="$q.screen.lt.md ? '55px' : '70px'"
+            :style="{ marginBottom: $q.screen.lt.md ? '3px' : '' }"
+          />
+          <div
+            class="text-h5 text-weight-bold"
+            :class="{
+              'text-h5': !$q.screen.lt.md,
+              'text-subtitle1': $q.screen.lt.md,
+            }"
+          >
+            INPATIENT
+          </div>
           <div class="text-caption text-uppercase q-mt-sm opacity-fade">
             Admit Patient
           </div>
@@ -36,10 +67,35 @@
         class="cursor-pointer hover-card animate-card delay-2"
         @click="openOutpatientForm"
         v-ripple
+        :class="{
+          row: $q.screen.lt.md,
+          column: !$q.screen.lt.md,
+        }"
+        :style="{
+          width: $q.screen.lt.md ? '250px' : '300px',
+          height: $q.screen.lt.md ? '160px' : '220px',
+        }"
       >
         <q-card-section class="col column flex-center full-height">
-          <q-icon name="directions_walk" size="70px" class="q-mb-md transition-icon" />
-          <div class="text-h5 text-weight-bold text-uppercase">OUTPATIENT</div>
+          <q-icon
+            name="directions_walk"
+            class="q-mb-md transition-icon card-icon"
+            :class="{
+              'q-mb-md': !$q.screen.lt.md,
+              'q-mb-xs': $q.screen.lt.md,
+            }"
+            :size="$q.screen.lt.md ? '55px' : '70px'"
+            :style="{ marginBottom: $q.screen.lt.md ? '3px' : '' }"
+          />
+          <div
+            class="text-h5 text-weight-bold text-uppercase"
+            :class="{
+              'text-h5': !$q.screen.lt.md,
+              'text-subtitle1': $q.screen.lt.md,
+            }"
+          >
+            OUTPATIENT
+          </div>
           <div class="text-caption text-uppercase q-mt-sm opacity-fade">
             Consultation / Check-up
           </div>
@@ -50,10 +106,35 @@
         class="cursor-pointer hover-card animate-card delay-3"
         @click="openReturningPatientForm"
         v-ripple
+        :class="{
+          row: $q.screen.lt.md,
+          column: !$q.screen.lt.md,
+        }"
+        :style="{
+          width: $q.screen.lt.md ? '250px' : '300px',
+          height: $q.screen.lt.md ? '160px' : '220px',
+        }"
       >
         <q-card-section class="col column flex-center full-height">
-          <q-icon name="assignment_return" size="70px" class="q-mb-md transition-icon" />
-          <div class="text-h5 text-weight-bold text-uppercase">RETURNING</div>
+          <q-icon
+            name="assignment_return"
+            class="q-mb-md transition-icon card-icon"
+            :class="{
+              row: $q.screen.lt.md,
+              column: !$q.screen.lt.md,
+            }"
+            :size="$q.screen.lt.md ? '55px' : '70px'"
+            :style="{ marginBottom: $q.screen.lt.md ? '3px' : '' }"
+          />
+          <div
+            class="text-h5 text-weight-bold text-uppercase"
+            :class="{
+              'text-h5': !$q.screen.lt.md,
+              'text-subtitle1': $q.screen.lt.md,
+            }"
+          >
+            RETURNING
+          </div>
           <div class="text-caption text-uppercase q-mt-sm opacity-fade">
             Update Patient Record
           </div>
@@ -64,10 +145,35 @@
         class="cursor-pointer hover-card animate-card delay-3"
         @click="personalInfoTriage"
         v-ripple
+        :class="{
+          row: $q.screen.lt.md,
+          column: !$q.screen.lt.md,
+        }"
+        :style="{
+          width: $q.screen.lt.md ? '250px' : '300px',
+          height: $q.screen.lt.md ? '160px' : '220px',
+        }"
       >
-        <q-card-section class="row column flex-center full-height">
-          <q-icon name="medical_services" size="70px" class="q-mb-md transition-icon" />
-          <div class="text-h5 text-weight-bold text-uppercase">Triage Assessment</div>
+        <q-card-section class="col column flex-center full-height">
+          <q-icon
+            name="medical_services"
+            class="q-mb-md transition-icon card-icon"
+            :class="{
+              row: $q.screen.lt.md,
+              column: !$q.screen.lt.md,
+            }"
+            :size="$q.screen.lt.md ? '55px' : '70px'"
+            :style="{ marginBottom: $q.screen.lt.md ? '3px' : '' }"
+          />
+          <div
+            class="text-h5 text-weight-bold text-uppercase"
+            :class="{
+              'text-h5': !$q.screen.lt.md,
+              'text-subtitle1': $q.screen.lt.md,
+            }"
+          >
+            Triage Assessment
+          </div>
           <div class="text-caption text-uppercase q-mt-sm opacity-fade">
             Initial Assessment
           </div>
@@ -133,6 +239,10 @@ export default {
   box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
   background-color: #004aad;
   color: white;
+}
+
+.card-icon {
+  font-size: 70px;
 }
 
 @keyframes fadeInDown {

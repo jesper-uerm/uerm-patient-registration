@@ -5,14 +5,32 @@
         <q-card class="text-white bg-blue-9">
           <q-card-section horizontal>
             <q-card-section class="col">
-              <div class="text-h4 text-weight-bolder">
+              <div
+                class="text-h4 text-weight-bolder"
+                :class="{
+                  'text-h5': !$q.screen.lt.md,
+                  'text-h5': $q.screen.lt.md,
+                }"
+              >
                 <q-spinner v-if="loading" color="white" size="0.8em" />
                 <span v-else>{{ inpatientCount }}</span>
               </div>
-              <div class="text-subtitle2">Admitted</div>
+              <div
+                class="text-subtitle2"
+                :class="{
+                  'text-subtitle2': !$q.screen.lt.md,
+                  'text-caption': $q.screen.lt.md,
+                }"
+              >
+                Admitted
+              </div>
             </q-card-section>
             <q-card-section class="col-auto flex flex-center">
-              <q-icon name="groups" size="50px" class="opacity-50" />
+              <q-icon
+                name="groups"
+                class="opacity-50"
+                :size="$q.screen.lt.md ? '40px' : '50px'"
+              />
             </q-card-section>
           </q-card-section>
         </q-card>
@@ -21,14 +39,32 @@
         <q-card class="text-white bg-blue-9">
           <q-card-section horizontal>
             <q-card-section class="col">
-              <div class="text-h4 text-weight-bolder">
+              <div
+                class="text-h4 text-weight-bolder"
+                :class="{
+                  'text-h5': !$q.screen.lt.md,
+                  'text-h5': $q.screen.lt.md,
+                }"
+              >
                 <q-spinner v-if="loading" color="white" size="0.8em" />
                 <span v-else>{{ outpatientCount }}</span>
               </div>
-              <div class="text-subtitle2">OPD</div>
+              <div
+                class="text-subtitle2"
+                :class="{
+                  'text-subtitle2': !$q.screen.lt.md,
+                  'text-caption': $q.screen.lt.md,
+                }"
+              >
+                OPD
+              </div>
             </q-card-section>
             <q-card-section class="col-auto flex flex-center">
-              <q-icon name="groups" size="50px" class="opacity-50" />
+              <q-icon
+                name="groups"
+                class="opacity-50"
+                :size="$q.screen.lt.md ? '40px' : '50px'"
+              />
             </q-card-section>
           </q-card-section>
         </q-card>
@@ -37,14 +73,32 @@
         <q-card class="text-white bg-blue-9">
           <q-card-section horizontal>
             <q-card-section class="col">
-              <div class="text-h4 text-weight-bolder">
+              <div
+                class="text-h4 text-weight-bolder"
+                :class="{
+                  'text-h5': !$q.screen.gt.md,
+                  'text-h5': $q.screen.lt.md,
+                }"
+              >
                 <q-spinner v-if="loading" color="white" size="0.8em" />
                 <span v-else>{{ erpatientCount }}</span>
               </div>
-              <div class="text-subtitle2">ER</div>
+              <div
+                class="text-subtitle2"
+                :class="{
+                  'text-subtitle2': !$q.screen.lt.md,
+                  'text-caption': $q.screen.lt.md,
+                }"
+              >
+                ER
+              </div>
             </q-card-section>
             <q-card-section class="col-auto flex flex-center">
-              <q-icon name="groups" size="50px" class="opacity-50" />
+              <q-icon
+                name="groups"
+                class="opacity-50"
+                :size="$q.screen.lt.md ? '40px' : '50px'"
+              />
             </q-card-section>
           </q-card-section>
         </q-card>

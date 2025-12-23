@@ -36,12 +36,33 @@
         <div class="row q-gutter-xl justify-center items-center full-width">
           <q-card
             class="cursor-pointer selection-card column flex-center"
+            :style="{
+              width: $q.screen.lt.md ? '250px' : '300px',
+              height: $q.screen.lt.md ? '160px' : '220px',
+            }"
             @click="openReturningPatientFormInpatient"
             v-ripple
           >
-            <q-card-section class="text-center no-padding">
-              <q-icon name="bedroom_parent" size="60px" class="q-mb-md transition-icon" />
-              <div class="text-h5 text-weight-bold">INPATIENT</div>
+            <q-card-section class="text-center">
+              <q-icon
+                name="bedroom_parent"
+                class="q-mb-md transition-icon"
+                :class="{
+                  row: $q.screen.lt.sm,
+                  column: !$q.screen.lt.md,
+                }"
+                :size="$q.screen.lt.md ? '45px' : '60px'"
+                :style="{ marginBottom: $q.screen.lt.md ? '3px' : '' }"
+              />
+              <div
+                class="text-h5 text-weight-bold"
+                :class="{
+                  'text-h5': !$q.screen.lt.md,
+                  'text-subtitle1': $q.screen.lt.md,
+                }"
+              >
+                INPATIENT
+              </div>
               <div class="text-caption text-uppercase q-mt-sm opacity-fade">
                 Admit Existing Patient
               </div>
@@ -50,12 +71,33 @@
 
           <q-card
             class="cursor-pointer selection-card column flex-center"
+            :style="{
+              width: $q.screen.lt.md ? '250px' : '300px',
+              height: $q.screen.lt.md ? '160px' : '220px',
+            }"
             @click="openReturningPatientFormOutpatient"
             v-ripple
           >
             <q-card-section class="text-center no-padding">
-              <q-icon name="person_search" size="60px" class="q-mb-md transition-icon" />
-              <div class="text-h5 text-weight-bold">OUTPATIENT</div>
+              <q-icon
+                name="person_search"
+                class="q-mb-md transition-icon"
+                :class="{
+                  row: $q.screen.lt.sm,
+                  column: !$q.screen.lt.md,
+                }"
+                :size="$q.screen.lt.md ? '45px' : '60px'"
+                :style="{ marginBottom: $q.screen.lt.md ? '3px' : '' }"
+              />
+              <div
+                class="text-h5 text-weight-bold"
+                :class="{
+                  'text-h5': !$q.screen.lt.md,
+                  'text-subtitle1': $q.screen.lt.md,
+                }"
+              >
+                OUTPATIENT
+              </div>
               <div class="text-caption text-uppercase q-mt-sm opacity-fade">
                 Consultation / Check-up
               </div>

@@ -246,15 +246,11 @@ export default {
 
     viewPatient(row) {
       console.log("Viewing Patient:", row);
-      // Logic: Open a read-only dialog, or fill the main form in read-only mode
-      // Example: this.$emit('view-patient', row);
       this.$q.notify({ type: "primary", message: `Viewing details for ${row.lastName}` });
     },
 
     printPatient(row) {
       console.log("Printing Patient:", row);
-      // Logic: Call your PDF generation function here
-      // Example: generatePDF(row);
       this.$q.notify({
         type: "positive",
         message: `Generating PDF for ${row.lastName}...`,
@@ -272,14 +268,13 @@ export default {
 .sticky-header-table :deep(thead tr:first-child th) {
   background-color: $blue-grey-14;
   color: #ffff;
-  font-weight: bold;
   text-transform: uppercase;
-  font-size: 0.85rem;
+  font-size: 10px;
   position: sticky;
   top: 0;
   z-index: 1;
   border-bottom: 2px solid #ddd;
-  height: 50px;
+  height: 40px;
 }
 
 .sticky-header-table :deep(tbody tr:hover) {

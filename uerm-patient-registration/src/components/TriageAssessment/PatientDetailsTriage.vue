@@ -1,12 +1,12 @@
 <template>
-  <q-form ref="personalInfoTriage" @submit="onNext">
+  <q-form ref="personalInfoTriage" @submit="onSubmit">
     <div class="text-subtitle2 text-bold q-mb-md">Patient Information:</div>
     <div class="row q-col-gutter-md">
       <div class="col-4 col-md-4">
         <q-input
           outlined
           dense
-          v-model="localForm.lastName"
+          v-model="localForm.lastNameTriage"
           label="Last Name *"
           :rules="[(val) => !!val || 'Required']"
         />
@@ -15,13 +15,18 @@
         <q-input
           outlined
           dense
-          v-model="localForm.firstName"
+          v-model="localForm.firstNameTriage"
           label="First Name *"
           :rules="[(val) => !!val || 'Required']"
         />
       </div>
       <div class="col-4 col-md-4">
-        <q-input outlined dense v-model="localForm.middleName" label="Middle Name" />
+        <q-input
+          outlined
+          dense
+          v-model="localForm.middleNameTriage"
+          label="Middle Name"
+        />
       </div>
     </div>
     <div class="row q-col-gutter-md">
@@ -29,18 +34,15 @@
         <q-input
           outlined
           dense
-          v-model="localForm.birthdate"
+          v-model="localForm.birthdateTriage"
           label="Birthdate *"
           mask="date"
-          :rules="[
-            'date',
-            (val) => new Date(val) <= new Date() || 'Date cannot be in the future',
-          ]"
+          :rules="['date', (val) => new Date(val) <= new Date() || 'Future date invalid']"
         >
           <template v-slot:append>
             <q-icon name="event" class="cursor-pointer">
               <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                <q-date v-model="localForm.birthdate">
+                <q-date v-model="localForm.birthdateTriage">
                   <div class="row items-center justify-end">
                     <q-btn v-close-popup label="Close" color="primary" flat />
                   </div>
@@ -55,7 +57,7 @@
           outlined
           dense
           type="number"
-          v-model="localForm.age"
+          v-model="localForm.ageTriage"
           label="Age"
           readonly
           bg-color="grey-2"
@@ -65,7 +67,7 @@
         <q-select
           outlined
           dense
-          v-model="localForm.gender"
+          v-model="localForm.genderTriage"
           :options="['Male', 'Female', 'Prefer not to say']"
           label="Gender"
           lazy-rules
@@ -78,7 +80,7 @@
         <q-input
           outlined
           dense
-          v-model="localForm.chiefComplaint"
+          v-model="localForm.chiefComplaintTriage"
           label="Chief Complaint"
         />
       </div>
@@ -245,7 +247,7 @@
           <template v-slot:append>
             <q-icon name="event" class="cursor-pointer">
               <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                <q-date v-model="localForm.birthdate">
+                <q-date v-model="localForm.dateTriage">
                   <div class="row items-center justify-end">
                     <q-btn v-close-popup label="Close" color="primary" flat />
                   </div>
@@ -259,15 +261,83 @@
     <q-stepper-navigation class="text-center">
       <q-btn
         color="blue-10"
-        icon-right="arrow_forward"
         style="width: 100%; height: 45px; max-width: 120px"
-        label="Next"
-        @click="onNext"
+        label="Submit"
+        @click="onSubmit"
       />
     </q-stepper-navigation>
   </q-form>
 </template>
+//
 <script>
+// import { date } from "quasar";
+
+// export default {
+//   name: "personalInfoTriage",
+//   props: {
+//     form: Object,
+//   },
+//   emits: ["update:form", "submit"],
+//   data() {
+//     return {
+//       localForm: {
+//         ...this.form,
+//       },
+//     };
+//   },
+
+//   async validate() {
+//     return await this.$refs.personalInfoTriage.validate();
+//   },
+//   methods: {
+//     async validate() {
+//       return await this.$refs.personalInfoTriage.validate();
+//     },
+
+//     async onSubmit() {
+//       const isValid = await this.$refs.personalInfoTriage.validate();
+
+//       if (!isValid) {
+//         this.$q.notify({
+//           type: "warning",
+//           message: "Please fill all required fields.",
+//           position: "top",
+//         });
+//         return;
+//       }
+
+//       this.$emit("submit");
+//     },
+
+//     calculateAge(birthDateString) {
+//       if (!birthDateString) {
+//         this.localForm.ageTriage = "";
+//         return;
+//       }
+//       const timeStamp = Date.now();
+//       const birthDate = new Date(birthDateString);
+
+//       const age = date.getDateDiff(timeStamp, birthDate, "years");
+//       this.localForm.ageTriage = age;
+//     },
+//   },
+
+//   watch: {
+//     "localForm.birthdateTriage": function (newDate) {
+//       this.calculateAge(newDate);
+//     },
+
+//     localForm: {
+//       deep: true,
+//       handler(newVal) {
+//         this.$emit("update:form", newVal);
+//       },
+//     },
+//   },
+// };
+//
+//
+//
 import { date } from "quasar";
 
 export default {
@@ -275,22 +345,19 @@ export default {
   props: {
     form: Object,
   },
-  emits: ["update:form", "next", "prev"],
+  emits: ["update:form", "next", "prev", "submit"],
   data() {
     return {
-      localForm: {
-        ...this.form,
-        outpatientPhilHealth: this.form.outpatientPhilHealth || [],
-      },
+      localForm: { ...this.form },
     };
   },
 
-  async validate() {
-    return await this.$refs.personalInfoTriage.validate();
-  },
-
   methods: {
-    async onNext() {
+    async validate() {
+      return await this.$refs.personalInfoTriage.validate();
+    },
+
+    async onSubmit() {
       const isValid = await this.$refs.personalInfoTriage.validate();
 
       if (!isValid) {
@@ -302,31 +369,33 @@ export default {
         return;
       }
 
-      this.$emit("next");
+      this.$emit("submit");
     },
+
     onBack() {
       this.$emit("prev");
     },
 
     calculateAge(birthDateString) {
       if (!birthDateString) {
-        this.localForm.age = "";
+        this.localForm.ageTriage = "";
         return;
       }
       const timeStamp = Date.now();
       const birthDate = new Date(birthDateString);
       const age = date.getDateDiff(timeStamp, birthDate, "years");
-      this.localForm.age = age;
+      this.localForm.ageTriage = age;
     },
   },
 
   watch: {
-    form: {
+    "localForm.birthdateTriage": function (newDate) {
+      this.calculateAge(newDate);
+    },
+    localForm: {
       deep: true,
       handler(newVal) {
-        if (JSON.stringify(newVal) !== JSON.stringify(this.localForm)) {
-          this.localForm = { ...newVal };
-        }
+        this.$emit("update:form", newVal);
       },
     },
   },

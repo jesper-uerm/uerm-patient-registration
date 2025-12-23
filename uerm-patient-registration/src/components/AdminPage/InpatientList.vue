@@ -56,7 +56,7 @@
           :loading="loading"
           flat
           :dense="$q.screen.lt.xl"
-          :grid="$q.screen.lt.sm"
+          :grid="$q.screen.lt.md"
           virtual-scroll
           :rows-per-page-options="[10]"
           class="clean-table fit"
@@ -113,16 +113,14 @@
           <template v-slot:item="props">
             <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
               <q-card flat bordered class="q-pa-sm">
-                <q-item>
+                <q-item clickable v-ripple @click="viewPatient(props.row)">
                   <q-item-section>
                     <q-item-label class="text-weight-bold text-blue-10">
                       {{ props.row.lastName }}, {{ props.row.firstName }}
                     </q-item-label>
                     <q-item-label caption>ID: {{ props.row.patient_id }}</q-item-label>
                   </q-item-section>
-                  <q-item-section side>
-                    <q-btn size="sm" flat round color="grey" icon="more_vert" />
-                  </q-item-section>
+                  <q-item-section side> </q-item-section>
                 </q-item>
               </q-card>
             </div>

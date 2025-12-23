@@ -61,7 +61,7 @@
         <q-separator class="q-mt-md" />
       </div>
 
-      <div class="col-12 col-md-4">
+      <!-- <div class="col-12 col-md-4">
         <div class="text-subtitle2 text-grey-8">
           Gross Income <span class="text-negative">*</span>
         </div>
@@ -140,8 +140,99 @@
             />
           </template>
         </q-field>
+      </div> -->
+      <div class="col-12 col-md-4">
+        <div
+          class="text-subtitle2 text-grey-8 q-mb-xs"
+          :style="{ marginTop: $q.screen.lt.md ? '0px' : '0px' }"
+        >
+          Gross Income <span class="text-negative">*</span>
+        </div>
+        <q-field
+          borderless
+          dense
+          :model-value="localForm.pt_gross_income"
+          :rules="[(val) => !!val || 'Please select a gross income']"
+          hide-bottom-space
+        >
+          <template v-slot:control>
+            <q-btn-toggle
+              v-model="localForm.pt_gross_income"
+              :options="grossIncomeOptions"
+              class="my-custom-toggle rounded-borders full-width"
+              no-caps
+              unelevated
+              toggle-color="primary"
+              color="grey-3"
+              text-color="grey-9"
+              spread
+              :padding="$q.screen.lt.md ? '8px 16px' : '16px'"
+            />
+          </template>
+        </q-field>
       </div>
 
+      <div class="col-12 col-md-4">
+        <div
+          class="text-subtitle2 text-grey-8 q-mb-xs"
+          :style="{ marginTop: $q.screen.lt.md ? '0px' : '0px' }"
+        >
+          Home Ownership <span class="text-negative">*</span>
+        </div>
+        <q-field
+          borderless
+          dense
+          :model-value="localForm.pt_home_ownership"
+          :rules="[(val) => !!val || 'Please select home ownership']"
+          hide-bottom-space
+        >
+          <template v-slot:control>
+            <q-btn-toggle
+              v-model="localForm.pt_home_ownership"
+              :options="homeOwnershipOptions"
+              class="my-custom-toggle full-width"
+              no-caps
+              unelevated
+              toggle-color="primary"
+              color="grey-3"
+              text-color="grey-9"
+              spread
+              :padding="$q.screen.lt.md ? '8px 16px' : '16px'"
+            />
+          </template>
+        </q-field>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <div
+          class="text-subtitle2 text-grey-8 q-mb-xs"
+          :style="{ marginTop: $q.screen.lt.md ? '0px' : '0px' }"
+        >
+          Years of Stay <span class="text-negative">*</span>
+        </div>
+        <q-field
+          borderless
+          dense
+          :model-value="localForm.pt_years_of_stay"
+          :rules="[(val) => !!val || 'Please select years of stay']"
+          hide-bottom-space
+        >
+          <template v-slot:control>
+            <q-btn-toggle
+              v-model="localForm.pt_years_of_stay"
+              :options="yearsOfStayOptions"
+              class="my-custom-toggle full-width"
+              no-caps
+              unelevated
+              toggle-color="primary"
+              color="grey-3"
+              text-color="grey-9"
+              spread
+              :padding="$q.screen.lt.md ? '8px 16px' : '16px'"
+            />
+          </template>
+        </q-field>
+      </div>
       <div class="col-12">
         <q-separator class="q-mb-sm" />
 

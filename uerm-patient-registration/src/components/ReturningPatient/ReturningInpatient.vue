@@ -275,12 +275,12 @@ export default {
   color: #ffff;
   font-weight: bold;
   text-transform: uppercase;
-  font-size: 0.85rem;
+  font-size: 10px;
   position: sticky;
   top: 0;
   z-index: 1;
   border-bottom: 2px solid #ddd;
-  height: 50px;
+  height: 40px;
 }
 
 .sticky-header-table :deep(tbody tr:hover) {
