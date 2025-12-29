@@ -2,7 +2,13 @@
   <q-layout view="lHh Lpr lFf" class="main-background">
     <q-header class="bg-uerm-blue text-white">
       <q-toolbar class="q-py-sm">
-        <q-avatar square size="70px" class="q-mr-xs" @click="$router.push('/')">
+        <q-avatar
+          square
+          size="70px"
+          class="q-mr-xs"
+          @click="$router.push('/')"
+          style="cursor: pointer"
+        >
           <img src="~assets/uermmc-white-logo.png" alt="UERM Logo" />
         </q-avatar>
 
@@ -13,9 +19,8 @@
           </div>
         </q-toolbar-title>
 
-        <!-- change to login page once done -->
         <q-btn
-          to="/admin"
+          to="/login"
           class="bg-white text-blue-10 text-weight-bold q-py-sm q-mr-md header-btn"
           icon-right="login"
           label="Login As AIS"
@@ -37,10 +42,16 @@
   </q-layout>
 </template>
 
-<script setup>
-import { computed } from "vue";
+<script>
+export default {
+  name: "MainLayout",
 
-const currentYear = computed(() => new Date().getFullYear());
+  computed: {
+    currentYear() {
+      return new Date().getFullYear();
+    },
+  },
+};
 </script>
 
 <style scoped>
@@ -61,6 +72,7 @@ const currentYear = computed(() => new Date().getFullYear());
   background-attachment: fixed;
   background-size: cover;
 }
+
 @media (max-width: 900px) {
   .header-title {
     font-size: 17px;

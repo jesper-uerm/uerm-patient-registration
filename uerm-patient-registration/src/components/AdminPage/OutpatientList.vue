@@ -376,6 +376,11 @@ export default {
         this.patientList = response.data;
       } catch (error) {
         console.error(error);
+        this.$q.notify({
+          type: "negative",
+          message: "Failed to load Outpatient List",
+          position: "top",
+        });
       } finally {
         this.loading = false;
       }

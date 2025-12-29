@@ -379,7 +379,7 @@ export default {
         console.error(error);
         this.$q.notify({
           type: "negative",
-          message: "Failed to load Inpatients",
+          message: "Failed to load Inpatients List",
           position: "top",
         });
       } finally {

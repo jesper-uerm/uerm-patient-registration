@@ -77,48 +77,85 @@
           :loading="loading"
           separator="horizontal"
           virtual-scroll
-          class="sticky-header-table q-ma-md"
+          class="clean-table q-ma-md"
           :rows-per-page-options="[0]"
         >
-          <template v-slot:body-cell-presentAddress="props">
-            <q-td :props="props" class="ellipsis" style="max-width: 250px">
-              {{ props.row.addressPresent }}
-              <q-tooltip>{{ props.row.addressPresent }}</q-tooltip>
+          <template v-slot:body-cell-patient_id="props">
+            <q-td :props="props">
+              <span class="text-grey-8">#{{ props.value }}</span>
             </q-td>
           </template>
-          <template v-slot:body-cell-actions="props">
-            <q-td :props="props" class="text-center" auto-width>
-              <div class="row justify-center items-center" style="gap: 5px">
-                <q-btn
-                  flat
-                  round
-                  dense
-                  color="amber-9"
-                  icon="visibility"
-                  size="md"
-                  @click="viewPatient(props.row)"
-                >
-                  <q-tooltip>View Details</q-tooltip>
-                </q-btn>
-                <q-btn
-                  flat
-                  round
-                  dense
-                  unelevated
-                  color="green-7"
-                  icon="print"
-                  size="md"
-                  @click="printPatient(props.row)"
-                >
-                  <q-tooltip>Print Record</q-tooltip>
-                </q-btn>
+
+          <template v-slot:body-cell-fullName="props">
+            <q-td :props="props">
+              <div class="text-weight-medium">{{ props.value }}</div>
+            </q-td>
+          </template>
+
+          <template v-slot:body-cell-addressPresent="props">
+            <q-td :props="props" style="max-width: 150px">
+              <div class="ellipsis text-grey-7">
+                {{ props.row.addressPresent }}
+                <q-tooltip>{{ props.row.addressPresent }}</q-tooltip>
               </div>
             </q-td>
           </template>
+
+          <template v-slot:body-cell-actions="props">
+            <q-td :props="props" class="text-center">
+              <q-btn
+                flat
+                round
+                color="grey-7"
+                icon="visibility"
+                size="md"
+                class="q-mr-sm hover-blue"
+                @click="viewPatient(props.row)"
+              >
+                <q-tooltip class="bg-blue-10">View Profile</q-tooltip>
+              </q-btn>
+              <q-btn
+                flat
+                round
+                color="grey-7"
+                icon="print"
+                size="md"
+                class="hover-green"
+                @click="printPatient(props.row)"
+              >
+                <q-tooltip class="bg-green-8">Print Record</q-tooltip>
+              </q-btn>
+            </q-td>
+          </template>
+
+          <template v-slot:item="props">
+            <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
+              <q-card flat bordered class="q-pa-sm">
+                <q-item clickable v-ripple @click="viewPatient(props.row)">
+                  <q-item-section>
+                    <q-item-label class="text-weight-bold text-blue-10">
+                      {{ props.row.lastName }}, {{ props.row.firstName }}
+                    </q-item-label>
+                    <q-item-label caption>ID: {{ props.row.patient_id }}</q-item-label>
+                  </q-item-section>
+                  <q-item-section side> </q-item-section>
+                </q-item>
+              </q-card>
+            </div>
+          </template>
+
+          <template v-slot:loading>
+            <q-inner-loading showing>
+              <q-spinner-gears size="50px" color="blue-10" />
+            </q-inner-loading>
+          </template>
+
           <template v-slot:no-data>
-            <div class="full-width column flex-center text-grey q-pa-xl">
+            <div class="full-width column flex-center text-grey-5 q-pa-xl">
               <q-icon size="4em" name="person_search" class="q-mb-md" />
-              <div class="text-h6" v-if="!hasSearched">Ready to Search</div>
+              <div class="text-subtitle1" v-if="!hasSearched">
+                Ready to Search Inpatients
+              </div>
               <div class="text-subtitle1" v-else>
                 No patients found matching "{{ searchQuery }}"
               </div>
@@ -154,16 +191,9 @@ export default {
           style: "font-weight: bold",
         },
         {
-          name: "lastName",
-          label: "Last Name",
-          field: "lastName",
-          align: "center",
-          sortable: true,
-        },
-        {
-          name: "firstName",
-          label: "First Name",
-          field: "firstName",
+          name: "fullName",
+          label: "Patient Name",
+          field: "fullName",
           align: "center",
           sortable: true,
         },
@@ -172,7 +202,7 @@ export default {
           label: "Birthdate",
           field: "birthdate",
           align: "center",
-          format: (val) => date.formatDate(val, "MMMM D, YYYY"),
+          format: (val) => date.formatDate(val, "MMM D, YYYY"),
         },
         { name: "age", label: "Age", field: "age", align: "center" },
         { name: "gender", label: "Sex", field: "gender", align: "center" },
@@ -247,15 +277,11 @@ export default {
 
     viewPatient(row) {
       console.log("Viewing Patient:", row);
-      // Logic: Open a read-only dialog, or fill the main form in read-only mode
-      // Example: this.$emit('view-patient', row);
       this.$q.notify({ type: "primary", message: `Viewing details for ${row.lastName}` });
     },
 
     printPatient(row) {
       console.log("Printing Patient:", row);
-      // Logic: Call your PDF generation function here
-      // Example: generatePDF(row);
       this.$q.notify({
         type: "positive",
         message: `Generating PDF for ${row.lastName}...`,
@@ -266,24 +292,45 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.sticky-header-table {
-  max-height: 100%;
+// .sticky-header-table {
+//   max-height: 100%;
+// }
+
+// .sticky-header-table :deep(thead tr:first-child th) {
+//   background-color: $blue-grey-14;
+//   color: #ffff;
+//   font-weight: bold;
+//   text-transform: uppercase;
+//   font-size: 10px;
+//   position: sticky;
+//   top: 0;
+//   z-index: 1;
+//   border-bottom: 2px solid #ddd;
+//   height: 40px;
+// }
+
+// .sticky-header-table :deep(tbody tr:hover) {
+//   background-color: #ffff;
+// }
+
+.clean-table :deep(.q-table__top),
+.clean-table :deep(.q-table__bottom),
+.clean-table :deep(thead tr:first-child th) {
+  border-bottom: 1px solid #f0f0f0;
 }
 
-.sticky-header-table :deep(thead tr:first-child th) {
-  background-color: $blue-grey-14;
-  color: #ffff;
-  font-weight: bold;
-  text-transform: uppercase;
-  font-size: 10px;
+.clean-table :deep(thead tr th) {
   position: sticky;
-  top: 0;
   z-index: 1;
-  border-bottom: 2px solid #ddd;
-  height: 40px;
+  background-color: #f8f9fa;
 }
 
-.sticky-header-table :deep(tbody tr:hover) {
-  background-color: #ffff;
+.clean-table :deep(tbody tr:hover) {
+  background: #fafafa !important;
+}
+
+.clean-table :deep(td),
+.clean-table :deep(th) {
+  border-bottom: 1px solid #f5f5f5;
 }
 </style>

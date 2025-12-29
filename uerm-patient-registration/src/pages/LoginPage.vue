@@ -1,300 +1,163 @@
 <template>
-  <q-page class="q-pa-md bg-grey-2 q-py-xl">
-    <div class="row justify-center q-mx-md">
-      <div class="col-12 col-xl-10">
-        <div class="row items-center justify-between q-mb-md">
-          <div class="row text-uppercase">
-            <div>
-              <div
-                class="text-h6 text-weight-bold text-blue-10"
-                style="letter-spacing: -0.5px"
-              >
-                Inpatient Search
-              </div>
-              <div class="text-caption text-grey-7">
-                Manage and view currently admitted patients
-              </div>
-            </div>
-          </div>
-          <div style="width: 300px">
-            <q-input
-              dense
-              borderless
-              rounded
-              v-model="searchQuery"
-              placeholder="Search patient..."
-              class="shadow-1"
-              input-class="text-grey-8"
-              @keyup.enter="handleSearch"
-              @update:model-value="debouncedSearch"
-            >
-              <template v-slot:prepend>
-                <q-icon name="search" class="text-grey-4" />
-              </template>
-
-              <template v-slot:append>
-                <q-spinner v-if="loading" color="blue-8" size="xs" />
-              </template>
-            </q-input>
-          </div>
-        </div>
-
-        <q-card class="shadow-2 rounded-borders">
-          <q-table
-            :rows="patientList"
-            :columns="columns"
-            row-key="patient_id"
-            :loading="loading"
-            flat
-            :dense="$q.screen.lt.md"
-            :grid="$q.screen.lt.md"
-            :pagination="{ rowsPerPage: 10 }"
-            class="sticky-header-table"
-          >
-            <template v-slot:body-cell-fullName="props">
-              <q-td :props="props">
-                <div class="row items-center no-wrap">
-                  <q-avatar
-                    size="35px"
-                    class="q-mr-md"
-                    :color="getAvatarColor(props.row.gender)"
-                    text-color="white"
-                  >
-                    {{ getInitials(props.row.firstName, props.row.lastName) }}
-                  </q-avatar>
+  <q-layout view="lHh Lpr fff" class="main-background">
+    <q-page-container>
+      <q-page class="window-height window-width row justify-center items-center">
+        <div class="row q-pa-lg">
+          <div class="row">
+            <q-card class="shadow-24" style="width: 400px; border-radius: 20px">
+              <q-card-section class="text-white" style="background-color: #004aad">
+                <div class="column items-center justify-center">
                   <div>
-                    <div class="text-weight-bold text-grey-9">
-                      {{ props.row.lastName }}, {{ props.row.firstName }}
-                    </div>
-                    <div class="text-caption text-grey-5">
-                      ID: <span class="text-mono">{{ props.row.patient_id }}</span>
-                    </div>
+                    <q-img
+                      src="~assets/uermmc-white-logo.png"
+                      alt="UERM Medical Center Logo"
+                      contain
+                      width="140px"
+                      class="cursor-pointer"
+                      @click="$router.push('/')"
+                    />
                   </div>
                 </div>
-              </q-td>
-            </template>
+              </q-card-section>
 
-            <template v-slot:body-cell-gender="props">
-              <q-td :props="props">
-                <q-badge
-                  :color="props.row.gender === 'Male' ? 'blue-1' : 'pink-1'"
-                  :text-color="props.row.gender === 'Male' ? 'blue-9' : 'pink-9'"
-                  class="q-px-sm q-py-xs"
-                  rounded
-                >
-                  {{ props.row.gender }}
-                </q-badge>
-              </q-td>
-            </template>
+              <q-card-section class="q-pt-lg q-px-lg">
+                <q-form @submit="onSubmit" class="q-gutter-md">
+                  <q-input
+                    outlined
+                    v-model="email"
+                    label="Employee Number"
+                    hint="Enter your employee number"
+                    lazy-rules
+                    :rules="[(val) => (val && val.length > 0) || 'Please enter your ID']"
+                  >
+                    <template v-slot:prepend>
+                      <q-icon name="person" style="color: #004aad" />
+                    </template>
+                  </q-input>
 
-            <template v-slot:body-cell-actions="props">
-              <q-td :props="props" class="text-right">
-                <div class="row justify-center q-gutter-x-sm">
-                  <q-btn
-                    flat
-                    round
-                    dense
-                    color="grey-7"
-                    icon="visibility"
-                    class="hover-icon"
-                    @click="viewPatient(props.row)"
+                  <q-input
+                    outlined
+                    v-model="password"
+                    :type="isPwd ? 'password' : 'text'"
+                    label="Password"
+                    lazy-rules
+                    :rules="[
+                      (val) => (val && val.length > 0) || 'Please enter your password',
+                    ]"
                   >
-                    <q-tooltip>View Details</q-tooltip>
-                  </q-btn>
-                  <q-btn
-                    flat
-                    round
-                    dense
-                    color="grey-7"
-                    icon="print"
-                    class="hover-icon"
-                    @click="printPatient(props.row)"
+                    <template v-slot:prepend>
+                      <q-icon name="lock" style="color: #004aad" />
+                    </template>
+                    <template v-slot:append>
+                      <q-icon
+                        :name="isPwd ? 'visibility_off' : 'visibility'"
+                        class="cursor-pointer"
+                        @click="isPwd = !isPwd"
+                        color="grey-7"
+                      />
+                    </template>
+                  </q-input>
+
+                  <div class="q-mt-sm text-center">
+                    <q-btn
+                      unelevated
+                      type="submit"
+                      color="blue-10"
+                      label="Login"
+                      :loading="loading"
+                      icon-right="login"
+                      class="login-btn full-width text-weight-bold"
+                    />
+                  </div>
+                </q-form>
+              </q-card-section>
+
+              <q-card-section class="text-center q-pb-lg">
+                <div class="q-mt-md text-grey-8">
+                  New Patient?
+                  <router-link
+                    to="/"
+                    class="text-weight-bold cursor-pointer hover-underline"
+                    style="color: #004aad; text-decoration: none"
                   >
-                    <q-tooltip>Print Record</q-tooltip>
-                  </q-btn>
+                    Registration Forms
+                  </router-link>
                 </div>
-              </q-td>
-            </template>
-
-            <template v-slot:no-data>
-              <div class="full-width column flex-center q-pa-lg text-grey-5">
-                <q-icon name="assignment_ind" size="4rem" class="q-mb-md opacity-50" />
-                <div class="text-h6" v-if="!hasSearched">Ready to Search</div>
-                <div class="text-h6" v-else>No patients found</div>
-              </div>
-            </template>
-          </q-table>
-        </q-card>
-      </div>
-    </div>
-  </q-page>
+                <q-separator spaced />
+                <div class="q-mt-lg text-grey-1">
+                  <q-footer class="bg-transparent text-grey text-center q-mb-md">
+                    <div class="text-caption">
+                      &copy; {{ currentYear }} UERM Memorial Medical Center. All rights
+                      reserved.
+                    </div>
+                  </q-footer>
+                </div>
+              </q-card-section>
+            </q-card>
+          </div>
+        </div>
+      </q-page>
+    </q-page-container>
+  </q-layout>
 </template>
 
 <script>
-import { date } from "quasar";
-import axios from "axios";
-import _ from "lodash";
-
 export default {
-  name: "InpatientList",
+  name: "HospitalLoginPage",
+
   data() {
     return {
-      searchQuery: "",
+      email: "",
+      password: "",
+      isPwd: true,
       loading: false,
-      hasSearched: false,
-      patientList: [],
-
-      columns: [
-        {
-          name: "fullName",
-          label: "Patient Information",
-          field: "fullName",
-          align: "left",
-          sortable: true,
-        },
-        {
-          name: "gender",
-          label: "Sex",
-          field: "gender",
-          align: "center",
-          style: "width: 120px",
-        },
-        {
-          name: "birthdate",
-          label: "Birthdate",
-          field: "birthdate",
-          align: "left",
-          format: (val) => (val ? date.formatDate(val, "MMM D, YYYY") : "-"),
-          classes: "text-grey-8",
-        },
-        {
-          name: "addressPresent",
-          label: "Address",
-          field: "addressPresent",
-          align: "left",
-          classes: "ellipsis",
-          style: "max-width: 200px;",
-        },
-        {
-          name: "actions",
-          label: "",
-          field: "actions",
-          align: "center",
-          style: "width: 200px",
-        },
-      ],
     };
   },
-
-  mounted() {
-    this.loadInitialData();
+  computed: {
+    currentYear() {
+      return new Date().getFullYear();
+    },
   },
-
   methods: {
-    async loadInitialData() {
+    onSubmit() {
       this.loading = true;
-      try {
-        const response = await axios.get("http://localhost:3000/api/auth/fetchInpatient");
-        this.patientList = response.data;
-      } catch (error) {
-        console.error(error);
-      } finally {
+
+      setTimeout(() => {
         this.loading = false;
-      }
-    },
 
-    handleSearch() {
-      if (this.searchQuery === "") {
-        this.loadInitialData();
-        this.hasSearched = false;
-        return;
-      }
-
-      if (this.searchQuery.length < 2) {
         this.$q.notify({
-          type: "warning",
-          message: "Please enter at least 2 characters",
-          position: "top",
+          color: "blue-10",
+          textColor: "white",
+          icon: "check_circle",
+          message: "Login Successful. Redirecting...",
         });
-        return;
-      }
-
-      this.performSearch();
-    },
-    debouncedSearch: _.debounce(function () {
-      if (this.searchQuery && this.searchQuery.length >= 2) {
-        this.performSearch();
-      }
-    }, 400),
-    async performSearch() {
-      this.loading = true;
-      try {
-        const response = await axios.get(
-          "http://localhost:3000/api/auth/searchInpatient",
-          {
-            params: { query: this.searchQuery },
-          }
-        );
-
-        this.patientList = response.data;
-        this.hasSearched = true;
-
-        if (this.patientList.length === 0) {
-          this.$q.notify({
-            type: "info",
-            message: "No records found.",
-            icon: "info",
-            position: "top",
-          });
-        }
-      } catch (error) {
-        console.error(error);
-        this.$q.notify({ type: "negative", message: "Search Failed", position: "top" });
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    getInitials(firstName, lastName) {
-      return (firstName?.charAt(0) || "") + (lastName?.charAt(0) || "");
-    },
-    getAvatarColor(gender) {
-      return gender === "Male" ? "blue-9" : "pink-6";
-    },
-
-    viewPatient(row) {
-      this.$q.notify({ type: "primary", message: `Viewing ${row.lastName}` });
-    },
-    printPatient(row) {
-      this.$q.notify({ type: "positive", message: `Printing ${row.lastName}` });
+      }, 2000);
     },
   },
 };
 </script>
 
-<style scoped lang="scss">
-.q-table tbody tr {
-  transition: background-color 0.2s ease;
-}
-.q-table tbody tr:hover {
-  background-color: #f8fbff !important;
-}
+<style scoped>
+.main-background {
+  min-height: 100vh;
+  background-color: #ffffff;
 
-.hover-icon {
-  opacity: 0.7;
-  transition: opacity 0.2s, transform 0.2s;
-}
-.hover-icon:hover {
-  opacity: 1;
-  transform: scale(1.1);
-  color: #004aad !important;
-}
+  background-image: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.9),
+      rgba(255, 255, 255, 0.7)
+    ),
+    url("/bg-images/uermmmc_bg.jpg");
 
-.text-mono {
-  font-family: "Consolas", "Monaco", monospace;
-  font-size: 0.85em;
-  background: #f1f1f1;
-  padding: 2px 4px;
-  border-radius: 4px;
+  background-position: center;
+  background-attachment: fixed;
+  background-size: cover;
+}
+.login-btn {
+  height: 45px;
+  border-radius: 8px;
+}
+.hover-underline:hover {
+  text-decoration: underline;
 }
 </style>

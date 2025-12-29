@@ -8,11 +8,18 @@ const routes = [
   },
 
   //change to login page
+  //   {
+  //   path: '/login',
+  //   component: () => import('layouts/AdminLayout.vue'),
+  //   children: [
+  //     { path: '', component: () => import('src/components/AdminPage/AdminDashboard.vue') }
+  //   ]
+  // },
     {
     path: '/login',
-    component: () => import('layouts/AdminLayout.vue'),
+    // component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '', component: () => import('src/components/AdminPage/AdminDashboard.vue') }
+      { path: '', component: () => import('src/pages/LoginPage.vue') }
     ]
   },
 

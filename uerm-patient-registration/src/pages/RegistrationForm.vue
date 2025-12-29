@@ -95,6 +95,7 @@ export default {
     ContactDetails,
     ModeOfPayment,
   },
+
   data() {
     return {
       regFormdialogVisible: false,
