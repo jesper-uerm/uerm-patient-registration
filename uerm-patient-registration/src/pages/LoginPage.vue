@@ -27,8 +27,6 @@
                     v-model="email"
                     label="Employee Number"
                     hint="Enter your employee number"
-                    lazy-rules
-                    :rules="[(val) => (val && val.length > 0) || 'Please enter your ID']"
                   >
                     <template v-slot:prepend>
                       <q-icon name="person" style="color: #004aad" />
@@ -40,10 +38,6 @@
                     v-model="password"
                     :type="isPwd ? 'password' : 'text'"
                     label="Password"
-                    lazy-rules
-                    :rules="[
-                      (val) => (val && val.length > 0) || 'Please enter your password',
-                    ]"
                   >
                     <template v-slot:prepend>
                       <q-icon name="lock" style="color: #004aad" />
@@ -58,7 +52,7 @@
                     </template>
                   </q-input>
 
-                  <div class="q-mt-sm text-center">
+                  <div class="q-mt-md text-center">
                     <q-btn
                       unelevated
                       type="submit"
@@ -143,9 +137,9 @@ export default {
   background-color: #ffffff;
 
   background-image: linear-gradient(
-      to bottom,
+      to top,
       rgba(255, 255, 255, 0.9),
-      rgba(255, 255, 255, 0.7)
+      rgba(20, 74, 173, 0.9)
     ),
     url("/bg-images/uermmmc_bg.jpg");
 

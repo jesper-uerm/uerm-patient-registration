@@ -47,10 +47,6 @@
               <q-icon
                 name="bedroom_parent"
                 class="q-mb-md transition-icon"
-                :class="{
-                  row: $q.screen.lt.sm,
-                  column: !$q.screen.lt.md,
-                }"
                 :size="$q.screen.lt.md ? '45px' : '60px'"
                 :style="{ marginBottom: $q.screen.lt.md ? '3px' : '' }"
               />
@@ -82,15 +78,12 @@
               <q-icon
                 name="person_search"
                 class="q-mb-md transition-icon"
-                :class="{
-                  row: $q.screen.lt.sm,
-                  column: !$q.screen.lt.md,
-                }"
                 :size="$q.screen.lt.md ? '45px' : '60px'"
                 :style="{ marginBottom: $q.screen.lt.md ? '3px' : '' }"
               />
+
               <div
-                class="text-h5 text-weight-bold"
+                class="text-weight-bold"
                 :class="{
                   'text-h5': !$q.screen.lt.md,
                   'text-subtitle1': $q.screen.lt.md,
@@ -98,6 +91,7 @@
               >
                 OUTPATIENT
               </div>
+
               <div class="text-caption text-uppercase q-mt-sm opacity-fade">
                 Consultation / Check-up
               </div>

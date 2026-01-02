@@ -20,7 +20,7 @@
         </q-toolbar-title>
 
         <q-btn
-          to="/login"
+          to="/admin"
           class="bg-white text-blue-10 text-weight-bold q-py-sm q-mr-md header-btn"
           icon-right="login"
           label="Login As AIS"

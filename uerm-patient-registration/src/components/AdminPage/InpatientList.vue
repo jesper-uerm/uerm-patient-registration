@@ -103,7 +103,7 @@
                 icon="print"
                 size="md"
                 class="hover-green"
-                @click="updateFinanceStatement(props.row)"
+                @click="generatePatientPdf(props.row)"
               >
                 <q-tooltip class="bg-green-8">Print Record</q-tooltip>
               </q-btn>
@@ -298,6 +298,8 @@ import { date } from "quasar";
 import axios from "axios";
 import _ from "lodash";
 
+import { usePdfGenerator } from "src/composables/usePdfGenerator";
+
 import FinancialStatement from "./FinancialStatement.vue";
 
 export default {
@@ -305,6 +307,12 @@ export default {
   components: {
     FinancialStatement,
   },
+
+  setup() {
+    const { generatePatientPdf } = usePdfGenerator();
+    return { generatePatientPdf };
+  },
+
   data() {
     return {
       searchQuery: "",

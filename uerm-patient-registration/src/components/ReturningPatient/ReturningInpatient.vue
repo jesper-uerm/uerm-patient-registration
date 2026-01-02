@@ -121,7 +121,7 @@
                 icon="print"
                 size="md"
                 class="hover-green"
-                @click="printPatient(props.row)"
+                @click="generatePatientPdf(props.row)"
               >
                 <q-tooltip class="bg-green-8">Print Record</q-tooltip>
               </q-btn>
@@ -171,8 +171,16 @@
 import { date } from "quasar";
 import axios from "axios";
 
+import { usePdfGenerator } from "src/composables/usePdfGenerator";
+
 export default {
   name: "ReturningInpatient",
+
+  setup() {
+    const { generatePatientPdf } = usePdfGenerator();
+    return { generatePatientPdf };
+  },
+
   data() {
     return {
       ReturningInpatientDialog: false,
@@ -280,39 +288,20 @@ export default {
       this.$q.notify({ type: "primary", message: `Viewing details for ${row.lastName}` });
     },
 
-    printPatient(row) {
-      console.log("Printing Patient:", row);
-      this.$q.notify({
-        type: "positive",
-        message: `Generating PDF for ${row.lastName}...`,
-      });
-    },
+    // printPatient(row) {
+    //   console.log("Printing Patient:", row);
+    //   this.$q.notify({
+    //     type: "positive",
+    //     message: `Generating PDF for ${row.lastName}...`,
+    //   });
+
+    //   this.generatePatientPdf(row);
+    // },
   },
 };
 </script>
 
 <style scoped lang="scss">
-// .sticky-header-table {
-//   max-height: 100%;
-// }
-
-// .sticky-header-table :deep(thead tr:first-child th) {
-//   background-color: $blue-grey-14;
-//   color: #ffff;
-//   font-weight: bold;
-//   text-transform: uppercase;
-//   font-size: 10px;
-//   position: sticky;
-//   top: 0;
-//   z-index: 1;
-//   border-bottom: 2px solid #ddd;
-//   height: 40px;
-// }
-
-// .sticky-header-table :deep(tbody tr:hover) {
-//   background-color: #ffff;
-// }
-
 .clean-table :deep(.q-table__top),
 .clean-table :deep(.q-table__bottom),
 .clean-table :deep(thead tr:first-child th) {
