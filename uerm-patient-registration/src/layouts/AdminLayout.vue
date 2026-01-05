@@ -16,7 +16,7 @@
           <span class="text-blue-10" style="letter-spacing: -0.5px"> UERMMC </span>
           <q-separator vertical spaced class="gt-xs" />
           <div class="text-caption text-grey-7 gt-xs" style="line-height: 1.2">
-            Patient Registration System
+            Patient Online Registration System
           </div>
         </q-toolbar-title>
 

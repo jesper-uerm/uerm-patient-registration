@@ -99,7 +99,7 @@ exports.register = async (req, res) => {
             .input('cpAddress', sql.NVarChar, body.contactPersonInpatientAddress)
             .input('cpOccupation', sql.NVarChar, body.contactPersonInpatientOccupation)
             .input('cpEmployerNumber', sql.NVarChar, body.contactPersonInpatientEmployerNumber)
-            .input('cpEmployerAddress', sql.NVarChar, body.contactPersonInpatientEmployerAddress)
+            .input('cpEmployerAddress', sql.NVarChar, body.contactPersonInpatientEmployerNameAddress)
             .input('cpIncomeSource', sql.NVarChar, body.contactPersonInpatientIncome ? JSON.stringify(body.contactPersonInpatientIncome) : null)
             .input('cpGrossIncome', sql.NVarChar, body.contactPersonInpatientGross ? JSON.stringify(body.contactPersonInpatientGross) : null)
             .input('cpHomeOwnership', sql.NVarChar, body.contactPersonInpatientHome ? JSON.stringify(body.contactPersonInpatientHome) : null)
@@ -131,7 +131,7 @@ exports.register = async (req, res) => {
                 sssgsisId, tinID, others, ptGrossIncome, ptHomeOwnership,
                 ptYearsStay, spouseName, spouseOccupation,spouseEmployerContact, ptCars, 
                 ptCarOwnership, cpName, cpRelationship, cpLandline, cpMobile, cpEmail,
-                cpAddress, cpOccupation, cpEmployerNumber, cpEmployerAddress,
+                cpAddress, cpOccupation, cpEmployerNumber, cpEmployerNameAddress,
                 cpIncomeSource, cpGrossIncome, cpHomeOwnership, cpHomeStay,
                 cpHasCar, cpCarOwnership, cpNumberOfCars, modeOfPayment, specificModeOfPayment, creditCards, 
                 bankAffiliations, itemsReceived, patientType, hmo, scidnoOutpatient, philHealth, medicalProcedure, physician
@@ -146,7 +146,7 @@ exports.register = async (req, res) => {
                 @sssgsis, @tin, @others, @ptGrossIncome, @ptHomeOwnership,
                 @ptYearsStay, @spouseName, @spouseOccupation,@spouseEmployerContact, @ptCars,
                 @ptCarOwnership, @cpName, @cpRelationship, @cpLandline, @cpMobile, @cpEmail,
-                @cpAddress, @cpOccupation, @cpEmployerNumber, @cpEmployerAddress,
+                @cpAddress, @cpOccupation, @cpEmployerNumber, @cpEmployerNameAddress,
                 @cpIncomeSource, @cpGrossIncome, @cpHomeOwnership, @cpHomeStay, @cpHasCar, 
                 @cpCarOwnership, @cpNumberOfCars, @mop, @specificmop, @creditCard, @bank, @items, @patientType, @hmo, @scidnoOutpatient, @philHealth, @medicalProcedure, @physician
             )
@@ -743,31 +743,31 @@ exports.updatePatientDetails = async (req, res) => {
     }
 };
 
-// exports.getInpatientById = async (req, res) => {
-//     try {
-//         const { id } = req.params; 
+exports.getInpatientById = async (req, res) => {
+    try {
+        const { id } = req.params; 
 
-//         if (!id) {
-//             return res.status(400).json({ message: "Patient ID is required" });
-//         }
+        if (!id) {
+            return res.status(400).json({ message: "Patient ID is required" });
+        }
 
-//         const pool = await sql.connect();
+        const pool = await sql.connect();
         
-//         const result = await pool.request()
-//             .input('patientId', sql.Int, id) 
-//             .query(`
-//                 SELECT * FROM PatientRegistration 
-//                 WHERE patient_id = @patientId
-//             `);
+        const result = await pool.request()
+            .input('patientId', sql.Int, id) 
+            .query(`
+                SELECT * FROM PatientRegistration 
+                WHERE patient_id = @patientId
+            `);
 
-//         if (result.recordset.length === 0) {
-//             return res.status(404).json({ message: "Patient not found" });
-//         }
+        if (result.recordset.length === 0) {
+            return res.status(404).json({ message: "Patient not found" });
+        }
 
-//         res.status(200).json(result.recordset[0]);
+        res.status(200).json(result.recordset[0]);
 
-//     } catch (err) {
-//         console.error("Fetch One Error:", err);
-//         res.status(500).json({ message: "Database error" });
-//     }
-// };
+    } catch (err) {
+        console.error("Fetch One Error:", err);
+        res.status(500).json({ message: "Database error" });
+    }
+};

@@ -28,7 +28,7 @@ router.get('/fetchAllPatient', authController.fetchAllPatient);
 
 router.put('/updatePatientDetails', authController.updatePatientDetails);
 
-// router.get('/getInpatient/:id', authController.getInpatientById);
+router.get('/getInpatient/:id', authController.getInpatientById);
 
 
 

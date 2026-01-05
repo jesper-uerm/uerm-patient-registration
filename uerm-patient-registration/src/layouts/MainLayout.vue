@@ -15,7 +15,7 @@
         <q-toolbar-title class="text-weight-bold header-title">
           UERM Admission Portal
           <div class="text-caption text-grey-4" style="line-height: 1.2">
-            Patient Registration System
+            Patient Online Registration System
           </div>
         </q-toolbar-title>
 

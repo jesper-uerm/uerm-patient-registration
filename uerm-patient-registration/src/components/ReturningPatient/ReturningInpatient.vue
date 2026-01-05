@@ -121,7 +121,7 @@
                 icon="print"
                 size="md"
                 class="hover-green"
-                @click="generatePatientPdf(props.row)"
+                @click="handlePrint(props.row)"
               >
                 <q-tooltip class="bg-green-8">Print Record</q-tooltip>
               </q-btn>
@@ -288,15 +288,28 @@ export default {
       this.$q.notify({ type: "primary", message: `Viewing details for ${row.lastName}` });
     },
 
-    // printPatient(row) {
-    //   console.log("Printing Patient:", row);
-    //   this.$q.notify({
-    //     type: "positive",
-    //     message: `Generating PDF for ${row.lastName}...`,
-    //   });
+    async handlePrint(row) {
+      this.loading = true;
 
-    //   this.generatePatientPdf(row);
-    // },
+      try {
+        const response = await axios.get(
+          `http://localhost:3000/api/auth/getInpatient/${row.patient_id}`
+        );
+
+        const fullPatientData = response.data;
+
+        await this.generatePatientPdf(fullPatientData);
+      } catch (error) {
+        console.error("Print Error:", error);
+        this.$q.notify({
+          type: "negative",
+          message: "Failed to fetch full details for printing",
+          position: "top",
+        });
+      } finally {
+        this.loading = false;
+      }
+    },
   },
 };
 </script>

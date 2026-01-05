@@ -169,8 +169,8 @@
         <q-input
           outlined
           dense
-          v-model="localForm.contactPersonInpatientEmployerAddress"
-          label="Employer Address"
+          v-model="localForm.contactPersonInpatientEmployerNameAddress"
+          label="Employer Name/Address"
         />
       </div>
     </div>
