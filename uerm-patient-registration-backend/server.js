@@ -8,19 +8,17 @@ const PORT = process.env.PORT || 3000;
 
 connectDB();
 
-
 app.use(cors()); 
-app.use(express.json()); 
+
+app.use(express.json({ limit: '50mb' })); 
+app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/auth', authRoutes);
 
 app.get('/', (req, res) => {
-    res.json({
-    message: 'Welcome to the Todolist API!',
-    status: 'Running',
-    })
-})
+    res.json({ message: 'API Running' });
+});
 
 app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
