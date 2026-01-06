@@ -113,7 +113,8 @@ export default {
         },
         contactPersonOutpatient: {
           contactPersonOutpatient: "",
-          contactNumberOutpatient: "",
+          contactPersonLandlineOutpatient: "",
+          contactPersonNumberOutpatient: "",
           contactPersonRelationship: "",
           outpatientProcedure: "",
           outpatientPhysician: "",
@@ -127,6 +128,7 @@ export default {
       this.step = 1;
       this.OutpatientregistrationFormDialog = true;
     },
+
     async validateFinalStep() {
       if (this.$refs.contactPersonRef) {
         const isContactValid = await this.$refs.contactPersonRef.validate();
@@ -171,7 +173,7 @@ export default {
 
       try {
         const response = await axios.post(
-          "http://localhost:3000/api/auth/register",
+          "http://10.107.0.2:3000/api/auth/register",
           finalData
         );
 

@@ -187,6 +187,7 @@ export default {
       this.step = 1;
       this.regFormdialogVisible = true;
     },
+
     async validateFinalStep() {
       if (this.$refs.patientConsent) {
         const isFormValid = await this.$refs.patientConsent.validateFinalStep();
@@ -201,19 +202,19 @@ export default {
           });
           return false;
         }
-
         if (!isSignatureValid) {
           return false;
         }
-
         return true;
       }
-
       return false;
     },
 
     async onSubmit() {
       if (this.submitting) return;
+
+      const isValid = await this.validateFinalStep();
+      if (!isValid) return;
 
       this.submitting = true;
       this.$q.loading.show({ message: "Submitting Registration..." });
@@ -222,7 +223,6 @@ export default {
         ...this.formData.personalInfo,
         ...this.formData.contactDetails,
         ...this.formData.patientConsent,
-        // ...this.formData.guarantorInfo,
 
         signature: this.formData.signature,
         patientType: "Inpatient",
@@ -230,7 +230,8 @@ export default {
 
       try {
         const response = await axios.post(
-          "http://localhost:3000/api/auth/register",
+          "http://10.107.0.2:3000/api/auth/register",
+
           finalData
         );
 

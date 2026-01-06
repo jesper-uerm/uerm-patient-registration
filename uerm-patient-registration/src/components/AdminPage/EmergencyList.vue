@@ -114,9 +114,12 @@
             <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
               <q-card flat bordered class="q-pa-sm">
                 <q-item clickable v-ripple @click="viewPatient(props.row)">
+                  <q-item-section avatar>
+                    <q-icon name="account_circle" color="blue-10" size="md" />
+                  </q-item-section>
                   <q-item-section>
                     <q-item-label class="text-weight-bold text-blue-10">
-                      {{ props.row.lastName }}, {{ props.row.firstName }}
+                      {{ props.row.firstName }} {{ props.row.lastName }}
                     </q-item-label>
                     <q-item-label caption>ID: {{ props.row.patient_id }}</q-item-label>
                   </q-item-section>
@@ -275,12 +278,17 @@
         <q-separator />
 
         <q-card-actions align="center" class="q-pa-md bg-grey-1">
-          <!-- <q-btn flat label="Close" color="grey-8" v-close-popup /> -->
           <q-btn
             unelevated
             label="Update Financial Statement"
             color="blue-10"
             @click="updateFinanceStatement(selectedPatient)"
+          />
+          <q-btn
+            unelevated
+            label="Print"
+            color="orange-10"
+            @click="handlePrint(selectedPatient)"
           />
         </q-card-actions>
       </q-card>
@@ -369,7 +377,9 @@ export default {
     async loadInitialData() {
       this.loading = true;
       try {
-        const response = await axios.get("http://localhost:3000/api/auth/fetchErpatient");
+        const response = await axios.get(
+          "http://10.107.0.2:3000/api/auth/fetchErpatient"
+        );
         this.patientList = response.data;
       } catch (error) {
         console.error(error);
@@ -412,7 +422,7 @@ export default {
       this.loading = true;
       try {
         const response = await axios.get(
-          "http://localhost:3000/api/auth/searchErpatient",
+          "http://10.107.0.2:3000/api/auth/searchErpatient",
           {
             params: { query: this.searchQuery },
           }

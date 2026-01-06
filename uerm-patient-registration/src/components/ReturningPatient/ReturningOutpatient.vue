@@ -67,63 +67,6 @@
 
       <q-separator class="q-mt-md" />
       <q-card-section class="col q-pa-none relative-position">
-        <!-- <q-table
-          flat
-          bordered
-          :rows="patientList"
-          :columns="columns"
-          row-key="patient_id"
-          :loading="loading"
-          separator="horizontal"
-          virtual-scroll
-          class="sticky-header-table q-ma-md"
-          :rows-per-page-options="[0]"
-        >
-          <template v-slot:body-cell-presentAddress="props">
-            <q-td :props="props" class="ellipsis" style="max-width: 250px">
-              {{ props.row.addressPresent }}
-              <q-tooltip>{{ props.row.addressPresent }}</q-tooltip>
-            </q-td>
-          </template>
-          <template v-slot:body-cell-actions="props">
-            <q-td :props="props" class="text-center" auto-width>
-              <div class="row justify-center items-center" style="gap: 5px">
-                <q-btn
-                  flat
-                  round
-                  dense
-                  color="amber-9"
-                  icon="visibility"
-                  size="md"
-                  @click="viewPatient(props.row)"
-                >
-                  <q-tooltip>View Details</q-tooltip>
-                </q-btn>
-                <q-btn
-                  flat
-                  round
-                  dense
-                  unelevated
-                  color="green-7"
-                  icon="print"
-                  size="md"
-                  @click="printPatient(props.row)"
-                >
-                  <q-tooltip>Print Record</q-tooltip>
-                </q-btn>
-              </div>
-            </q-td>
-          </template>
-          <template v-slot:no-data>
-            <div class="full-width column flex-center text-grey q-pa-xl">
-              <q-icon size="4em" name="person_search" class="q-mb-md" />
-              <div class="text-h6" v-if="!hasSearched">Ready to Search</div>
-              <div class="text-subtitle1" v-else>
-                No patients found matching "{{ searchQuery }}"
-              </div>
-            </div>
-          </template>
-        </q-table> -->
         <q-table
           flat
           bordered
@@ -159,7 +102,7 @@
 
           <template v-slot:body-cell-actions="props">
             <q-td :props="props" class="text-center">
-              <q-btn
+              <!-- <q-btn
                 flat
                 round
                 color="grey-7"
@@ -169,7 +112,7 @@
                 @click="viewPatient(props.row)"
               >
                 <q-tooltip class="bg-blue-10">View Profile</q-tooltip>
-              </q-btn>
+              </q-btn> -->
               <q-btn
                 flat
                 round
@@ -177,7 +120,7 @@
                 icon="print"
                 size="md"
                 class="hover-green"
-                @click="printPatient(props.row)"
+                @click="handlePrint(props.row)"
               >
                 <q-tooltip class="bg-green-8">Print Record</q-tooltip>
               </q-btn>
@@ -227,8 +170,16 @@
 import { date } from "quasar";
 import axios from "axios";
 
+import { printOutpatientInformation } from "src/composables/printOutpatientInformation";
+
 export default {
   name: "ReturningInpatient",
+
+  setup() {
+    const { generatePatientPdf } = printOutpatientInformation();
+    return { generatePatientPdf };
+  },
+
   data() {
     return {
       ReturningOutpatientDialog: false,
@@ -302,7 +253,7 @@ export default {
 
       try {
         const response = await axios.get(
-          "http://localhost:3000/api/auth/searchOutpatient",
+          "http://10.107.0.2:3000/api/auth/searchOutpatient",
           {
             params: { query: this.searchQuery },
           }
@@ -336,12 +287,29 @@ export default {
       this.$q.notify({ type: "primary", message: `Viewing details for ${row.lastName}` });
     },
 
-    printPatient(row) {
-      console.log("Printing Patient:", row);
-      this.$q.notify({
-        type: "positive",
-        message: `Generating PDF for ${row.lastName}...`,
-      });
+    async handlePrint(row) {
+      this.loading = true;
+
+      try {
+        const response = await axios.get(
+          `http://10.107.0.2:3000/api/auth/getPatient/${row.patient_id}`
+        );
+
+        const fullPatientData = {
+          ...response.data,
+          patientId: row.patient_id,
+        };
+        await this.generatePatientPdf(fullPatientData);
+      } catch (error) {
+        console.error("Print Error:", error);
+        this.$q.notify({
+          type: "negative",
+          message: "Failed to fetch full details for printing",
+          position: "top",
+        });
+      } finally {
+        this.loading = false;
+      }
     },
   },
 };

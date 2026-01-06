@@ -186,7 +186,7 @@ export default {
           formData: this.formData,
         };
 
-        await axios.put("http://localhost:3000/api/auth/updatePatientDetails", payload);
+        await axios.put("http://10.107.0.2:3000/api/auth/updatePatientDetails", payload);
 
         this.$q.notify({
           type: "positive",

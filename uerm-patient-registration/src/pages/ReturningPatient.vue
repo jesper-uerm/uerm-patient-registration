@@ -6,13 +6,8 @@
     transition-hide="scale"
   >
     <q-card
-      style="
-        width: 850px;
-        max-width: 95vw;
-        display: flex;
-        flex-direction: column;
-        height: 40vh;
-      "
+      style="width: 850px; max-width: 95vw; display: flex; flex-direction: column"
+      :style="{ height: $q.screen.lt.md ? '30vh' : '55vh' }"
     >
       <q-card-section
         class="column text-center text-white q-py-md relative-position"

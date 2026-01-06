@@ -12,7 +12,7 @@
           class="text-h4 text-white text-weight-bold q-mb-sm"
           :style="{ fontSize: $q.screen.lt.md ? '25px' : '' }"
         >
-          Welcome to UERMMC Patient Registration Portal
+          Welcome to UERMMC Patient Online Registration System
         </div>
         <div
           class="text-subtitle1 text-white text-weight-regular"
@@ -33,8 +33,8 @@
           column: !$q.screen.lt.md,
         }"
         :style="{
-          width: $q.screen.lt.md ? '250px' : '300px',
-          height: $q.screen.lt.md ? '160px' : '220px',
+          width: $q.screen.lt.md ? '250px' : '260px',
+          height: $q.screen.lt.md ? '160px' : '200px',
         }"
       >
         <q-card-section class="col column flex-center full-height">
@@ -72,8 +72,8 @@
           column: !$q.screen.lt.md,
         }"
         :style="{
-          width: $q.screen.lt.md ? '250px' : '300px',
-          height: $q.screen.lt.md ? '160px' : '220px',
+          width: $q.screen.lt.md ? '250px' : '260px',
+          height: $q.screen.lt.md ? '160px' : '200px',
         }"
       >
         <q-card-section class="col column flex-center full-height">
@@ -111,8 +111,8 @@
           column: !$q.screen.lt.md,
         }"
         :style="{
-          width: $q.screen.lt.md ? '250px' : '300px',
-          height: $q.screen.lt.md ? '160px' : '220px',
+          width: $q.screen.lt.md ? '250px' : '260px',
+          height: $q.screen.lt.md ? '160px' : '200px',
         }"
       >
         <q-card-section class="col column flex-center full-height">
@@ -150,8 +150,8 @@
           column: !$q.screen.lt.md,
         }"
         :style="{
-          width: $q.screen.lt.md ? '250px' : '300px',
-          height: $q.screen.lt.md ? '160px' : '220px',
+          width: $q.screen.lt.md ? '250px' : '260px',
+          height: $q.screen.lt.md ? '160px' : '200px',
         }"
       >
         <q-card-section class="col column flex-center full-height">
@@ -172,7 +172,7 @@
               'text-subtitle1': $q.screen.lt.md,
             }"
           >
-            Triage Assessment
+            Triage Form
           </div>
           <div class="text-caption text-uppercase q-mt-sm opacity-fade">
             Initial Assessment

@@ -103,7 +103,7 @@
 
           <template v-slot:body-cell-actions="props">
             <q-td :props="props" class="text-center">
-              <q-btn
+              <!-- <q-btn
                 flat
                 round
                 color="grey-7"
@@ -113,7 +113,7 @@
                 @click="viewPatient(props.row)"
               >
                 <q-tooltip class="bg-blue-10">View Profile</q-tooltip>
-              </q-btn>
+              </q-btn> -->
               <q-btn
                 flat
                 round
@@ -171,13 +171,13 @@
 import { date } from "quasar";
 import axios from "axios";
 
-import { usePdfGenerator } from "src/composables/usePdfGenerator";
+import { printInpatientInformation } from "src/composables/printInpatientInformation";
 
 export default {
   name: "ReturningInpatient",
 
   setup() {
-    const { generatePatientPdf } = usePdfGenerator();
+    const { generatePatientPdf } = printInpatientInformation();
     return { generatePatientPdf };
   },
 
@@ -254,7 +254,7 @@ export default {
 
       try {
         const response = await axios.get(
-          "http://localhost:3000/api/auth/searchInpatient",
+          "http://10.107.0.2:3000/api/auth/searchInpatient",
           {
             params: { query: this.searchQuery },
           }
@@ -293,7 +293,7 @@ export default {
 
       try {
         const response = await axios.get(
-          `http://localhost:3000/api/auth/getInpatient/${row.patient_id}`
+          `http://10.107.0.2:3000/api/auth/getpatient/${row.patient_id}`
         );
 
         const fullPatientData = response.data;

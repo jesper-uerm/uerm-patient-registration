@@ -4,7 +4,7 @@
       Person to notify in case of emergency:
     </div>
     <div class="row q-col-gutter-md">
-      <div class="col-4 col-md-4">
+      <div class="col-4 col-md-3">
         <q-input
           outlined
           dense
@@ -13,11 +13,11 @@
           :rules="[(val) => !!val || 'Please input valid name']"
         />
       </div>
-      <div class="col-4 col-md-4">
+      <div class="col-4 col-md-3">
         <q-input
           outlined
           dense
-          v-model="localForm.contactNumberOutpatient"
+          v-model="localForm.contactPersonNumberOutpatient"
           label="Mobile No. *"
           mask="####-###-####"
           unmasked-value
@@ -31,11 +31,25 @@
           </template>
         </q-input>
       </div>
-      <div class="col-4 col-md-4">
+      <div class="col-4 col-md-3">
+        <q-input
+          outlined
+          dense
+          v-model="localForm.contactPersonLandlineOutpatient"
+          label="Landline No. *"
+          mask="(##) ####-####"
+          unmasked-value
+        >
+          <template v-slot:append>
+            <q-icon name="phone" />
+          </template>
+        </q-input>
+      </div>
+      <div class="col-4 col-md-3">
         <q-select
           outlined
           dense
-          v-model="localForm.contactPersonRelationship"
+          v-model="localForm.contactPersonRelationshipOutpatient"
           :options="relationshipOptions"
           label="Relationship"
         />

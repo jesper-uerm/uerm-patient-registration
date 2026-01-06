@@ -45,16 +45,6 @@
       class="bg-white text-grey-9 shadow-1"
       :breakpoint="600"
     >
-      <!-- <div
-        class="bg-uerm-blue text-white q-pa-md column flex-center"
-        style="height: 180px"
-      >
-        <q-avatar square size="80px" class="q-mb-sm">
-          <img src="~assets/uermmc-white-logo.png" alt="UERM Logo" />
-        </q-avatar>
-        <div class="text-subtitle1 text-weight-bold">Administrator</div>
-        <div class="text-caption opacity-80">admin@uerm.edu.ph</div>
-      </div> -->
       <div
         class="column flex-center q-pa-md q-mt-md relative-position"
         style="height: 200px"
@@ -70,10 +60,6 @@
             "
           />
         </q-avatar>
-        <!-- <div class="text-subtitle1 text-white text-weight-bold letter-spacing-1">
-          Administrator
-        </div>
-        <div class="text-caption text-blue-2 q-mt-xs">admin@uerm.edu.ph</div> -->
       </div>
 
       <q-list padding class="text-grey-8">

@@ -92,72 +92,7 @@ export default {
       },
     };
   },
-  // methods: {
-  //   show() {
-  //     this.step = 1;
-  //     this.TriageAssessmentFormDialog = true;
-  //   },
-  //   async validateFinalStep() {
-  //     if (this.$refs.contactPersonRef) {
-  //       const isContactValid = await this.$refs.contactPersonRef.validate();
 
-  //       if (!isContactValid) {
-  //         this.$q.notify({
-  //           type: "warning",
-  //           message: "Please input required details.",
-  //         });
-  //         return false;
-  //       }
-  //       return true;
-  //     }
-  //     return false;
-  //   },
-
-  //   async onSubmit() {
-  //     if (this.submitting) return;
-
-  //     const isValid = await this.validateFinalStep();
-  //     if (!isValid) return;
-
-  //     this.submitting = true;
-  //     this.$q.loading.show({ message: "Submitting Registration..." });
-
-  //     const finalData = {
-  //       ...this.formData.personalInfoTriage,
-
-  //       patientType: "Emergency",
-  //     };
-
-  //     try {
-  //       const response = await axios.post(
-  //         "http://localhost:3000/api/auth/registerTriage",
-  //         finalData
-  //       );
-
-  //       this.$q.notify({
-  //         type: "positive",
-  //         message: "Registration Successful! ID: " + (response.data.patientId || "Saved"),
-  //         position: "top",
-  //         timeout: 4000,
-  //       });
-  //       setTimeout(() => {
-  //         this.TriageAssessmentFormDialog = false;
-  //       }, 1500);
-  //     } catch (error) {
-  //       console.error(error);
-  //       const errorMsg = error.response?.data?.message || "Server Error: Could not save.";
-
-  //       this.$q.notify({
-  //         type: "negative",
-  //         message: errorMsg,
-  //         position: "top",
-  //       });
-  //     } finally {
-  //       this.submitting = false;
-  //       this.$q.loading.hide();
-  //     }
-  //   },
-  // },
   methods: {
     show() {
       this.step = 1;
@@ -176,7 +111,7 @@ export default {
 
       try {
         const response = await axios.post(
-          "http://localhost:3000/api/auth/registerTriage",
+          "http://10.107.0.2:3000/api/auth/registerTriage",
           finalData
         );
 

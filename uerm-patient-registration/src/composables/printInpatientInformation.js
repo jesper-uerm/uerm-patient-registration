@@ -1,4 +1,4 @@
-export function usePdfGenerator() {
+export function printInpatientInformation() {
 
   const loadScript = (src) => {
     return new Promise((resolve, reject) => {
@@ -9,6 +9,20 @@ export function usePdfGenerator() {
       script.onerror = () => reject(new Error(`Failed to load ${src}`));
       document.body.appendChild(script);
     });
+  };
+
+
+  const getSignatureFromAPI = async (patientId) => {
+    try {
+      const response = await fetch(`http://10.107.0.2:3000/api/auth/getpatientSignature/${patientId}`);
+      if (!response.ok) return null;
+
+      const data = await response.json();
+      return (data && data.signature) ? data.signature : null;
+    } catch (error) {
+      console.warn('Failed to fetch signature:', error);
+      return null;
+    }
   };
 
   const getBase64ImageFromURL = (url) => {
@@ -47,6 +61,9 @@ export function usePdfGenerator() {
 
       const leftLogo = await getBase64ImageFromURL('src/assets/uerm-logo.png');
       const rightLogo = await getBase64ImageFromURL('src/assets/uermmc-blue-logo.png');
+
+      const signatureData = await getSignatureFromAPI(patient.patientId || patient.id);
+
 
       const getLogoColumn = (imgData, align) => {
         if (imgData) {
@@ -129,10 +146,16 @@ export function usePdfGenerator() {
       const cpCarOwnership = patient.cpCarOwnership || '-';
       const cpNumberOfCars = patient.cpNumberOfCars || '-';
 
-      const modeOfPayment = patient.modeOfPayment || patient.specificModeOfPayment || '-';
-      const creditCards = patient.creditCards || '-';
-      const bankAffiliations = patient.bankAffiliations || '-';
-      const itemsReceived = patient.itemsReceived ? patient.itemsReceived.replace(/["[\]]/g, '') : '-';
+      // const modeOfPayment = patient.modeOfPayment || patient.specificModeOfPayment || '-';
+      // const creditCards = patient.creditCards || '-';
+      // const bankAffiliations = patient.bankAffiliations || '-';
+      // const itemsReceived = patient.itemsReceived ? patient.itemsReceived.replace(/["[\]]/g, '') : '-';
+
+      const signatureElement = signatureData
+        ? { image: signatureData, width: 150, alignment: 'center', margin: [0, 0, 0, 2] }
+        : { text: '(Signature Not Available)', fontSize: 9, color: '#999', alignment: 'center', margin: [0, 0, 0, 10] };
+
+      const createdAt = patient.createdAt ? new Date(patient.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '-';
 
       const docDefinition = {
         pageMargins: [30, 30, 30, 30],
@@ -342,10 +365,10 @@ export function usePdfGenerator() {
                   { ...createCell('Employer/Business Contact No.', cpEmployerNumber), colSpan: 1 },
                 ],
                 [
-                  createCell('Gross Income', cpGrossIncome),
-                  createCell('Home Ownership', cpHomeOwnership),
-                  createCell('Years of Stay', cpHomeStay),
+                  { ...createCell('Gross Income', cpGrossIncome), colSpan: 1 },
+                  { ...createCell('Home Ownership', cpHomeOwnership), colSpan: 2 },
                   {},
+                  { ...createCell('Years of Stay', cpHomeStay), colSpan: 1 },
                 ],
                 [
                   { ...createCell('Car Ownership', cpCarOwnership), colSpan: 2 },
@@ -357,34 +380,70 @@ export function usePdfGenerator() {
             }
           },
 
+          // {
+          //   margin: [0, 10, 0, 0],
+          //   // layout: 'noBorders',
+          //   table: {
+          //     widths: ['25%', '25%', '25%', '25%'],
+          //     body: [
+          //       [
+          //         {
+          //           text: 'MODE OF PAYMENT',
+          //           style: 'sectionHeader',
+          //           fillColor: '#eeeeee',
+          //           margin: [0, 0, 0, 0],
+          //           alignment: 'center',
+          //           colSpan: 4,
+          //         },
+          //         {},
+          //         {},
+          //         {},
+          //       ],
+          //       [
+          //         createCell('Mode of Payment ', modeOfPayment),
+          //         createCell('No. of Credit Card Owned', creditCards),
+          //         createCell('Bank Affliations', bankAffiliations),
+          //         createCell('Items Received in Good Condition', itemsReceived),
+          //       ],
+          //     ]
+          //   }
+          // },
+
           {
             margin: [0, 10, 0, 0],
-            // layout: 'noBorders',
-            table: {
-              widths: ['25%', '25%', '25%', '25%'],
-              body: [
-                [
+            columns: [
+              { width: '*', text: '' }, // Left Spacer
+              {
+                width: 150,
+                stack: [
+                  signatureElement,
                   {
-                    text: 'MODE OF PAYMENT',
-                    style: 'sectionHeader',
-                    fillColor: '#eeeeee',
-                    margin: [0, 0, 0, 0],
+                    text: `${firstname} ${lastname}`.toUpperCase(),
+                    style: 'subheader',
                     alignment: 'center',
-                    colSpan: 4,
+                    bold: true,
+                    margin: [0, 0, 0, 5]
                   },
-                  {},
-                  {},
-                  {},
-                ],
-                [
-                  createCell('Mode of Payment ', modeOfPayment),
-                  createCell('No. of Credit Card Owned', creditCards),
-                  createCell('Bank Affliations', bankAffiliations),
-                  createCell('Items Received in Good order and Condition', itemsReceived),
-                ],
-              ]
-            }
-          },
+                  {
+                    canvas: [{ type: 'line', x1: 0, y1: 0, x2: 150, y2: 0, lineWidth: 1 }]
+                  },
+                  {
+                    text: 'SIGNATURE OVER PRINTED NAME',
+                    style: 'subheader',
+                    alignment: 'center',
+                    margin: [0, 5, 0, 0]
+                  },
+                  {
+                    text: `DATE: ${createdAt}`,
+                    fontSize: 8,
+                    alignment: 'center',
+                    margin: [0, 3, 0, 0]
+                  }
+                ]
+              },
+              { width: '*', text: '' }
+            ]
+          }
         ],
 
         styles: {
