@@ -15,30 +15,29 @@ exports.register = async (req, res) => {
     
     let province = getValue(body.selectedProvince) || getValue(body.selectedProvinceOutpatient) || '';
     if (province === 'NCR' || province === 'N/A (NCR)') {
-        province = '';
+        province = 'NCR'; 
     }
-
-    const fullPresentAddress = [street, brgy, city, province, region]
-        .filter(Boolean)
-        .join(', ')
-        .toUpperCase();
 
     const p = {
         lastName: body.lastName || body.lastNameOutpatient,
         firstName: body.firstName || body.firstNameOutpatient,
         middleName: body.middleName || body.middleNameOutpatient,
+        suffix: body.suffix || body.suffixOutpatient,
         age: body.age ?? body.ageOutpatient,
         gender: body.gender || body.genderOutpatient,
         civilStatus: body.civilStatus || body.civilStatusOutpatient,
         religion: body.religion || body.religionOutpatient,
         landline: body.landline || body.landlineOutpatient,
         mobile: body.mobile || body.mobileOutpatient,
+        occupation: body.occupation || body.occupationOutpatient,
         birthdate: (body.birthdate || body.birthdateOutpatient) ? new Date(body.birthdate || body.birthdateOutpatient) : null,
         birthplace: body.birthplace || body.birthplaceOutpatient,
         nationality: body.nationality || body.nationalityOutpatient,
         permanentAddress: body.permanentAddress || body.permanentAddressOutpatient,
-        cpName: body.contactPersonInpatient || body.contactPersonOutpatientOutpatient, 
+        cpName: body.contactPersonInpatient || body.contactPersonOutpatient, 
         cpRelationship: body.contactPersonInpatientRelationship || body.contactPersonRelationshipOutpatient, 
+        cpLandline: body.contactPersonInpatientLandline || body.contactPersonLandlineOutpatient,
+        cpMobile: body.cpNumber || body.contactPersonNumberOutpatient, 
         patientType: body.patientType || '',
         signature: body.signature || body.signatureOutpatient,
     };
@@ -61,19 +60,24 @@ exports.register = async (req, res) => {
             .input('landline', sql.NVarChar, p.landline)
             .input('mobile', sql.NVarChar, p.mobile)
             .input('email', sql.NVarChar, body.email)
+            .input('suffix', sql.NVarChar, p.suffix)
+            .input('occupation', sql.NVarChar, p.occupation)
             .input('birthdate', sql.Date, p.birthdate)      
             .input('birthplace', sql.NVarChar, p.birthplace)
             .input('nationality', sql.NVarChar, p.nationality)
-            .input('presentAddress', sql.NVarChar, fullPresentAddress)
-            .input('permanentAddress', sql.NVarChar, p.permanentAddress)
             
+            .input('street', sql.NVarChar, street)
+            .input('barangay', sql.NVarChar, brgy)
+            .input('city', sql.NVarChar, city)
+            .input('province', sql.NVarChar, province)
+            .input('region', sql.NVarChar, region)
+            .input('permanentAddress', sql.NVarChar, p.permanentAddress)
             .input('fathersName', sql.NVarChar, body.fathersName)
             .input('fathersAddress', sql.NVarChar, body.fathersAddress)
             .input('fatherContactNumber', sql.NVarChar, body.fatherContactNumber)
             .input('mothersName', sql.NVarChar, body.mothersName)
             .input('mothersAddress', sql.NVarChar, body.mothersAddress)
             .input('motherContactNumber', sql.NVarChar, body.motherContactNumber)
-            
             .input('ptSourceIncome', sql.NVarChar, body.sourceOfIncome)
             .input('specificSourceOfIncome', sql.NVarChar, body.specificSourceOfIncome)
             .input('seniorpwd', sql.NVarChar, body.seniorpwd || body.scidnoOutpatient) 
@@ -81,25 +85,25 @@ exports.register = async (req, res) => {
             .input('philhealthId', sql.NVarChar, body.philhealthId)
             .input('tin', sql.NVarChar, body.tin)
             .input('others', sql.NVarChar, body.others)
-            
             .input('ptGrossIncome', sql.NVarChar, body.pt_gross_income ? JSON.stringify(body.pt_gross_income) : null)
             .input('ptHomeOwnership', sql.NVarChar, body.pt_home_ownership ? JSON.stringify(body.pt_home_ownership) : null)
             .input('ptYearsStay', sql.NVarChar, body.pt_years_of_stay ? JSON.stringify(body.pt_years_of_stay) : null)
             .input('spouseName', sql.NVarChar, body.spouseName)
             .input('spouseOccupation', sql.NVarChar, body.spouseOccupation)
             .input('spouseEmployerContact', sql.NVarChar, body.spouseEmployerContact)
+            .input('spouseEmployerName', sql.NVarChar, body.spouseEmployerName)
+            .input('spouseEmployerAddress', sql.NVarChar, body.spouseEmployerAddress)
             .input('ptCars', sql.NVarChar, body.pthasCar)
             .input('ptCarOwnership', sql.NVarChar, body.carOwnership)
-
             .input('cpName', sql.NVarChar, p.cpName)
             .input('cpRelationship', sql.NVarChar, p.cpRelationship)
-            .input('cpLandline', sql.NVarChar, body.contactPersonInpatientLandline)
-            .input('cpMobile', sql.NVarChar, p.cpNumber) 
+            .input('cpLandline', sql.NVarChar, p.cpLandline)
+            .input('cpMobile', sql.NVarChar, p.cpMobile) 
             .input('cpEmail', sql.NVarChar, body.contactPersonInpatientEmail)
             .input('cpAddress', sql.NVarChar, body.contactPersonInpatientAddress)
             .input('cpOccupation', sql.NVarChar, body.contactPersonInpatientOccupation)
             .input('cpEmployerNumber', sql.NVarChar, body.contactPersonInpatientEmployerNumber)
-            .input('cpEmployerAddress', sql.NVarChar, body.contactPersonInpatientEmployerNameAddress)
+            
             .input('cpIncomeSource', sql.NVarChar, body.contactPersonInpatientIncome ? JSON.stringify(body.contactPersonInpatientIncome) : null)
             .input('cpGrossIncome', sql.NVarChar, body.contactPersonInpatientGross ? JSON.stringify(body.contactPersonInpatientGross) : null)
             .input('cpHomeOwnership', sql.NVarChar, body.contactPersonInpatientHome ? JSON.stringify(body.contactPersonInpatientHome) : null)
@@ -107,13 +111,11 @@ exports.register = async (req, res) => {
             .input('cpHasCar', sql.NVarChar, body.contactPersonInpatienthasCar)
             .input('cpCarOwnership', sql.NVarChar, body.contactPersonInpatientcarOwnership)
             .input('cpNumberOfCars', sql.NVarChar, body.contactPersonInpatientnumberOfCars)
-
             .input('mop', sql.NVarChar, body.mop)
             .input('specificmop', sql.NVarChar, body.specificmop)
             .input('creditCard', sql.NVarChar, body.creditCard)
             .input('bank', sql.NVarChar, body.bank)
             .input('items', sql.NVarChar, body.items ? JSON.stringify(body.items) : null)
-
             .input('patientType', sql.NVarChar, p.patientType)
             .input('hmo', sql.NVarChar, body.hmoOutpatient)
             .input('scidnoOutpatient', sql.NVarChar, body.scidnoOutpatient)
@@ -121,32 +123,40 @@ exports.register = async (req, res) => {
             .input('medicalProcedure', sql.NVarChar, body.outpatientProcedure) 
             .input('physician', sql.NVarChar, body.outpatientPhysician);
 
+        
         const patientResult = await request.query(`
             INSERT INTO PatientRegistration (
-                lastName, firstName, middleName, birthdate, age, birthplace, sex, 
-                civilStatus, religion, nationality, landline, mobile, email, 
-                addressPresent, addressPermanent, ptFatherName, ptFatherAddress, 
+                lastName, firstName, middleName, suffix, birthdate, age, birthplace, sex, 
+                civilStatus, religion, nationality, landline, mobile, email, occupation, 
+                
+                addressStreet, addressBarangay, addressCity, addressProvince, addressRegion,
+                
+                addressPermanent, ptFatherName, ptFatherAddress, 
                 ptFatherContact, ptMotherMaidenNam, ptMotherAddress, ptMotherContact, 
                 ptSourceIncome, specificSourceOfIncome, seniorId, philhealthId,
                 sssgsisId, tinID, others, ptGrossIncome, ptHomeOwnership,
                 ptYearsStay, spouseName, spouseOccupation,spouseEmployerContact, ptCars, 
                 ptCarOwnership, cpName, cpRelationship, cpLandline, cpMobile, cpEmail,
-                cpAddress, cpOccupation, cpEmployerNumber, cpEmployerNameAddress,
+                cpAddress, cpOccupation, cpEmployerNumber, spouseEmployerName, spouseEmployerAddress,
                 cpIncomeSource, cpGrossIncome, cpHomeOwnership, cpHomeStay,
                 cpHasCar, cpCarOwnership, cpNumberOfCars, modeOfPayment, specificModeOfPayment, creditCards, 
                 bankAffiliations, itemsReceived, patientType, hmo, scidnoOutpatient, philHealth, medicalProcedure, physician
             )
             OUTPUT INSERTED.patient_id 
             VALUES (
-                @lastName, @firstName, @middleName, @birthdate, @age, @birthplace, @gender,
-                @civilStatus, @religion, @nationality, @landline, @mobile, @email,
-                @presentAddress, @permanentAddress, @fathersName, @fathersAddress,
+                @lastName, @firstName, @middleName, @suffix, @birthdate, @age, @birthplace, @gender,
+                @civilStatus, @religion, @nationality, @landline, @mobile, @email, @occupation,
+                
+                -- CHANGED HERE: Use the new variables
+                @street, @barangay, @city, @province, @region,
+                
+                @permanentAddress, @fathersName, @fathersAddress,
                 @fatherContactNumber, @mothersName, @mothersAddress, @motherContactNumber,
                 @ptSourceIncome, @specificSourceOfIncome, @seniorpwd, @philhealthId,
                 @sssgsis, @tin, @others, @ptGrossIncome, @ptHomeOwnership,
                 @ptYearsStay, @spouseName, @spouseOccupation,@spouseEmployerContact, @ptCars,
                 @ptCarOwnership, @cpName, @cpRelationship, @cpLandline, @cpMobile, @cpEmail,
-                @cpAddress, @cpOccupation, @cpEmployerNumber, @cpEmployerNameAddress,
+                @cpAddress, @cpOccupation, @cpEmployerNumber, @spouseEmployerName, @spouseEmployerAddress,
                 @cpIncomeSource, @cpGrossIncome, @cpHomeOwnership, @cpHomeStay, @cpHasCar, 
                 @cpCarOwnership, @cpNumberOfCars, @mop, @specificmop, @creditCard, @bank, @items, @patientType, @hmo, @scidnoOutpatient, @philHealth, @medicalProcedure, @physician
             )
@@ -202,30 +212,37 @@ exports.registerTriage = async (req, res) => {
     }
     const body = req.body;
 
-    const t = {
-        lastName: body.lastNameTriage,
-        firstName: body.firstNameTriage,
-        middleName: body.middleNameTriage,
-        birthdate: body.birthdateTriage ? new Date(body.birthdateTriage) : null,
-        age: body.ageTriage,
-        gender: body.genderTriage,
-        patientType: body.patientType,
+    const toDecimal = (val) => (val === "" || val === undefined || val === null) ? null : parseFloat(val);
+    const toInt = (val) => (val === "" || val === undefined || val === null) ? null : parseInt(val, 10);
+    const toStr = (val) => (val === "" || val === undefined) ? null : val;
 
-        // chiefComplaint: body.chiefComplaintTriage,
-        // temp: body.tempTriage,
-        // heartRate: body.heartRateTriage,
-        // oxygen: body.oxygenTriage,
-        // bp: body.bpTriage,
-        // respiRate: body.respiRateTriage,
-        // painScore: body.painScoreTriage,
+    const t = {
+        lastName: toStr(body.lastNameTriage),
+        firstName: toStr(body.firstNameTriage),
+        middleName: toStr(body.middleNameTriage),
+        suffix: toStr(body.suffixTriage),
+        birthdate: body.birthdateTriage ? new Date(body.birthdateTriage) : null,
+        age: toInt(body.ageTriage),
+        gender: toStr(body.genderTriage),
+        patientType: toStr(body.patientType),
+
+        chiefComplaint: toStr(body.chiefComplaintTriage),
         
-        // avpu: body.avpuTriage,
-        // contagious: body.contagiousTriage,
-        // isolation: body.isolationPrecautionTriage,
-        // cpd: body.cpdTriage,
-        // level: body.levelTriage,
-        
-        personnel: body.personnelTriage,
+        temp: toDecimal(body.tempTriage),     
+        heartRate: toInt(body.heartRateTriage),
+        oxygen: toDecimal(body.oxygenTriage),
+        respiRate: toInt(body.respiRateTriage),
+        painScore: toInt(body.painScoreTriage),
+
+        bp: toStr(body.bpTriage),
+        avpu: toStr(body.avpuTriage),
+        contagious: toStr(body.contagiousTriage),
+        isolation: toStr(body.isolationPrecautionTriage),
+        cpd: toStr(body.cpdTriage),
+        level: toStr(body.levelTriage),
+        remarks: toStr(body.remarksTriage),
+        checkforPresense: toStr(body.checkforPresense),
+        personnel: toStr(body.personnelTriage),
         dateAccomplished: body.dateTriage ? new Date(body.dateTriage) : new Date()
     };
 
@@ -237,36 +254,44 @@ exports.registerTriage = async (req, res) => {
             .input('lastName', sql.NVarChar, t.lastName)
             .input('firstName', sql.NVarChar, t.firstName)
             .input('middleName', sql.NVarChar, t.middleName)
+            .input('suffix', sql.NVarChar, t.suffix)
             .input('birthdate', sql.Date, t.birthdate)
             .input('age', sql.Int, t.age)
             .input('gender', sql.NVarChar, t.gender)
             .input('patientType', sql.NVarChar, t.patientType)
 
+            .input('chiefComplaint', sql.NVarChar, t.chiefComplaint)
             
-            // .input('chiefComplaint', sql.NVarChar, t.chiefComplaint)
-            // .input('temp', sql.Decimal(4, 1), t.temp)     
-            // .input('heartRate', sql.Int, t.heartRate)
-            // .input('oxygen', sql.Decimal(5, 2), t.oxygen)  
-            // .input('bp', sql.NVarChar, t.bp)
-            // .input('respiRate', sql.Int, t.respiRate)
-            // .input('painScore', sql.Int, t.painScore)
+            .input('temp', sql.Decimal(5, 2), t.temp)     
+            .input('heartRate', sql.Int, t.heartRate)
+            .input('oxygen', sql.Decimal(5, 2), t.oxygen)  
+            .input('bp', sql.NVarChar, t.bp)
+            .input('respiRate', sql.Int, t.respiRate)     
+            .input('painScore', sql.Int, t.painScore)
             
-            // .input('avpu', sql.NVarChar, t.avpu)
-            // .input('contagious', sql.NVarChar, t.contagious)
-            // .input('isolation', sql.NVarChar, t.isolation)
-            // .input('cpd', sql.NVarChar, t.cpd)
-            // .input('level', sql.NVarChar, t.level)
-            
-            // .input('personnel', sql.NVarChar, t.personnel)
-            // .input('dateAccomplished', sql.Date, t.dateAccomplished);
+            .input('avpu', sql.NVarChar, t.avpu)
+            .input('contagious', sql.NVarChar, t.contagious)
+            .input('isolation', sql.NVarChar, t.isolation)
+            .input('cpd', sql.NVarChar, t.cpd)
+            .input('level', sql.NVarChar, t.level)
+            .input('remarks', sql.NVarChar, t.remarks)
+            .input('checkforPresense', sql.NVarChar, t.checkforPresense)
+            .input('personnel', sql.NVarChar, t.personnel)
+            .input('dateAccomplished', sql.Date, t.dateAccomplished);
 
         const result = await request.query(`
             INSERT INTO PatientRegistration (
-                lastName, firstName, middleName, birthdate, age, sex, patientType
+                lastName, firstName, middleName, suffix, birthdate, age, sex, patientType,
+                chiefComplaint, temp, heartrate, oxygen, bp, respirate, painScore,
+                avpu, contagious, isolation, cpd, level, remarks, symptoms,
+                personnel, dateAccomplished
             )
             OUTPUT INSERTED.patient_id
             VALUES (
-                @lastName, @firstName, @middleName, @birthdate, @age, @gender, @patientType
+                @lastName, @firstName, @middleName, @suffix, @birthdate, @age, @gender, @patientType,
+                @chiefComplaint, @temp, @heartRate, @oxygen, @bp, @respiRate, @painScore,
+                @avpu, @contagious, @isolation, @cpd, @level, @remarks, @checkforPresense,
+                @personnel, @dateAccomplished
             )
         `);
 
@@ -312,7 +337,7 @@ exports.searchInpatient = async (req, res) => {
                     sex as gender, 
                     civilStatus,
                     nationality,
-                    addressPresent,
+                    CONCAT_WS(', ', addressStreet, addressBarangay, addressCity, addressProvince, addressRegion) AS addressPresent,
                     mobile,
                     email,
                     createdAt,
@@ -344,25 +369,64 @@ exports.fetchInpatient = async (req, res) => {
         const result = await pool.request()
             .query(`
                 SELECT TOP 100 
+                    -- Basic Identifiers
                     patient_id,
                     
-                    (firstName + ' ' + ISNULL(middleName + ' ', '') + lastName) AS fullName,                    
-                        
+                    (firstName + ' ' + ISNULL(middleName + ' ', '') + lastName + ISNULL(' ' + suffix, '')) AS fullName,                    
+                    
                     lastName, 
                     firstName, 
                     ISNULL(middleName, '') as middleName, 
-                    
-                    FORMAT(birthdate, 'yyyy-MM-dd') as birthdate,
-                    age,
+                    ISNULL(suffix, '') as suffix,
+
                     sex as gender, 
                     civilStatus,
+                    religion,
                     nationality,
-                    addressPresent,
+                    occupation,
+
+                    FORMAT(birthdate, 'yyyy-MM-dd') as birthdate,
+                    age,
+                    birthplace,
+
+                    addressStreet,  
+                    addressBarangay,  
+                    addressCity,  
+                    addressRegion,  
+                    addressProvince,
+
+                    CONCAT_WS(', ', addressStreet, addressBarangay, addressCity, addressProvince, addressRegion) AS addressPresent,
+                    
                     mobile,
+                    landline,
                     email,
+
+                    cpName,
+                    cpRelationship,
+                    cpAddress,
+                    cpLandline,
+                    cpMobile,
+
+                    spouseName,
+                    spouseOccupation,
+                    spouseEmployerContact,
+
+                    ptFatherName,
+                    ptFatherAddress,
+                    ptFatherContact,
+                    ptMotherMaidenNam,
+                    ptMotherAddress,
+                    ptMotherContact,
+
+                    sssgsisId,
+                    tinID,
+                    seniorId, 
+                    philhealthId,
+
                     createdAt,
                     patientType,
                     physician
+
                 FROM PatientRegistration
                 WHERE 
                     patientType = 'Inpatient' 
@@ -372,7 +436,7 @@ exports.fetchInpatient = async (req, res) => {
         res.status(200).json(result.recordset);
 
     } catch (err) {
-        console.error("Fetch Error:", err);
+        console.error("Fetch Inpatient Error:", err);
         res.status(500).json({ message: "Database error" });
     }
 };
@@ -406,7 +470,7 @@ exports.searchOutpatient = async (req, res) => {
                     sex as gender, 
                     civilStatus,
                     nationality,
-                    addressPresent,
+                    CONCAT_WS(', ', addressStreet, addressBarangay, addressCity, addressProvince, addressRegion) AS addressPresent,
                     mobile,
                     email,
                     createdAt,
@@ -460,7 +524,7 @@ exports.searchErpatient = async (req, res) => {
                     sex as gender, 
                     civilStatus,
                     nationality,
-                    addressPresent,
+                    CONCAT_WS(', ', addressStreet, addressBarangay, addressCity, addressProvince, addressRegion) AS addressPresent,
                     mobile,
                     email,
                     createdAt,
@@ -492,25 +556,64 @@ exports.fetchOutpatient = async (req, res) => {
         const result = await pool.request()
             .query(`
                 SELECT TOP 100 
+                    -- Basic Identifiers
                     patient_id,
                     
-                    (firstName + ' ' + ISNULL(middleName + ' ', '') + lastName) AS fullName,                    
-                        
+                    (firstName + ' ' + ISNULL(middleName + ' ', '') + lastName + ISNULL(' ' + suffix, '')) AS fullName,                    
+                    
                     lastName, 
                     firstName, 
                     ISNULL(middleName, '') as middleName, 
-                    
-                    FORMAT(birthdate, 'yyyy-MM-dd') as birthdate,
-                    age,
+                    ISNULL(suffix, '') as suffix,
+
                     sex as gender, 
                     civilStatus,
+                    religion,
                     nationality,
-                    addressPresent,
+                    occupation,
+
+                    FORMAT(birthdate, 'yyyy-MM-dd') as birthdate,
+                    age,
+                    birthplace,
+
+                    addressStreet,  
+                    addressBarangay,  
+                    addressCity,  
+                    addressRegion,  
+                    addressProvince,
+
+                    CONCAT_WS(', ', addressStreet, addressBarangay, addressCity, addressProvince, addressRegion) AS addressPresent,
+                    
                     mobile,
+                    landline,
                     email,
+
+                    cpName,
+                    cpRelationship,
+                    cpAddress,
+                    cpLandline,
+                    cpMobile,
+
+                    spouseName,
+                    spouseOccupation,
+                    spouseEmployerContact,
+
+                    ptFatherName,
+                    ptFatherAddress,
+                    ptFatherContact,
+                    ptMotherMaidenNam,
+                    ptMotherAddress,
+                    ptMotherContact,
+
+                    sssgsisId,
+                    tinID,
+                    seniorId, 
+                    philhealthId,
+
                     createdAt,
                     patientType,
                     physician
+
                 FROM PatientRegistration
                 WHERE 
                     patientType = 'Outpatient' 
@@ -520,7 +623,7 @@ exports.fetchOutpatient = async (req, res) => {
         res.status(200).json(result.recordset);
 
     } catch (err) {
-        console.error("Fetch Error:", err);
+        console.error("Fetch Inpatient Error:", err);
         res.status(500).json({ message: "Database error" });
     }
 };
@@ -545,7 +648,7 @@ exports.fetchErpatient = async (req, res) => {
                     sex as gender, 
                     civilStatus,
                     nationality,
-                    addressPresent,
+                    CONCAT_WS(', ', addressStreet, addressBarangay, addressCity, addressProvince, addressRegion) AS addressPresent,
                     mobile,
                     email,
                     createdAt,
@@ -654,7 +757,7 @@ exports.fetchAllPatient = async (req, res) => {
                     FORMAT(createdAt, 'yyyy-MM-dd') as createdAt
                 FROM PatientRegistration 
                 ORDER BY createdAt DESC 
-            `);
+            `); 
 
         res.status(200).json(result.recordset);
 
@@ -672,31 +775,39 @@ exports.updatePatientDetails = async (req, res) => {
             return res.status(400).json({ success: false, message: "Missing patientId or form data." });
         }
         
-        const income = formData.patientSourceOfIncome || {};
+        const ptData = formData.patientSourceOfIncome || {};
+        const cpData = formData.ContactPersonSourceOfIncome || {};
         const hmo = formData.hmoForm || {};
 
         const pool = await sql.connect();
         const request = pool.request();
 
-
         request.input('patientId', sql.Int, patientId);
-        request.input('ptSourceIncome', sql.NVarChar, income.sourceOfIncome);
-        request.input('specificSourceOfIncome', sql.NVarChar, income.sourceOfIncome === 'Others' ? income.specificSourceOfIncome : null);
-        
-        request.input('ptGrossIncome', sql.NVarChar, income.pt_gross_income ? JSON.stringify(income.pt_gross_income) : null);
-        request.input('ptHomeOwnership', sql.NVarChar, income.pt_home_ownership ? JSON.stringify(income.pt_home_ownership) : null);
-        request.input('ptYearsStay', sql.NVarChar, income.pt_years_of_stay ? JSON.stringify(income.pt_years_of_stay) : null);
-        
-        request.input('ptCars', sql.NVarChar, income.pthasCar);
-        request.input('ptCarOwnership', sql.NVarChar, income.pthasCar === 'yes' ? income.carOwnership : null);
-        request.input('ptNumberOfCars', sql.NVarChar, income.pthasCar === 'yes' ? String(income.numberOfCars) : '0');
 
-        request.input('modeOfPayment', sql.NVarChar, income.mop);
-        request.input('specificModeOfPayment', sql.NVarChar, income.mop === 'Others' ? income.specificmop : null);
-        request.input('creditCards', sql.NVarChar, String(income.creditCard || 0));
-        request.input('bankAffiliations', sql.NVarChar, income.bank);
+        request.input('ptSourceIncome', sql.NVarChar, ptData.sourceOfIncome);
+        request.input('specificSourceOfIncome', sql.NVarChar, ptData.sourceOfIncome === 'Others' ? ptData.specificSourceOfIncome : null);
+        request.input('ptGrossIncome', sql.NVarChar, ptData.pt_gross_income ? JSON.stringify(ptData.pt_gross_income) : null);
+        request.input('ptHomeOwnership', sql.NVarChar, ptData.pt_home_ownership ? JSON.stringify(ptData.pt_home_ownership) : null);
+        request.input('ptYearsStay', sql.NVarChar, ptData.pt_years_of_stay ? JSON.stringify(ptData.pt_years_of_stay) : null);
+        request.input('ptCars', sql.NVarChar, ptData.pthasCar);
+        request.input('ptCarOwnership', sql.NVarChar, ptData.pthasCar === 'yes' ? ptData.carOwnership : null);
+        request.input('ptNumberOfCars', sql.NVarChar, ptData.pthasCar === 'yes' ? String(ptData.numberOfCars) : null);
 
-    
+        request.input('cpIncomeSource', sql.NVarChar, cpData.sourceOfIncomeContactPerson);
+        request.input('cpSpecificSourceIncome', sql.NVarChar, cpData.sourceOfIncomeContactPerson === 'Others' ? cpData.specificSourceOfIncomeContactPerson : null);
+        
+        request.input('cpGrossIncome', sql.NVarChar, cpData.cp_gross_income ? JSON.stringify(cpData.cp_gross_income) : null);
+        request.input('cpHomeOwnership', sql.NVarChar, cpData.cp_home_ownership ? JSON.stringify(cpData.cp_home_ownership) : null);
+        request.input('cpHomeStay', sql.NVarChar, cpData.cp_years_of_stay ? JSON.stringify(cpData.cp_years_of_stay) : null);
+        request.input('cpHasCar', sql.NVarChar, cpData.cphasCar);
+        request.input('cpCarOwnership', sql.NVarChar, cpData.cphasCar === 'yes' ? cpData.cpcarOwnership : null);
+        request.input('cpNumberOfCars', sql.NVarChar, cpData.cphasCar === 'yes' ? String(cpData.cpnumberOfCars) : '0');
+
+        request.input('modeOfPayment', sql.NVarChar, ptData.mop);
+        request.input('specificModeOfPayment', sql.NVarChar, ptData.mop === 'Others' ? ptData.specificmop : null);
+        request.input('creditCards', sql.NVarChar, String(ptData.creditCard || 0));
+        request.input('bankAffiliations', sql.NVarChar, ptData.bank);
+
         request.input('hmoName', sql.NVarChar, hmo.hmoName);
         request.input('hmoMemberId', sql.NVarChar, hmo.hmomemberId);
         request.input('hmoValidityDate', sql.NVarChar, hmo.hmovalidityDate || null); 
@@ -717,6 +828,16 @@ exports.updatePatientDetails = async (req, res) => {
                 ptCars = @ptCars,
                 ptCarOwnership = @ptCarOwnership,
                 ptNumberOfCars = @ptNumberOfCars, 
+
+                cpIncomeSource = @cpIncomeSource,
+                                
+                cpGrossIncome = @cpGrossIncome,
+                cpHomeOwnership = @cpHomeOwnership,
+                cpHomeStay = @cpHomeStay,
+                cpHasCar = @cpHasCar,
+                cpCarOwnership = @cpCarOwnership,
+                cpNumberOfCars = @cpNumberOfCars, 
+
                 modeOfPayment = @modeOfPayment,
                 specificModeOfPayment = @specificModeOfPayment,
                 creditCards = @creditCards,
@@ -743,7 +864,7 @@ exports.updatePatientDetails = async (req, res) => {
     }
 };
 
-exports.getInpatientById = async (req, res) => {
+exports.getpatientById = async (req, res) => {
     try {
         const { id } = req.params; 
 
@@ -769,5 +890,101 @@ exports.getInpatientById = async (req, res) => {
     } catch (err) {
         console.error("Fetch One Error:", err);
         res.status(500).json({ message: "Database error" });
+    }
+};
+
+exports.getPatientSignature = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const pool = await sql.connect();
+
+        const result = await pool.request()
+            .input('patientId', sql.Int, id)
+            .query(`SELECT eSignature FROM ptSignature WHERE patient_id = @patientId`);
+
+        if (result.recordset.length > 0 && result.recordset[0].eSignature) {
+            const binaryData = result.recordset[0].eSignature;
+            
+            const base64Signature = binaryData.toString('base64');
+
+
+            let mimeType = 'image/png'; // Default
+            if (base64Signature.startsWith('/9j/')) {
+                mimeType = 'image/jpeg';
+            }
+
+            const dataUrl = `data:${mimeType};base64,${base64Signature}`;
+
+            return res.status(200).json({ signature: dataUrl });
+        } else {
+            return res.status(404).json({ message: "No signature found" });
+        }
+
+    } catch (err) {
+        console.error("Signature Fetch Error:", err);
+        res.status(500).json({ message: "Server Error" });
+    }
+};
+
+exports.sendDataInformation = async (req, res) => {
+    const { patient_id } = req.body;
+
+    if (!patient_id) {
+        return res.status(400).json({ message: "Patient ID is required" });
+    }
+
+    const transaction = new sql.Transaction();
+    
+    try {
+        await transaction.begin();
+        const request = new sql.Request(transaction);
+        request.input('id', sql.Int, patient_id);
+
+    
+        await request.query(`
+            INSERT INTO UERMMMC.dbo.PATIENTINFO (
+                PATIENTNO,
+                LASTNAME, FIRSTNAME, MIDDLENAME, SUFFIX,
+                BARANGAY, MUNICIPALITY,
+                SEX, STATUS,
+                RELIGION, NATIONALITY,
+                DBIRTH, AGE, BPLACE,
+                OCCUPATION,
+                INCASE, RELATIONSHIP, INCASEPHONENO, INCASEADD,
+                PHONENOS, MOBILENO,
+                NAMEOFSPOUSE, SPOUSEOCCUPATION,
+                EMPLOYER, EMPLOYERADD, EMPLOYERTELNO,
+                FATHER, FADDRESS, FTEL,
+                MOTHER, MADDRESS, MTEL,
+                SSSNO, TINNO, SCIDNO, UDF_PHILHEALTHNO
+            )
+            SELECT 
+                patient_id,
+                lastName, firstName, middleName, suffix,
+                addressBarangay, addressCity,
+                sex, civilStatus,
+                religion, nationality,
+                birthdate, age, birthplace,
+                occupation,
+                cpName, cpRelationship, 
+                ISNULL(cpLandline, cpMobile), 
+                cpAddress,
+                cpLandline, cpMobile,
+                spouseName, spouseOccupation,
+                spouseEmployerName, spouseEmployerAddress, spouseEmployerContact, 
+                ptFatherName, ptFatherAddress, ptFatherContact,
+                ptMotherMaidenNam, ptMotherAddress, ptMotherContact,
+                sssgsisId, tinID, seniorId, philhealthId
+            FROM PatientRegistrationDB.dbo.PatientRegistration
+            WHERE patient_id = @id
+        `);
+
+        await transaction.commit();
+        res.status(200).json({ message: "Patient data successfully transferred to Finance Statement!" });
+
+    } catch (err) {
+        if (transaction) await transaction.rollback();
+        console.error("Transfer Error:", err);
+        res.status(500).json({ message: "Transfer failed", error: err.message });
     }
 };

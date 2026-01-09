@@ -28,7 +28,12 @@ router.get('/fetchAllPatient', authController.fetchAllPatient);
 
 router.put('/updatePatientDetails', authController.updatePatientDetails);
 
-router.get('/getInpatient/:id', authController.getInpatientById);
+router.get('/getPatient/:id', authController.getpatientById);
+
+router.get('/getpatientSignature/:id', authController.getPatientSignature);
+
+router.post('/sendDataInformation', authController.sendDataInformation);
+
 
 
 
