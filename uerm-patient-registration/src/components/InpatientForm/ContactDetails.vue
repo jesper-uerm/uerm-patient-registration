@@ -41,7 +41,7 @@
       <div class="col-12">
         <div class="text-subtitle2">Spouse Details:</div>
       </div>
-      <div class="col-4 col-md-4">
+      <div class="col-4 col-md-4 q-mb-md">
         <q-input
           outlined
           dense
@@ -50,12 +50,7 @@
         />
       </div>
       <div class="col-4 col-md-4">
-        <q-input
-          outlined
-          dense
-          v-model="localForm.spouseOccupation"
-          label="Occupation/Employer"
-        />
+        <q-input outlined dense v-model="localForm.spouseOccupation" label="Occupation" />
       </div>
       <div class="col-4 col-md-4">
         <q-input
@@ -65,6 +60,25 @@
           unmasked-value
           v-model="localForm.spouseEmployerContact"
           label="Employer Contact"
+        />
+      </div>
+    </div>
+
+    <div class="row q-col-gutter-md">
+      <div class="col-6 col-md-6">
+        <q-input
+          outlined
+          dense
+          v-model="localForm.spouseEmployerName"
+          label="Employer Name"
+        />
+      </div>
+      <div class="col-6 col-md-6">
+        <q-input
+          outlined
+          dense
+          v-model="localForm.spouseEmployerAddress"
+          label="Employer Address"
         />
       </div>
     </div>
@@ -146,34 +160,7 @@
         />
       </div>
     </div>
-    <div class="row q-col-gutter-md">
-      <div class="col-6 col-md-6">
-        <q-input
-          outlined
-          dense
-          v-model="localForm.contactPersonInpatientOccupation"
-          label="Occupation/Employer"
-        />
-      </div>
-      <div class="col-6 col-md-6">
-        <q-input
-          outlined
-          dense
-          v-model="localForm.contactPersonInpatientEmployerNumber"
-          mask="####-###-####"
-          unmasked-value
-          label="Employer Contact No"
-        />
-      </div>
-      <div class="col-12">
-        <q-input
-          outlined
-          dense
-          v-model="localForm.contactPersonInpatientEmployerNameAddress"
-          label="Employer Name/Address"
-        />
-      </div>
-    </div>
+
     <q-stepper-navigation class="text-center q-gutter-md">
       <q-btn
         style="width: 100%; height: 45px; max-width: 120px"

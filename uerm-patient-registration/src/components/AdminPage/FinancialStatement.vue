@@ -37,7 +37,12 @@
           flat
           alternative-labels
         >
-          <q-step :name="1" title="Mode Of Payment" icon="person" :done="step > 1">
+          <q-step
+            :name="1"
+            title="Patient Source Of Income"
+            icon="person"
+            :done="step > 1"
+          >
             <patient-source-of-income
               :form="formData.patientSourceOfIncome"
               :local-patient="localPatient"
@@ -52,13 +57,34 @@
               @next="step = 2"
             />
           </q-step>
-          <q-step :name="2" title="HMO" icon="payments" :done="step > 2">
+          <q-step
+            :name="2"
+            title="Contact Person Source Of Income"
+            label="fsafsa"
+            icon="person"
+            :done="step > 2"
+          >
+            <contact-person-source-of-income
+              :form="formData.ContactPersonSourceOfIncome"
+              :local-patient="localPatient"
+              :yesNoOptions="yesNoOptions"
+              :ownershipOptions="ownershipOptions"
+              :sourceIncomeOptions="sourceIncomeOptions"
+              :grossIncomeOptions="grossIncomeOptions"
+              :homeOwnershipOptions="homeOwnershipOptions"
+              :yearsOfStayOptions="yearsOfStayOptions"
+              @update:form="(val) => (formData.ContactPersonSourceOfIncome = val)"
+              @prev="step = 1"
+              @next="step = 3"
+            />
+          </q-step>
+          <q-step :name="3" title="HMO" icon="payments" :done="step > 3">
             <accredited-h-m-o
               ref="hmoForm"
               :form="formData.hmoForm"
               :mopOptions="mopOptions"
               @update:form="(val) => (formData.hmoForm = val)"
-              @prev="step = 1"
+              @prev="step = 2"
               @close="financialDialog = false"
               @submit="updateDetails"
             />
@@ -72,6 +98,7 @@
 <script>
 import PatientSourceOfIncome from "src/components/AdminPage/PatientSourceOfIncome.vue";
 import AccreditedHMO from "src/components/AdminPage/AccreditedHMO.vue";
+import ContactPersonSourceOfIncome from "src/components/AdminPage/ContactPersonSourceOfIncome.vue";
 
 import axios from "axios";
 
@@ -80,12 +107,14 @@ export default {
   components: {
     PatientSourceOfIncome,
     AccreditedHMO,
+    ContactPersonSourceOfIncome,
   },
   data() {
     return {
       financialDialog: false,
       step: 1,
       submitting: false,
+      localPatient: {},
       ownershipOptions: ["Owned", "Company", "Mortgaged"],
       grossIncomeOptions: [
         { label: "Below 20k", value: "Below 20k" },
@@ -135,6 +164,16 @@ export default {
           creditCard: "",
           bank: "",
         },
+        ContactPersonSourceOfIncome: {
+          sourceOfIncomeContactPerson: "",
+          specificSourceOfIncomeContactPerson: "",
+          cp_gross_income: "",
+          cp_home_ownership: "",
+          cp_years_of_stay: "",
+          cphasCar: "",
+          cpcarOwnership: "",
+          cpnumberOfCars: "",
+        },
         hmo: {
           hmoName: "",
           memberId: "",
@@ -154,30 +193,6 @@ export default {
       this.localPatient = patientData;
       this.financialDialog = true;
     },
-    // async validateFinalStep() {
-    //   if (this.$refs.patientConsent) {
-    //     const isPaymentValid = await this.$refs.patientConsent.validate();
-
-    //     const isSignatureValid = !!this.formData.signature;
-
-    //     if (!isPaymentValid) {
-    //       this.$q.notify({
-    //         type: "warning",
-    //         position: "top",
-    //         message: "Please correct errors in Payment Details.",
-    //       });
-    //       return false;
-    //     }
-
-    //     if (!isSignatureValid) {
-    //       return false;
-    //     }
-
-    //     return true;
-    //   }
-
-    //   return false;
-    // },
 
     async updateDetails() {
       try {

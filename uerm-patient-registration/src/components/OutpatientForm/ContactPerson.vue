@@ -4,7 +4,7 @@
       Person to notify in case of emergency:
     </div>
     <div class="row q-col-gutter-md">
-      <div class="col-4 col-md-3">
+      <div class="col-4 col-md-3 col-sm-6">
         <q-input
           outlined
           dense
@@ -13,7 +13,7 @@
           :rules="[(val) => !!val || 'Please input valid name']"
         />
       </div>
-      <div class="col-4 col-md-3">
+      <div class="col-4 col-md-3 col-sm-6">
         <q-input
           outlined
           dense
@@ -31,7 +31,7 @@
           </template>
         </q-input>
       </div>
-      <div class="col-4 col-md-3">
+      <div class="col-4 col-md-3 col-sm-6">
         <q-input
           outlined
           dense
@@ -45,7 +45,7 @@
           </template>
         </q-input>
       </div>
-      <div class="col-4 col-md-3">
+      <div class="col-4 col-md-3 col-sm-6">
         <q-select
           outlined
           dense
@@ -94,7 +94,7 @@
           </div>
           <div class="text-body2 q-mt-sm text-justify text-grey-9">
             3. I / We authorize the Center and its authorized personnel to process all
-            information I / we provided...
+            information I / we provided.
           </div>
         </div>
         <div class="col-12 items-center">

@@ -1,0 +1,310 @@
+<template>
+  <q-form ref="ContactPersonSourceOfIncome" @submit="onNext">
+    <div class="row q-col-gutter-lg">
+      <div class="col-12">
+        <div class="text-subtitle2 text-weight-medium q-mb-xs">
+          Source of Income
+          <span class="text-weight-regular text-grey-8">
+            (Contact Person: {{ localPatient?.cpName || "N/A" }})
+          </span>
+          <span class="text-negative">*</span>
+        </div>
+        <q-field
+          borderless
+          dense
+          :model-value="localForm.sourceOfIncomeContactPerson"
+          :rules="[(val) => !!val || 'Please select a source of income']"
+          hide-bottom-space
+        >
+          <template v-slot:control>
+            <q-option-group
+              v-model="localForm.sourceOfIncomeContactPerson"
+              :options="sourceIncomeOptions"
+              color="primary"
+              inline
+              class="q-ml-none"
+            />
+          </template>
+        </q-field>
+
+        <q-slide-transition>
+          <div
+            v-if="localForm.sourceOfIncomeContactPerson === 'Others'"
+            class="q-mt-sm"
+            style="max-width: 100%"
+          >
+            <q-input
+              outlined
+              dense
+              v-model="localForm.specificSourceOfIncomeContactPerson"
+              label="Please specify *"
+              :rules="[(val) => !!val || 'Please specify']"
+              bg-color="white"
+            />
+          </div>
+        </q-slide-transition>
+        <q-separator class="q-mt-md" />
+      </div>
+
+      <div class="col-12 col-md-4">
+        <div
+          class="text-subtitle2 text-grey-8 q-mb-xs"
+          :style="{ marginTop: $q.screen.lt.md ? '0px' : '0px' }"
+        >
+          Gross Income <span class="text-negative">*</span>
+        </div>
+        <q-field
+          borderless
+          dense
+          :model-value="localForm.cp_gross_income"
+          :rules="[(val) => !!val || 'Please select a gross income']"
+          hide-bottom-space
+        >
+          <template v-slot:control>
+            <q-btn-toggle
+              v-model="localForm.cp_gross_income"
+              :options="grossIncomeOptions"
+              class="my-custom-toggle rounded-borders full-width"
+              no-caps
+              unelevated
+              toggle-color="primary"
+              color="grey-3"
+              text-color="grey-9"
+              spread
+              :padding="$q.screen.lt.md ? '8px 16px' : '16px'"
+            />
+          </template>
+        </q-field>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <div
+          class="text-subtitle2 text-grey-8 q-mb-xs"
+          :style="{ marginTop: $q.screen.lt.md ? '0px' : '0px' }"
+        >
+          Home Ownership <span class="text-negative">*</span>
+        </div>
+        <q-field
+          borderless
+          dense
+          :model-value="localForm.cp_home_ownership"
+          :rules="[(val) => !!val || 'Please select home ownership']"
+          hide-bottom-space
+        >
+          <template v-slot:control>
+            <q-btn-toggle
+              v-model="localForm.cp_home_ownership"
+              :options="homeOwnershipOptions"
+              class="my-custom-toggle full-width"
+              no-caps
+              unelevated
+              toggle-color="primary"
+              color="grey-3"
+              text-color="grey-9"
+              spread
+              :padding="$q.screen.lt.md ? '8px 16px' : '16px'"
+            />
+          </template>
+        </q-field>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <div
+          class="text-subtitle2 text-grey-8 q-mb-xs"
+          :style="{ marginTop: $q.screen.lt.md ? '0px' : '0px' }"
+        >
+          Years of Stay <span class="text-negative">*</span>
+        </div>
+        <q-field
+          borderless
+          dense
+          :model-value="localForm.cp_years_of_stay"
+          :rules="[(val) => !!val || 'Please select years of stay']"
+          hide-bottom-space
+        >
+          <template v-slot:control>
+            <q-btn-toggle
+              v-model="localForm.cp_years_of_stay"
+              :options="yearsOfStayOptions"
+              class="my-custom-toggle full-width"
+              no-caps
+              unelevated
+              toggle-color="primary"
+              color="grey-3"
+              text-color="grey-9"
+              spread
+              :padding="$q.screen.lt.md ? '8px 16px' : '16px'"
+            />
+          </template>
+        </q-field>
+      </div>
+      <div class="col-12">
+        <q-separator class="q-mb-sm" />
+
+        <div class="row items-center q-gutter-x-md">
+          <div class="text-subtitle2 text-weight-medium">
+            Do you have a car? <span class="text-negative">*</span>
+          </div>
+          <q-field
+            borderless
+            dense
+            :model-value="localForm.cphasCar"
+            :rules="[(val) => !!val || 'Required']"
+            hide-bottom-space
+            class="q-pb-none"
+          >
+            <template v-slot:control>
+              <q-btn-toggle
+                v-model="localForm.cphasCar"
+                :options="yesNoOptions"
+                @update:model-value="resetCarData"
+                no-caps
+                unelevated
+                toggle-color="primary"
+                color="grey-3"
+                text-color="grey-9"
+                padding="6px 20px"
+              />
+            </template>
+          </q-field>
+        </div>
+      </div>
+
+      <template v-if="localForm.cphasCar === 'yes'">
+        <div class="col-12 col-md-6">
+          <q-select
+            outlined
+            dense
+            v-model="localForm.cpcarOwnership"
+            :options="ownershipOptions"
+            label="Ownership Type *"
+            :rules="[(val) => !!val || 'Please select a option']"
+            bg-color="white"
+          />
+        </div>
+        <div class="col-12 col-md-6">
+          <q-input
+            outlined
+            dense
+            type="number"
+            v-model="localForm.cpnumberOfCars"
+            label="Number of Cars *"
+            inputmode="numeric"
+            :rules="[
+              (val) => (val !== null && val !== '') || 'Required',
+              (val) => val > 0 || 'Min 1',
+            ]"
+            bg-color="white"
+          />
+        </div>
+      </template>
+    </div>
+
+    <div class="row justify-center q-mt-lg">
+      <q-btn
+        flat
+        class="q-mr-sm"
+        color="grey-8"
+        icon="arrow_back"
+        label="Back"
+        @click="onBack"
+      />
+      <q-btn
+        unelevated
+        color="blue-10"
+        icon-right="arrow_forward"
+        label="Next"
+        type="submit"
+        style="height: 45px; max-width: 120px"
+      />
+    </div>
+  </q-form>
+</template>
+
+<script>
+import { date } from "quasar";
+
+export default {
+  props: {
+    form: Object,
+    localPatient: { type: Object, default: () => ({}) },
+    yesNoOptions: Array,
+    sourceIncomeOptions: Array,
+    ownershipOptions: Array,
+    grossIncomeOptions: Array,
+    homeOwnershipOptions: Array,
+    yearsOfStayOptions: Array,
+    mopOptions: Array,
+  },
+  emits: ["update:form", "next", "back"],
+  data() {
+    return {
+      localForm: { ...this.form },
+    };
+  },
+  watch: {
+    form: {
+      handler(newVal) {
+        if (JSON.stringify(newVal) !== JSON.stringify(this.localForm)) {
+          this.localForm = { ...newVal };
+        }
+      },
+      deep: true,
+    },
+    localForm: {
+      handler(val) {
+        this.$emit("update:form", val);
+      },
+      deep: true,
+    },
+    "localForm.sourceOfIncome"(val) {
+      if (val !== "Others") {
+        this.localForm.specificSourceOfIncome = "";
+      }
+    },
+    "localForm.mop"(val) {
+      if (val !== "Others") {
+        this.localForm.specificmop = "";
+      }
+    },
+  },
+  methods: {
+    async validate() {
+      return await this.$refs.ContactPersonSourceOfIncome.validate();
+    },
+    async onNext() {
+      const isValid = await this.validate();
+      if (!isValid) {
+        this.$q.notify({
+          type: "warning",
+          message: "Please fill all required fields.",
+          position: "top",
+        });
+        return;
+      }
+      this.$emit("next");
+    },
+
+    onBack() {
+      this.$emit("prev");
+    },
+
+    resetCarData(value) {
+      if (value === "no") {
+        this.localForm.carOwnership = null;
+        this.localForm.numberOfCars = "";
+      }
+    },
+    formatDate(val) {
+      if (!val) return "-";
+      return date.formatDate(val, "MMM D, YYYY");
+    },
+  },
+};
+</script>
+
+<style scoped>
+.my-custom-toggle {
+  border: 1px solid #e0e0e0;
+}
+</style>

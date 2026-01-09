@@ -4,12 +4,12 @@
       <q-toolbar class="q-py-sm">
         <q-avatar
           square
-          size="70px"
+          size="80px"
           class="q-mr-xs"
           @click="$router.push('/')"
           style="cursor: pointer"
         >
-          <img src="~assets/uermmc-white-logo.png" alt="UERM Logo" />
+          <img src="~assets/uermmc-white-logo-header.png" alt="UERM Logo" />
         </q-avatar>
 
         <q-toolbar-title class="text-weight-bold header-title">

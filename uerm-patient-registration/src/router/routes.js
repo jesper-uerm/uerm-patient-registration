@@ -15,11 +15,19 @@ const routes = [
   //     { path: '', component: () => import('src/components/AdminPage/AdminDashboard.vue') }
   //   ]
   // },
-    {
+  {
     path: '/login',
     // component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: '', component: () => import('src/pages/LoginPage.vue') }
+    ]
+  },
+
+    {
+    path: '/register',
+    // component: () => import('layouts/MainLayout.vue'),
+    children: [
+      { path: '', component: () => import('src/pages/RegisterLogin.vue') }
     ]
   },
 

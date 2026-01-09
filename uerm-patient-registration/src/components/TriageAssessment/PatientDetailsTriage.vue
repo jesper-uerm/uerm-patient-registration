@@ -2,7 +2,7 @@
   <q-form ref="personalInfoTriage" @submit="onSubmit">
     <div class="text-subtitle2 text-bold q-mb-md">Patient Information:</div>
     <div class="row q-col-gutter-md">
-      <div class="col-4 col-md-4">
+      <div class="col-3 col-md-3">
         <q-input
           outlined
           dense
@@ -11,7 +11,7 @@
           :rules="[(val) => !!val || 'Required']"
         />
       </div>
-      <div class="col-4 col-md-4">
+      <div class="col-3 col-md-3">
         <q-input
           outlined
           dense
@@ -20,12 +20,22 @@
           :rules="[(val) => !!val || 'Required']"
         />
       </div>
-      <div class="col-4 col-md-4">
+      <div class="col-3 col-md-3">
         <q-input
           outlined
           dense
           v-model="localForm.middleNameTriage"
           label="Middle Name"
+        />
+      </div>
+      <div class="col-3 col-md-3">
+        <q-select
+          outlined
+          dense
+          v-model="localForm.suffixTriage"
+          :options="['Jr.', 'Sr.', 'II', 'III', 'IV', 'V', 'VI']"
+          label="Suffix"
+          lazy-rules
         />
       </div>
     </div>
@@ -215,13 +225,45 @@
           dense
           v-model="localForm.levelTriage"
           :options="['1 - (Emergent)', '2 - (Urgent)', '3 - (Non-Urgent)']"
-          label="Triage Level:"
+          label="Triage Level"
           lazy-rules
           :rules="[(val) => !!val || 'Please select triage level.']"
         />
       </div>
     </div>
 
+    <div class="row q-col-gutter-md">
+      <div class="col-6 col-md-6">
+        <q-select
+          outlined
+          dense
+          v-model="localForm.checkforPresense"
+          :options="[
+            'Fever',
+            'Cough',
+            'Sore Throat',
+            'Headache',
+            'Diarrhea',
+            'Shortness of Breath',
+            'Joint pains',
+            'Muscle pains',
+            'Decreased sense of taste/smell',
+            'Rash',
+          ]"
+          label="Check for Presence of the any of the following: "
+        />
+      </div>
+      <div class="col-6 col-md-6">
+        <q-input
+          outlined
+          dense
+          v-model="localForm.remarksTriage"
+          label="Remarks"
+          :rules="[(val) => !!val || 'Required']"
+        >
+        </q-input>
+      </div>
+    </div>
     <div class="row q-col-gutter-md">
       <div class="col-6 col-md-6">
         <q-input

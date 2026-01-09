@@ -2,7 +2,7 @@
   <q-form ref="patientDetails" @submit="onNext">
     <div class="text-subtitle1 text-bold q-mb-md">Patient Information:</div>
     <div class="row q-col-gutter-md">
-      <div class="col-4 col-md-4">
+      <div class="col-3 col-md-3">
         <q-input
           outlined
           dense
@@ -11,7 +11,7 @@
           :rules="[(val) => !!val || 'Required']"
         />
       </div>
-      <div class="col-4 col-md-4">
+      <div class="col-3 col-md-3">
         <q-input
           outlined
           dense
@@ -20,8 +20,18 @@
           :rules="[(val) => !!val || 'Required']"
         />
       </div>
-      <div class="col-4 col-md-4">
+      <div class="col-3 col-md-3">
         <q-input outlined dense v-model="localForm.middleName" label="Middle Name" />
+      </div>
+      <div class="col-3 col-md-3">
+        <q-select
+          outlined
+          dense
+          v-model="localForm.suffix"
+          :options="['Jr.', 'Sr.', 'II', 'III', 'IV', 'V', 'VI']"
+          label="Suffix"
+          lazy-rules
+        />
       </div>
     </div>
     <div class="row q-col-gutter-md">
@@ -147,6 +157,18 @@
           type="email"
           v-model="localForm.email"
           label="Email Address"
+        />
+      </div>
+    </div>
+    <div class="row q-col-gutter-md q-mb-md">
+      <div class="col-12 col-md-12">
+        <q-input
+          outlined
+          dense
+          v-model="localForm.occupation"
+          type="textarea"
+          rows="1"
+          label="Occupation"
         />
       </div>
     </div>

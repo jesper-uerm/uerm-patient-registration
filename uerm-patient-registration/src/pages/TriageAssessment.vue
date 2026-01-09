@@ -69,11 +69,11 @@ export default {
           lastNameTriage: "",
           firstNameTriage: "",
           middleNameTriage: "",
+          suffixTriage: "",
           birthdateTriage: "",
           ageTriage: "",
           genderTriage: "",
 
-          //new db column
           chiefComplaintTriage: "",
           tempTriage: "",
           heartRateTriage: "",
@@ -86,8 +86,10 @@ export default {
           isolationPrecautionTriage: "",
           cpdTriage: "",
           levelTriage: "",
+          remarksTriage: "",
+          checkforPresense: "",
           personnelTriage: "",
-          dateTriage: "", //Triage Accomplished Date
+          dateTriage: "",
         },
       },
     };

@@ -4,9 +4,13 @@
       <q-page class="window-height window-width row justify-center items-center">
         <div class="row q-pa-lg">
           <div class="row">
-            <q-card class="shadow-24" style="width: 400px; border-radius: 20px">
+            <q-card
+              class="shadow-24"
+              style="border-radius: 20px"
+              :style="{ width: $q.screen.lt.md ? '550px' : '400px', maxWidth: '100%' }"
+            >
               <q-card-section class="text-white" style="background-color: #004aad">
-                <div class="column items-center justify-center">
+                <div class="column items-center justify-center q-py-md">
                   <div>
                     <q-img
                       src="~assets/uermmc-white-logo.png"

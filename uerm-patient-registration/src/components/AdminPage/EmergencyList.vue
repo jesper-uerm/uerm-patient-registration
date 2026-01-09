@@ -29,7 +29,6 @@
           @keyup.enter="handleSearch"
           :disable="loading"
           class="bg-white"
-          @update:model-value="debouncedSearch"
         >
           <template v-slot:prepend>
             <q-icon name="search" class="text-grey-5" />
@@ -103,7 +102,7 @@
                 icon="print"
                 size="md"
                 class="hover-green"
-                @click="printPatient(props.row)"
+                @click="handlePrint(props.row)"
               >
                 <q-tooltip class="bg-green-8">Print Record</q-tooltip>
               </q-btn>
@@ -122,6 +121,28 @@
                       {{ props.row.firstName }} {{ props.row.lastName }}
                     </q-item-label>
                     <q-item-label caption>ID: {{ props.row.patient_id }}</q-item-label>
+                  </q-item-section>
+
+                  <q-item-section side>
+                    <q-btn flat round color="grey-7" icon="more_vert" @click.stop>
+                      <q-menu cover auto-close>
+                        <q-list style="min-width: 150px">
+                          <!-- <q-item clickable @click="viewPatient(props.row)">
+                            <q-item-section avatar class="q-mr-xs">
+                              <q-icon name="visibility" size="xs" />
+                            </q-item-section>
+                            <q-item-section>View</q-item-section>
+                          </q-item> -->
+
+                          <q-item clickable @click="handlePrint(props.row)">
+                            <q-item-section avatar>
+                              <q-icon name="print" size="xs" />
+                            </q-item-section>
+                            <q-item-section>Print</q-item-section>
+                          </q-item>
+                        </q-list>
+                      </q-menu>
+                    </q-btn>
                   </q-item-section>
                 </q-item>
               </q-card>
@@ -284,12 +305,6 @@
             color="blue-10"
             @click="updateFinanceStatement(selectedPatient)"
           />
-          <q-btn
-            unelevated
-            label="Print"
-            color="orange-10"
-            @click="handlePrint(selectedPatient)"
-          />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -300,15 +315,22 @@
 <script>
 import { date } from "quasar";
 import axios from "axios";
-import _ from "lodash";
 
 import FinancialStatement from "./FinancialStatement.vue";
+
+import { printEmergencyPatientInformation } from "src/composables/printEmergencyPatientInformation";
 
 export default {
   name: "EmergencyList",
   components: {
     FinancialStatement,
   },
+
+  setup() {
+    const { generatePatientPdf } = printEmergencyPatientInformation();
+    return { generatePatientPdf };
+  },
+
   data() {
     return {
       searchQuery: "",
@@ -412,17 +434,11 @@ export default {
       this.performSearch();
     },
 
-    debouncedSearch: _.debounce(function () {
-      if (this.searchQuery && this.searchQuery.length >= 2) {
-        this.performSearch();
-      }
-    }, 400),
-
     async performSearch() {
       this.loading = true;
       try {
         const response = await axios.get(
-          "http://10.107.0.2:3000/api/auth/searchErpatient",
+          "http://10.107.0.2:3000/api/auth/searchInpatient",
           {
             params: { query: this.searchQuery },
           }
@@ -454,6 +470,32 @@ export default {
     viewPatient(row) {
       this.selectedPatient = row;
       this.viewDialog = true;
+    },
+
+    async handlePrint(row) {
+      this.loading = true;
+
+      try {
+        const response = await axios.get(
+          `http://10.107.0.2:3000/api/auth/getPatient/${row.patient_id}`
+        );
+
+        const fullPatientData = {
+          ...response.data,
+          patientId: row.patient_id,
+        };
+
+        await this.generatePatientPdf(fullPatientData);
+      } catch (error) {
+        console.error("Print Error:", error);
+        this.$q.notify({
+          type: "negative",
+          message: "Failed to fetch full details for printing",
+          position: "top",
+        });
+      } finally {
+        this.loading = false;
+      }
     },
 
     formatDate(val) {

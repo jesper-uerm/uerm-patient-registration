@@ -128,6 +128,7 @@ export default {
           lastName: "",
           firstName: "",
           middleName: "",
+          suffix: "",
           age: "",
           gender: null,
           civilStatus: null,
@@ -135,6 +136,7 @@ export default {
           landline: "",
           mobile: "",
           email: "",
+          occupation: "",
           birthdate: "",
           birthplace: "",
           nationality: "",
@@ -161,6 +163,8 @@ export default {
           spouseName: "",
           spouseOccupation: "",
           spouseEmployerContact: "",
+          spouseEmployerName: "",
+          spouseEmployerAddress: "",
           contactPersonInpatient: "",
           contactPersonInpatientRelationship: null,
           contactPersonInpatientLandline: "",
@@ -169,7 +173,6 @@ export default {
           contactPersonInpatientAddress: "",
           contactPersonInpatientOccupation: "",
           contactPersonInpatientEmployerNumber: "",
-          contactPersonInpatientEmployerAddress: "",
         },
         patientConsent: {
           mop: "",
@@ -191,7 +194,6 @@ export default {
     async validateFinalStep() {
       if (this.$refs.patientConsent) {
         const isFormValid = await this.$refs.patientConsent.validateFinalStep();
-
         const isSignatureValid = !!this.formData.signature;
 
         if (!isFormValid) {
@@ -202,7 +204,13 @@ export default {
           });
           return false;
         }
+
         if (!isSignatureValid) {
+          this.$q.notify({
+            type: "warning",
+            position: "top",
+            message: "Patient Signature is required.",
+          });
           return false;
         }
         return true;

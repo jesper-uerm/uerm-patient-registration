@@ -123,6 +123,28 @@
                     </q-item-label>
                     <q-item-label caption>ID: {{ props.row.patient_id }}</q-item-label>
                   </q-item-section>
+
+                  <q-item-section side>
+                    <q-btn flat round color="grey-7" icon="more_vert" @click.stop>
+                      <q-menu cover auto-close>
+                        <q-list style="min-width: 150px">
+                          <!-- <q-item clickable @click="viewPatient(props.row)">
+                            <q-item-section avatar class="q-mr-xs">
+                              <q-icon name="visibility" size="xs" />
+                            </q-item-section>
+                            <q-item-section>View</q-item-section>
+                          </q-item> -->
+
+                          <q-item clickable @click="handlePrint(props.row)">
+                            <q-item-section avatar>
+                              <q-icon name="print" size="xs" />
+                            </q-item-section>
+                            <q-item-section>Print</q-item-section>
+                          </q-item>
+                        </q-list>
+                      </q-menu>
+                    </q-btn>
+                  </q-item-section>
                 </q-item>
               </q-card>
             </div>
@@ -280,17 +302,12 @@
         <q-separator />
 
         <q-card-actions align="center" class="q-pa-md bg-grey-1">
+          <!-- <q-btn flat label="Close" color="grey-8" v-close-popup /> -->
           <q-btn
             unelevated
             label="Update Financial Statement"
             color="blue-10"
             @click="updateFinanceStatement(selectedPatient)"
-          />
-          <q-btn
-            unelevated
-            label="Print"
-            color="orange-10"
-            @click="handlePrint(selectedPatient)"
           />
         </q-card-actions>
       </q-card>
@@ -302,7 +319,6 @@
 <script>
 import { date } from "quasar";
 import axios from "axios";
-import _ from "lodash";
 
 import FinancialStatement from "./FinancialStatement.vue";
 import { printOutpatientInformation } from "src/composables/printOutpatientInformation";
@@ -400,6 +416,7 @@ export default {
         this.loading = false;
       }
     },
+
     handleSearch() {
       if (this.searchQuery === "") {
         this.loadInitialData();
@@ -418,16 +435,12 @@ export default {
 
       this.performSearch();
     },
-    debouncedSearch: _.debounce(function () {
-      if (this.searchQuery && this.searchQuery.length >= 2) {
-        this.performSearch();
-      }
-    }, 400),
+
     async performSearch() {
       this.loading = true;
       try {
         const response = await axios.get(
-          "http://10.107.0.2:3000/api/auth/searchOutpatient",
+          "http://10.107.0.2:3000/api/auth/searchInpatient",
           {
             params: { query: this.searchQuery },
           }
@@ -446,7 +459,11 @@ export default {
         }
       } catch (error) {
         console.error(error);
-        this.$q.notify({ type: "negative", message: "Search Failed", position: "top" });
+        this.$q.notify({
+          type: "negative",
+          message: "Search Failed",
+          position: "top",
+        });
       } finally {
         this.loading = false;
       }

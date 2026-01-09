@@ -92,7 +92,7 @@ export function printInpatientInformation() {
       });
 
       const lastname = patient.lastName || 'Unknown';
-      const firstname = patient.firstName || 'Unknown';
+      const firstname = [patient.firstName, patient.suffix].filter(Boolean).join(' ') || 'Unknown';
       const middlename = patient.middleName || '-';
       const age = patient.age ? patient.age.toString() : '-';
       const sex = patient.gender || patient.sex || '-';
@@ -106,7 +106,14 @@ export function printInpatientInformation() {
       const birthplace = patient.birthplace || '-';
       const nationality = patient.nationality || '-';
 
-      const presentAddress = patient.addressPresent || '-';
+      const presentAddress = [
+            patient.addressStreet,
+            patient.addressBarangay,
+            patient.addressCity,
+            patient.addressProvince,
+            patient.addressRegion ]
+            .filter(part => part && part.trim() !== '')
+            .join(', ') || '-';
       const permanentAddress = patient.addressPermanent || '-';
 
       const spousename = patient.spouseName || '-';
@@ -137,12 +144,13 @@ export function printInpatientInformation() {
       const cpOccupation = patient.cpOccupation || '-';
       const cpEmail = patient.cpEmail || '-';
       const cpIncomeSource = patient.cpIncomeSource || '-';
-      const cpEmployerNameAddress = patient.cpEmployerNameAddress || '-';
+      const cpEmployerName = patient.cpEmployerName || '-';
+      const cpEmployerAddress = patient.cpEmployerAddress || '-';
       const cpEmployerNumber = patient.cpEmployerNumber || '-';
 
       const cpGrossIncome = patient.cpGrossIncome ? patient.cpGrossIncome.replace(/"/g, '') : '-';
-      const cpHomeOwnership = patient.cpHomeOwnership || '-';
-      const cpHomeStay = patient.cpHomeStay || '-';
+      const cpHomeOwnership = patient.cpHomeOwnership ? patient.cpHomeOwnership.replace(/"/g, '') : '-';
+      const cpHomeStay = patient.ptYearsStay ? patient.cpHomeStay.replace(/"/g, '') : '-';
       const cpCarOwnership = patient.cpCarOwnership || '-';
       const cpNumberOfCars = patient.cpNumberOfCars || '-';
 
@@ -360,8 +368,8 @@ export function printInpatientInformation() {
                 ],
                 [
                   { ...createCell('Source of Income', cpIncomeSource ), colSpan: 1 },
-                  { ...createCell('Employer/Business Name and Address', cpEmployerNameAddress ), colSpan: 2 },
-                  {},
+                  { ...createCell('Employer Name', cpEmployerName ), colSpan: 1 },
+                  { ...createCell('Employer Address', cpEmployerAddress ), colSpan: 1 },
                   { ...createCell('Employer/Business Contact No.', cpEmployerNumber), colSpan: 1 },
                 ],
                 [
@@ -412,7 +420,7 @@ export function printInpatientInformation() {
           {
             margin: [0, 10, 0, 0],
             columns: [
-              { width: '*', text: '' }, // Left Spacer
+              { width: '*', text: '' },
               {
                 width: 150,
                 stack: [
@@ -440,8 +448,7 @@ export function printInpatientInformation() {
                     margin: [0, 3, 0, 0]
                   }
                 ]
-              },
-              { width: '*', text: '' }
+              }
             ]
           }
         ],
