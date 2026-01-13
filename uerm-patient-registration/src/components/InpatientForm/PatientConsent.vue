@@ -1,130 +1,95 @@
 <template>
-  <q-form ref="patientConsent">
-    <div class="text-subtitle1 text-bold">Patient Consent</div>
+  <q-form ref="patientConsent" @submit.prevent="trySubmit">
+    <div class="text-subtitle2 text-bold q-mb-sm">Patient Consent</div>
     <div class="row q-col-gutter-md">
-      <!-- <div class="col-12 col-md-12">
-        <q-field
-          borderless
-          :model-value="localForm.mop"
-          :rules="[(val) => !!val || 'Please provide source of income.']"
-          dense
-          emit-value
-          map-options
-        >
-          <template v-slot:control>
-            <q-option-group
-              v-model="localForm.mop"
-              :options="mopOptions"
-              color="primary"
-              inline
-            />
-          </template>
-        </q-field>
-        <q-slide-transition>
-          <div v-if="localForm.mop === 'Others'" class="q-mt-sm">
-            <q-input
-              outlined
-              v-model="localForm.specificmop"
-              label="Please specify mode of payment *"
-              dense
-              :rules="[(val) => !!val || 'Please specify']"
-            />
-          </div>
-        </q-slide-transition>
+      <div class="col-12">
         <q-separator class="q-my-sm" />
+        <div class="text-subtitle2 q-mb-sm">
+          I / We received the following items in good order and condition:
+        </div>
+
+        <q-option-group
+          v-model="localForm.items"
+          :options="itemOptions"
+          type="checkbox"
+          inline
+          color="primary"
+        />
+        <q-separator class="q-my-md" />
       </div>
-      <div class="row col-12 q-col-gutter-md">
-        <div class="col-12 col-md-6">
-          <q-input
-            outlined
-            dense
-            v-model="localForm.creditCard"
-            type="number"
-            label="No. of Credit Cards owned"
-          />
-        </div>
-        <div class="col-12 col-md-6">
-          <q-input outlined dense v-model="localForm.bank" label="Bank Affliations" />
-        </div>
-      </div> -->
-      <div class="row col-12 q-col-gutter-md">
-        <div class="col-12 col-md-12">
-          <q-separator class="q-my-sm" />
-          <div class="text-subtitle1 text-bold">
-            I / We received the following items in good order and condition:
-          </div>
-          <div class="row q-gutter-lg q-pt-xs" emit-value map-options>
-            <q-checkbox
-              v-model="localForm.items"
-              val="UERM Brochure"
-              label="UERM Brochure"
-            />
-            <q-checkbox
-              v-model="localForm.items"
-              val="Admission Kit"
-              label="Admission Kit"
-            />
-            <q-checkbox
-              v-model="localForm.items"
-              val="Patient Satisfaction Survey"
-              label="Patient Satisfaction Survey"
-            />
-          </div>
-          <q-separator class="q-my-md" />
-        </div>
-      </div>
-      <div class="row col-12 q-col-gutter-md">
-        <div class="col-12 text-center">
-          <div class="text-subtitle2">CERTIFICATION</div>
-        </div>
+
+      <div class="col-12">
+        <div class="text-subtitle2 text-center q-mb-md">Data Privacy Consent</div>
+
         <div class="q-mx-xl">
-          <div class="text-body2 text-justify text-grey-9">
-            1. I / We hereby certify that the information provided herein is true and
-            correct to the best of my / our knowledge.
-          </div>
-          <div class="text-body2 q-mt-sm text-justify text-grey-9">
-            2. I / We further agree to bind myself / ourselves to the terms of the
-            attached memorandum of undertaking and terms and conditions for inpatients.
-          </div>
-          <div class="text-body2 q-mt-sm text-justify text-grey-9">
-            3. I / We authorize the Center and its authorized personnel to process all
-            information I / we provided, including collecting, recording, organizing,
-            storing, updating, modifying, retrieving, consolidating, sharing, or using the
-            information and/or documents provided in any other way necessary to pursue its
-            legitimate interests in relation to the admission. I understand that the
-            Center may keep my information for historical and statistical purposes.
-          </div>
-        </div>
-        <div class="col-12 items-center">
-          <SignaturePad v-model="localSignature" />
-          <div
-            v-if="hasError"
-            class="col-12 text-center text-negative text-caption q-mt-sm"
+          <q-scroll-area
+            :style="{ height: $q.screen.lt.sm ? '200px' : '250px' }"
+            style="border: 1px solid #e0e0e0; border-radius: 8px"
+            class="q-pa-md bg-grey-1 text-justify"
           >
-            <q-icon name="warning" class="q-mr-xs" /> Signature is required to proceed.
-          </div>
+            <p>
+              <strong>1. Data Collection & Usage:</strong>
+              In accordance with the
+              <strong>Data Privacy Act of 2012 (Republic Act No. 10173)</strong>, I hereby
+              authorize UERM Memorial Medical Center to collect, process, and store my
+              personal data for the purpose of medical records, hospital administration,
+              and insurance processing.
+            </p>
+            <p>
+              <strong>2. Confidentiality:</strong>
+              UERM ensures that all personal information is treated with strict
+              confidentiality and is accessed only by authorized personnel.
+            </p>
+            <p>
+              <strong>3. Third-Party Sharing:</strong>
+              My data may be shared with PhilHealth, HMOs, and other regulatory bodies as
+              required by law or for the facilitation of my medical benefits.
+            </p>
+            <p>
+              <strong>4. Data Retention:</strong>
+              My records will be retained in accordance with the hospital's retention
+              policy and applicable laws.
+            </p>
+            <p>
+              By signing below, I acknowledge that I have read and understood this Data
+              Privacy Consent form.
+            </p>
+          </q-scroll-area>
+        </div>
+      </div>
+      <div class="col-12 items-center">
+        <SignaturePad v-model="localSignature" />
+        <div
+          v-if="hasError"
+          class="col-12 text-center text-negative text-caption q-mt-sm"
+        >
+          <q-icon name="warning" class="q-mr-xs" />
+          Signature is required to proceed.
         </div>
       </div>
     </div>
-    <q-stepper-navigation class="text-center q-gutter-md">
+
+    <q-stepper-navigation class="row justify-center q-gutter-md q-mt-lg">
       <q-btn
-        style="width: 100%; height: 45px; max-width: 130px"
+        flat
         color="orange-10"
         icon="arrow_back"
         label="Back"
+        class="q-px-lg"
         @click="onBack"
       />
       <q-btn
-        style="width: 100%; height: 45px; max-width: 130px"
-        type="submit"
+        unelevated
         color="blue-10"
         icon-right="upload"
         label="Submit"
+        class="q-px-lg"
         @click="trySubmit"
       />
     </q-stepper-navigation>
   </q-form>
 </template>
+
 <script>
 import SignaturePad from "src/components/InpatientForm/SignaturePad.vue";
 
@@ -134,24 +99,39 @@ export default {
     SignaturePad,
   },
   props: {
-    form: Object,
-    mopOptions: Array,
+    form: {
+      type: Object,
+      required: true,
+      default: () => ({ items: [] }),
+    },
     initialSignature: {
       type: String,
       default: null,
     },
   },
-  emits: ["update:form", "next", "prev", "close", "submit", "update:signature"],
+  emits: ["update:form", "next", "prev", "submit", "update:signature"],
+
   data() {
     return {
-      localForm: {
-        ...this.form,
-      },
+      localForm: { ...this.form },
       localSignature: this.initialSignature || null,
       hasError: false,
+
+      itemOptions: [
+        { label: "UERM Brochure", value: "UERM Brochure" },
+        { label: "Admission Kit", value: "Admission Kit" },
+        { label: "Patient Satisfaction Survey", value: "Patient Satisfaction Survey" },
+      ],
     };
   },
+
   watch: {
+    form: {
+      handler(newVal) {
+        this.localForm = { ...newVal };
+      },
+      deep: true,
+    },
     localForm: {
       handler(val) {
         this.$emit("update:form", val);
@@ -165,10 +145,12 @@ export default {
       this.$emit("update:signature", val);
     },
   },
+
   methods: {
     async validateFinalStep() {
       const isFormValid = await this.$refs.patientConsent.validate();
-      const isSignatureValid = !!this.localSignature;
+      const isSignatureValid = !!this.localSignature && this.localSignature.length > 0;
+
       this.hasError = !isSignatureValid;
 
       return isFormValid && isSignatureValid;
@@ -183,7 +165,7 @@ export default {
         this.$q.notify({
           type: "warning",
           position: "top",
-          message: "Please fill all fields and provide a signature.",
+          message: "Please ensure the form is complete and signed.",
         });
       }
     },
@@ -194,4 +176,3 @@ export default {
   },
 };
 </script>
-<style scoped></style>

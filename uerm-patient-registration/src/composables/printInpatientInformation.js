@@ -92,8 +92,7 @@ export function printInpatientInformation() {
       });
 
       const lastname = patient.lastName || 'Unknown';
-      const firstname = [patient.firstName, patient.suffix].filter(Boolean).join(' ') || 'Unknown';
-      const middlename = patient.middleName || '-';
+      const firstname = [patient.firstName, patient.suffix].filter(Boolean).join(' ') || 'Unknown';      const middlename = patient.middleName || '-';
       const age = patient.age ? patient.age.toString() : '-';
       const sex = patient.gender || patient.sex || '-';
       const civilStatus = patient.civilStatus || '-';
@@ -448,7 +447,8 @@ export function printInpatientInformation() {
                     margin: [0, 3, 0, 0]
                   }
                 ]
-              }
+              },
+              { width: '*', text: '' }
             ]
           }
         ],

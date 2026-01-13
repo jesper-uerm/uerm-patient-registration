@@ -7,7 +7,7 @@
   >
     <q-card
       style="width: 1500px; max-width: 95vw; display: flex; flex-direction: column"
-      :style="{ height: $q.screen.lt.md ? '40vh' : '60vh' }"
+      :style="{ height: $q.screen.lt.md ? '55vh' : '60vh' }"
     >
       <q-card-section
         class="column text-center text-white q-py-md relative-position"

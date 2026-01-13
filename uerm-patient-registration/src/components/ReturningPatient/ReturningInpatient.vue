@@ -7,7 +7,7 @@
   >
     <q-card
       style="width: 1500px; max-width: 95vw; display: flex; flex-direction: column"
-      :style="{ height: $q.screen.lt.md ? '40vh' : '60vh' }"
+      :style="{ height: $q.screen.lt.md ? '55vh' : '80vh' }"
     >
       <q-card-section
         class="column text-center text-white q-py-md relative-position"
@@ -68,14 +68,14 @@
           bordered
           :rows="patientList"
           :columns="columns"
-          row-key="patient_id"
+          row-key="PATIENTNO"
           :loading="loading"
           separator="horizontal"
           virtual-scroll
           class="clean-table q-ma-md"
           :rows-per-page-options="[0]"
         >
-          <template v-slot:body-cell-patient_id="props">
+          <template v-slot:body-cell-PATIENTNO="props">
             <q-td :props="props">
               <span class="text-grey-8">#{{ props.value }}</span>
             </q-td>
@@ -131,7 +131,7 @@
                     <q-item-label class="text-weight-bold text-blue-10">
                       {{ props.row.lastName }}, {{ props.row.firstName }}
                     </q-item-label>
-                    <q-item-label caption>ID: {{ props.row.patient_id }}</q-item-label>
+                    <q-item-label caption>ID: {{ props.row.PATIENTNO }}</q-item-label>
                   </q-item-section>
                   <q-item-section side> </q-item-section>
                 </q-item>
@@ -188,7 +188,7 @@ export default {
         {
           name: "patient_id",
           label: "Patient ID",
-          field: "patient_id",
+          field: "PATIENTNO",
           align: "center",
           sortable: true,
           style: "font-weight: bold",
@@ -207,7 +207,7 @@ export default {
           align: "center",
           format: (val) => date.formatDate(val, "MMM D, YYYY"),
         },
-        { name: "age", label: "Age", field: "age", align: "center" },
+        { name: "age", label: "Age", field: "AGE", align: "center" },
         { name: "gender", label: "Sex", field: "gender", align: "center" },
         {
           name: "presentAddress",
@@ -284,21 +284,39 @@ export default {
     },
 
     async handlePrint(row) {
+      if (!row || !row.PATIENTNO) {
+        this.$q.notify({ type: "warning", message: "Invalid Patient ID selected" });
+        return;
+      }
+
       this.loading = true;
 
       try {
-        const response = await axios.get(
-          `http://10.107.0.2:3000/api/auth/getpatient/${row.patient_id}`
+        const checkResponse = await this.$axios.get(
+          `http://10.107.0.2:3000/api/auth/checkPatientExists/${row.PATIENTNO}`
+        );
+
+        if (!checkResponse.data.exists) {
+          this.$q.notify({
+            type: "warning",
+            message:
+              "This patient has not been validated yet (ID not found in PatientRegistration).",
+            position: "top",
+          });
+          return;
+        }
+
+        const response = await this.$axios.get(
+          `http://10.107.0.2:3000/api/auth/getPatient/${row.PATIENTNO}`
         );
 
         const fullPatientData = response.data;
-
         await this.generatePatientPdf(fullPatientData);
       } catch (error) {
         console.error("Print Error:", error);
         this.$q.notify({
           type: "negative",
-          message: "Failed to fetch full details for printing",
+          message: "An error occurred while processing.",
           position: "top",
         });
       } finally {

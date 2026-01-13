@@ -23,6 +23,14 @@ const routes = [
     ]
   },
 
+  {
+    path: '/consent',
+    // component: () => import('layouts/MainLayout.vue'),
+    children: [
+      { path: '', component: () => import('src/pages/PrivacyConsent.vue') }
+    ]
+  },
+
     {
     path: '/register',
     // component: () => import('layouts/MainLayout.vue'),

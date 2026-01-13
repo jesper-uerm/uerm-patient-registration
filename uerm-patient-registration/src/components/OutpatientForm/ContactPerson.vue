@@ -79,24 +79,46 @@
           <q-separator class="q-my-md" />
         </div>
       </div>
-      <div class="row col-12 q-col-gutter-md">
-        <div class="col-12 text-center">
-          <div class="text-subtitle2">CERTIFICATION</div>
-        </div>
+      <div class="col-12">
+        <div class="text-subtitle2 text-center q-mb-md">Data Privacy Consent</div>
+
         <div class="q-mx-xl">
-          <div class="text-body2 text-justify text-grey-9">
-            1. I / We hereby certify that the information provided herein is true and
-            correct to the best of my / our knowledge.
-          </div>
-          <div class="text-body2 q-mt-sm text-justify text-grey-9">
-            2. I / We further agree to bind myself / ourselves to the terms of the
-            attached memorandum of undertaking and terms and conditions for inpatients.
-          </div>
-          <div class="text-body2 q-mt-sm text-justify text-grey-9">
-            3. I / We authorize the Center and its authorized personnel to process all
-            information I / we provided.
-          </div>
+          <q-scroll-area
+            :style="{ height: $q.screen.lt.sm ? '200px' : '250px' }"
+            style="border: 1px solid #e0e0e0; border-radius: 8px"
+            class="q-pa-xl bg-grey-1 text-justify"
+          >
+            <p>
+              <strong>1. Data Collection & Usage:</strong>
+              In accordance with the
+              <strong>Data Privacy Act of 2012 (Republic Act No. 10173)</strong>, I hereby
+              authorize UERM Memorial Medical Center to collect, process, and store my
+              personal data for the purpose of medical records, hospital administration,
+              and insurance processing.
+            </p>
+            <p>
+              <strong>2. Confidentiality:</strong>
+              UERM ensures that all personal information is treated with strict
+              confidentiality and is accessed only by authorized personnel.
+            </p>
+            <p>
+              <strong>3. Third-Party Sharing:</strong>
+              My data may be shared with PhilHealth, HMOs, and other regulatory bodies as
+              required by law or for the facilitation of my medical benefits.
+            </p>
+            <p>
+              <strong>4. Data Retention:</strong>
+              My records will be retained in accordance with the hospital's retention
+              policy and applicable laws.
+            </p>
+            <p>
+              By signing below, I acknowledge that I have read and understood this Data
+              Privacy Consent form.
+            </p>
+          </q-scroll-area>
         </div>
+      </div>
+      <div class="row col-12 q-col-gutter-md">
         <div class="col-12 items-center">
           <SignaturePadOutpatient v-model="localSignature" />
           <div

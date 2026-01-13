@@ -292,7 +292,7 @@ export function printOutpatientInformation() {
                     margin: [0, 0, 0, 5]
                   },
                   {
-                    canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1 }]
+                    canvas: [{ type: 'line', x1: 0, y1: 0, x2: 150, y2: 0, lineWidth: 1 }]
                   },
                   {
                     text: 'SIGNATURE OVER PRINTED NAME',
@@ -304,11 +304,11 @@ export function printOutpatientInformation() {
                     text: `DATE: ${createdAt}`,
                     fontSize: 8,
                     alignment: 'center',
-                    margin: [0, 8, 0, 0]
+                    margin: [0, 3, 0, 0]
                   }
                 ]
               },
-                { width: '*', text: '' }
+              { width: '*', text: '' }
             ]
           }
         ],

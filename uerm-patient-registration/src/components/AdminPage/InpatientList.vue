@@ -84,41 +84,44 @@
 
           <template v-slot:body-cell-actions="props">
             <q-td :props="props" class="text-center">
-              <q-btn
-                flat
-                round
-                color="grey-7"
-                icon="visibility"
-                size="md"
-                class="q-mr-sm hover-blue"
-                @click="viewPatient(props.row)"
-              >
-                <q-tooltip class="bg-blue-10">View Profile</q-tooltip>
-              </q-btn>
-              <q-btn
-                flat
-                round
-                color="grey-7"
-                icon="visibility"
-                size="md"
-                class="q-mr-sm hover-blue"
-                @click="validatePatient(props.row)"
-              >
-                <q-tooltip class="bg-blue-10">Validate Information</q-tooltip>
-              </q-btn>
-              <q-btn
-                flat
-                round
-                color="grey-7"
-                icon="print"
-                size="md"
-                class="hover-green"
-                @click="handlePrint(props.row)"
-              >
-                <q-tooltip class="bg-green-8">Print Record</q-tooltip>
+              <q-btn flat round color="grey-7" icon="more_vert">
+                <q-menu cover auto-close>
+                  <q-list style="min-width: 150px">
+                    <q-item clickable @click="viewPatient(props.row)">
+                      <q-item-section avatar>
+                        <q-icon name="visibility" color="blue-10" />
+                      </q-item-section>
+                      <q-item-section>View Profile</q-item-section>
+                    </q-item>
+
+                    <q-item clickable @click="validatePatient(props.row)">
+                      <q-item-section avatar>
+                        <q-icon name="check" color="blue-10" />
+                      </q-item-section>
+                      <q-item-section>Validate</q-item-section>
+                    </q-item>
+
+                    <q-separator />
+
+                    <q-item clickable @click="handlePrint(props.row)">
+                      <q-item-section avatar>
+                        <q-icon name="print" color="green-8" />
+                      </q-item-section>
+                      <q-item-section>Print Record</q-item-section>
+                    </q-item>
+
+                    <q-item clickable @click="handlePrintConsent(props.row)">
+                      <q-item-section avatar>
+                        <q-icon name="download" color="green-8" />
+                      </q-item-section>
+                      <q-item-section>Download Consent</q-item-section>
+                    </q-item>
+                  </q-list>
+                </q-menu>
               </q-btn>
             </q-td>
           </template>
+
           <template v-slot:item="props">
             <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
               <q-card flat bordered class="q-pa-sm">
@@ -137,18 +140,25 @@
                     <q-btn flat round color="grey-7" icon="more_vert" @click.stop>
                       <q-menu cover auto-close>
                         <q-list style="min-width: 150px">
-                          <!-- <q-item clickable @click="viewPatient(props.row)">
-                            <q-item-section avatar class="q-mr-xs">
-                              <q-icon name="visibility" size="xs" />
+                          <q-item clickable @click="validatePatient(props.row)">
+                            <q-item-section avatar>
+                              <q-icon name="check" size="xs" />
                             </q-item-section>
-                            <q-item-section>View</q-item-section>
-                          </q-item> -->
+                            <q-item-section>Validate Information</q-item-section>
+                          </q-item>
+
+                          <q-item clickable @click="handlePrintConsent(props.row)">
+                            <q-item-section avatar>
+                              <q-icon name="download" size="xs" />
+                            </q-item-section>
+                            <q-item-section>Download Consent</q-item-section>
+                          </q-item>
 
                           <q-item clickable @click="handlePrint(props.row)">
                             <q-item-section avatar>
                               <q-icon name="print" size="xs" />
                             </q-item-section>
-                            <q-item-section>Print</q-item-section>
+                            <q-item-section>Print Information</q-item-section>
                           </q-item>
                         </q-list>
                       </q-menu>
@@ -179,6 +189,7 @@
         </q-table>
       </q-card-section>
     </q-card>
+
     <q-dialog v-model="viewDialog" transition-show="scale" transition-hide="scale">
       <q-card style="width: 900px; max-width: 80vw" class="rounded-borders">
         <q-card-section class="bg-gradient-primary text-white q-pa-md">
@@ -337,68 +348,72 @@
         <q-separator />
 
         <q-card-section class="q-pa-lg scroll" style="max-height: 70vh">
-          <div class="text-overline text-primary q-mb-sm">Parent Information</div>
+          <div class="text-caption text-weight-medium text-primary q-mb-sm">
+            Patient Information
+          </div>
           <div class="row q-col-gutter-md q-mb-lg">
             <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Full Name</div>
+              <div class="text-caption text-grey-8">Full Name</div>
               <div class="text-body2">
                 {{ formatFullName(selectedPatient) }}
               </div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Birthdate</div>
+              <div class="text-caption text-grey-8">Birthdate</div>
               <div class="text-body2">
                 {{ formatDate(selectedPatient.birthdate) }} ({{ selectedPatient.age }}
                 y/o)
               </div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Birthplace</div>
+              <div class="text-caption text-grey-8">Birthplace</div>
               <div class="text-body2">{{ selectedPatient.birthplace || "N/A" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Gender</div>
+              <div class="text-caption text-grey-8">Gender</div>
               <div class="text-body2">{{ selectedPatient.gender || "N/A" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Civil Status</div>
+              <div class="text-caption text-grey-8">Civil Status</div>
               <div class="text-body2">{{ selectedPatient.civilStatus || "N/A" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Occupation</div>
+              <div class="text-caption text-grey-8">Occupation</div>
               <div class="text-body2">{{ selectedPatient.occupation || "N/A" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Nationality</div>
+              <div class="text-caption text-grey-8">Nationality</div>
               <div class="text-body2">{{ selectedPatient.nationality || "N/A" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Religion</div>
+              <div class="text-caption text-grey-8">Religion</div>
               <div class="text-body2">{{ selectedPatient.religion || "N/A" }}</div>
             </div>
           </div>
 
           <q-separator dashed class="q-my-sm" />
-          <div class="text-overline text-primary q-mb-sm">Residential Address</div>
+          <div class="text-caption text-weight-medium text-primary q-mb-sm">
+            Residential Address
+          </div>
           <div class="row q-col-gutter-md q-mb-lg">
             <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Street / House No.</div>
+              <div class="text-caption text-grey-8">Street / House No.</div>
               <div class="text-body2">{{ selectedPatient.addressStreet || "N/A" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Barangay</div>
+              <div class="text-caption text-grey-8">Barangay</div>
               <div class="text-body2">{{ selectedPatient.addressBarangay || "N/A" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">City / Municipality</div>
+              <div class="text-caption text-grey-8">City / Municipality</div>
               <div class="text-body2">{{ selectedPatient.addressCity || "N/A" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Province</div>
+              <div class="text-caption text-grey-8">Province</div>
               <div class="text-body2">{{ selectedPatient.addressProvince || "N/A" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Region</div>
+              <div class="text-caption text-grey-8">Region</div>
               <div class="text-body2">{{ selectedPatient.addressRegion || "N/A" }}</div>
             </div>
           </div>
@@ -407,9 +422,11 @@
 
           <div class="row q-col-gutter-xl">
             <div class="col-12 col-md-6">
-              <div class="text-overline text-primary q-mb-sm">Emergency & Spouse</div>
+              <div class="text-caption text-weight-medium text-primary q-mb-sm">
+                Emergency & Spouse
+              </div>
 
-              <div style="border-left: 3px solid #1976d2; padding-left: 16px">
+              <div>
                 <div class="q-mb-lg">
                   <div class="text-subtitle2 text-weight-bold">
                     {{ selectedPatient.cpName || "N/A" }}
@@ -458,9 +475,11 @@
             </div>
 
             <div class="col-12 col-md-6">
-              <div class="text-overline text-primary q-mb-sm">Parent Information</div>
+              <div class="text-caption text-weight-medium text-primary q-mb-sm">
+                Parent Information
+              </div>
 
-              <div style="border-left: 3px solid #1976d2; padding-left: 16px">
+              <div>
                 <div class="q-mb-lg">
                   <div class="text-subtitle2 text-weight-bold">
                     {{ selectedPatient.ptFatherName || "N/A" }}
@@ -509,7 +528,9 @@
           </div>
 
           <q-separator dashed class="q-my-sm" />
-          <div class="text-overline text-primary q-mb-sm">Government Identification</div>
+          <div class="text-caption text-weight-medium text-primary q-mb-sm">
+            Government Identification
+          </div>
           <div class="row q-col-gutter-sm">
             <div class="col-6 col-sm-3">
               <q-input
@@ -573,6 +594,7 @@ import { date } from "quasar";
 import axios from "axios";
 
 import { printInpatientInformation } from "src/composables/printInpatientInformation";
+import { printPatientConsent } from "src/composables/printPatientConsent";
 
 import FinancialStatement from "./FinancialStatement.vue";
 
@@ -584,7 +606,9 @@ export default {
 
   setup() {
     const { generatePatientPdf } = printInpatientInformation();
-    return { generatePatientPdf };
+    const { generatePatientConsentPdf } = printPatientConsent();
+
+    return { generatePatientPdf, generatePatientConsentPdf };
   },
 
   data() {
@@ -727,7 +751,6 @@ export default {
     viewPatient(row) {
       this.selectedPatient = row;
       this.viewDialog = true;
-      this.viewPatientValidationDialog = true;
     },
 
     validatePatient(row) {
@@ -749,6 +772,32 @@ export default {
         };
 
         await this.generatePatientPdf(fullPatientData);
+      } catch (error) {
+        console.error("Print Error:", error);
+        this.$q.notify({
+          type: "negative",
+          message: "Failed to fetch full details for printing",
+          position: "top",
+        });
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async handlePrintConsent(row) {
+      this.loading = true;
+
+      try {
+        const response = await axios.get(
+          `http://10.107.0.2:3000/api/auth/getPatient/${row.patient_id}`
+        );
+
+        const fullPatientData = {
+          ...response.data,
+          patientId: row.patient_id,
+        };
+
+        await this.generatePatientConsentPdf(fullPatientData);
       } catch (error) {
         console.error("Print Error:", error);
         this.$q.notify({
@@ -798,42 +847,90 @@ export default {
         return;
       }
 
-      this.$q
-        .dialog({
-          title: "Confirm Validation",
-          html: true,
-          message: `Is the information valid?<br><br>Please confirm that all provided details for <b>${patient?.lastName} ${patient?.firstName}</b> are correct before sending.`,
-          cancel: true,
-          persistent: true,
-          cardStyle: { width: "600px", maxWidth: "90vw" },
-        })
-        .onOk(async () => {
-          this.loading = true;
-          try {
-            await this.$axios.post(
-              "http://10.107.0.2:3000/api/auth/sendDataInformation",
-              {
-                patient_id: patient.patient_id,
-              }
-            );
-
-            this.$q.notify({
-              type: "positive",
-              message: "Data sent to live server.",
-            });
-
-            this.viewPatientValidationDialog = false;
-            this.loadInitialData();
-          } catch (error) {
-            console.error(error);
-            this.$q.notify({
-              type: "negative",
-              message: "Failed to send data. Please check connection.",
-            });
-          } finally {
-            this.loading = false;
-          }
+      this.loading = true;
+      try {
+        await this.$axios.post("http://10.107.0.2:3000/api/auth/sendDataInformation", {
+          patient_id: patient.patient_id,
         });
+
+        this.$q.notify({
+          type: "positive",
+          message: "Data successfully sent to live server.",
+        });
+
+        this.viewPatientValidationDialog = false;
+        this.loadInitialData();
+      } catch (error) {
+        console.error(error);
+
+        if (error.response && error.response.status === 409) {
+          const {
+            existingPatientNo,
+            firstName,
+            lastName,
+            birthdate,
+          } = error.response.data;
+
+          const formattedBirthdate = new Date(birthdate).toLocaleDateString();
+
+          this.$q
+            .dialog({
+              title: '<span class="text-negative">Validation Failed</span>',
+              message: `
+                      <div class="q-mb-md">
+                        This patient already exists in the Hospital System.
+                      </div>
+
+                      <div style="background: #f5f5f5; padding: 10px; border-radius: 4px; border: 1px solid #e0e0e0;">
+                        <div class="row no-wrap q-mb-xs">
+                          <span class="text-grey-8" style="min-width: 100px;">Patient No:</span>
+                          <span class="text-weight-bold">${existingPatientNo}</span>
+                        </div>
+                        <div class="row no-wrap q-mb-xs">
+                          <span class="text-grey-8" style="min-width: 100px;">Name:</span>
+                          <span class="text-weight-bold">${firstName} ${lastName}</span>
+                        </div>
+                        <div class="row no-wrap">
+                          <span class="text-grey-8" style="min-width: 100px;">Birthday:</span>
+                          <span class="text-weight-bold">${formattedBirthdate}</span>
+                        </div>
+                      </div>
+
+                      <div class="q-mt-md">
+                        Do you want to update their record?
+                      </div>
+                    `,
+              html: true,
+              persistent: true,
+
+              ok: {
+                label: "Yes",
+                color: "primary",
+                flat: false,
+              },
+              cancel: {
+                label: "No",
+                color: "negative",
+                flat: true,
+              },
+            })
+            .onOk(() => {
+              console.log("User clicked Yes");
+            })
+            .onCancel(() => {
+              console.log("User clicked No");
+            });
+        } else {
+          this.$q.notify({
+            type: "negative",
+            message:
+              error.response?.data?.message ||
+              "Failed to send data. Please check connection.",
+          });
+        }
+      } finally {
+        this.loading = false;
+      }
     },
   },
 };
