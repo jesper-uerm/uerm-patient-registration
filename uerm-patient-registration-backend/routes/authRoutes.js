@@ -34,6 +34,8 @@ router.get('/getpatientSignature/:id', authController.getPatientSignature);
 
 router.post('/sendDataInformation', authController.sendDataInformation);
 
+router.get('/checkPatientExists/:id', authController.checkPatientExists);
+
 
 
 

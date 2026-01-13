@@ -308,57 +308,123 @@ exports.registerTriage = async (req, res) => {
     }
 };
 
+// exports.searchInpatient = async (req, res) => {
+//     try {
+//         const { query } = req.query; 
+
+//         if (!query) {
+//             return res.status(400).json({ message: "Search query required" });
+//         }
+
+//         const pool = await sql.connect();
+        
+//         const result = await pool.request()
+//             .input('search', sql.NVarChar, `%${query}%`)
+//             .input('exactId', sql.VarChar, query) 
+
+//             .query(`
+//                 SELECT TOP 1000 
+//                     PATIENTNO, 
+//                     (FIRSTNAME + ' ' + ISNULL(MIDDLENAME + ' ', '') + LASTNAME) AS fullName,                    
+//                     LASTNAME, 
+//                     FIRSTNAME, 
+//                     ISNULL(MIDDLENAME, '') as MIDDLENAME, 
+                    
+//                     FORMAT(DBIRTH, 'yyyy-MM-dd') as birthdate,
+                    
+//                     AGE,
+//                     SEX as gender, 
+//                     STATUS,
+//                     NATIONALITY,
+//                     CONCAT_WS(', ', BARANGAY, MUNICIPALITY) AS addressPresent,
+//                     DATE_ENCODED
+//                 FROM UERMMMC.dbo.PATIENTINFO
+//                 WHERE 
+//                     (
+//                     LASTNAME LIKE @search 
+//                     OR FIRSTNAME LIKE @search
+//                     OR PATIENTNO = @exactId
+//                     )
+//                 ORDER BY LASTNAME, FIRSTNAME
+//             `);
+
+//         res.status(200).json(result.recordset);
+
+//     } catch (err) {
+//         console.error("Search Error:", err);
+//         res.status(500).json({ message: "Database error" });
+//     }
+// };
+
 exports.searchInpatient = async (req, res) => {
     try {
         const { query } = req.query; 
 
-        if (!query) {
-            return res.status(400).json({ message: "Search query required" });
+        if (!query || query.trim() === '') {
+            return res.status(200).json([]); 
         }
 
-        const pool = await sql.connect();
+        const cleanQuery = query.trim();
         
-        const result = await pool.request()
-            .input('search', sql.NVarChar, `%${query}%`) 
-            .input('exactId', sql.Int, isNaN(query) ? 0 : parseInt(query)) 
-            .query(`
-                SELECT TOP 20 
-                    patient_id, 
+        const maxResults = 50;
 
-                    (firstName + ' ' + ISNULL(middleName + ' ', '') + lastName) AS fullName,                    
+        const pool = await sql.connect(); 
+        
+        const request = pool.request();
 
-                    lastName, 
-                    firstName, 
-                    ISNULL(middleName, '') as middleName, 
-                    
-                    FORMAT(birthdate, 'yyyy-MM-dd') as birthdate,
-                    
-                    age,
-                    sex as gender, 
-                    civilStatus,
-                    nationality,
-                    CONCAT_WS(', ', addressStreet, addressBarangay, addressCity, addressProvince, addressRegion) AS addressPresent,
-                    mobile,
-                    email,
-                    createdAt,
-                    patientType,
-                    physician
-                FROM PatientRegistration
-                WHERE 
-                    (
-                    lastName LIKE @search 
-                    OR firstName LIKE @search
-                    OR patient_id = @exactId
-                    )
-                    AND patientType = 'Inpatient'
-                ORDER BY lastName, firstName
-            `);
+    
+        const searchTerms = cleanQuery.split(' ').filter(term => term.length > 0);
+
+        let sqlQuery = `
+            SELECT TOP ${maxResults} 
+                PATIENTNO, 
+                (FIRSTNAME + ' ' + ISNULL(MIDDLENAME + ' ', '') + LASTNAME) AS fullName,                    
+                LASTNAME, 
+                FIRSTNAME, 
+                ISNULL(MIDDLENAME, '') as MIDDLENAME, 
+                FORMAT(DBIRTH, 'yyyy-MM-dd') as birthdate,
+                AGE,
+                SEX as gender, 
+                STATUS,
+                NATIONALITY,
+                CONCAT_WS(', ', BARANGAY, MUNICIPALITY) AS addressPresent,
+                DATE_ENCODED
+            FROM UERMMMC.dbo.PATIENTINFO
+            WHERE 1=1 
+        `;
+
+        
+        const isNumeric = /^\d+$/.test(cleanQuery);
+
+        if (isNumeric) {
+            sqlQuery += ` AND (PATIENTNO LIKE @exactId OR PATIENTNO LIKE @partialId) `;
+            request.input('exactId', sql.VarChar, cleanQuery);
+            request.input('partialId', sql.VarChar, `${cleanQuery}%`);
+        } else {
+    
+            searchTerms.forEach((term, index) => {
+                const paramName = `term${index}`;
+                request.input(paramName, sql.NVarChar, `%${term}%`);
+                
+                sqlQuery += ` 
+                    AND (
+                        LASTNAME LIKE @${paramName} 
+                        OR FIRSTNAME LIKE @${paramName}
+                        OR MIDDLENAME LIKE @${paramName}
+                    ) 
+                `;
+            });
+        }
+
+        sqlQuery += ` ORDER BY LASTNAME, FIRSTNAME`;
+
+        const result = await request.query(sqlQuery);
 
         res.status(200).json(result.recordset);
 
     } catch (err) {
         console.error("Search Error:", err);
-        res.status(500).json({ message: "Database error" });
+        res.status(500).json({ message: "Database error", error: err.message });
     }
 };
 
@@ -875,7 +941,7 @@ exports.getpatientById = async (req, res) => {
         const pool = await sql.connect();
         
         const result = await pool.request()
-            .input('patientId', sql.Int, id) 
+            .input('patientId', sql.BigInt, id) 
             .query(`
                 SELECT * FROM PatientRegistration 
                 WHERE patient_id = @patientId
@@ -896,19 +962,27 @@ exports.getpatientById = async (req, res) => {
 exports.getPatientSignature = async (req, res) => {
     try {
         const { id } = req.params;
+
+        if (!id) {
+            return res.status(400).json({ message: "Patient ID is required" });
+        }
+
         const pool = await sql.connect();
 
         const result = await pool.request()
-            .input('patientId', sql.Int, id)
-            .query(`SELECT eSignature FROM ptSignature WHERE patient_id = @patientId`);
+            .input('patientId', sql.VarChar, id) 
+            .query(`
+                SELECT eSignature 
+                FROM ptSignature 
+                WHERE patient_id = @patientId
+            `);
 
         if (result.recordset.length > 0 && result.recordset[0].eSignature) {
-            const binaryData = result.recordset[0].eSignature;
             
+            const binaryData = result.recordset[0].eSignature;
             const base64Signature = binaryData.toString('base64');
 
-
-            let mimeType = 'image/png'; // Default
+            let mimeType = 'image/png'; 
             if (base64Signature.startsWith('/9j/')) {
                 mimeType = 'image/jpeg';
             }
@@ -916,8 +990,10 @@ exports.getPatientSignature = async (req, res) => {
             const dataUrl = `data:${mimeType};base64,${base64Signature}`;
 
             return res.status(200).json({ signature: dataUrl });
-        } else {
-            return res.status(404).json({ message: "No signature found" });
+        } 
+        
+        else {
+            return res.status(404).json({ message: "No signature found for this Patient ID" });
         }
 
     } catch (err) {
@@ -925,6 +1001,230 @@ exports.getPatientSignature = async (req, res) => {
         res.status(500).json({ message: "Server Error" });
     }
 };
+
+// exports.sendDataInformation = async (req, res) => {
+//     const { patient_id } = req.body;
+
+//     if (!patient_id) {
+//         return res.status(400).json({ message: "Patient ID is required" });
+//     }
+
+//     const transaction = new sql.Transaction();
+    
+//     try {
+//         await transaction.begin();
+        
+//         const requestSource = new sql.Request(transaction);
+//         requestSource.input('id', sql.BigInt, patient_id);
+        
+//         const sourceData = await requestSource.query(`
+//             SELECT lastName, firstName, birthdate 
+//             FROM PatientRegistrationDB.dbo.PatientRegistration 
+//             WHERE patient_id = @id
+//         `);
+
+//         if (sourceData.recordset.length === 0) {
+//             await transaction.rollback();
+//             return res.status(404).json({ message: "Patient not found in Registration records." });
+//         }
+
+//         let { lastName, firstName, birthdate } = sourceData.recordset[0];
+        
+//         const cleanLastName = lastName ? lastName.trim().toUpperCase() : '';
+//         const cleanFirstName = firstName ? firstName.trim().toUpperCase() : '';
+//         const cleanBirthdate = birthdate ? new Date(birthdate).toLocaleDateString('en-CA') : null;
+
+//         const requestCheck = new sql.Request(transaction);
+
+//         requestCheck.input('id', sql.BigInt, patient_id);
+        
+//         requestCheck.input('checkLastName', sql.VarChar, cleanLastName);
+//         requestCheck.input('checkFirstName', sql.VarChar, cleanFirstName);
+//         requestCheck.input('checkBirthdate', sql.VarChar, cleanBirthdate); 
+
+//         const duplicateCheck = await requestCheck.query(`
+//             SELECT TOP 1 PATIENTNO 
+//             FROM UERMMMC.dbo.PATIENTINFO 
+//             WHERE 
+//                 UPPER(LTRIM(RTRIM(LASTNAME))) = @checkLastName 
+//                 AND UPPER(LTRIM(RTRIM(FIRSTNAME))) = @checkFirstName 
+//                 AND CAST(DBIRTH as DATE) = CAST(@checkBirthdate as DATE)
+//         `);
+
+//         if (duplicateCheck.recordset.length > 0) {
+//             await transaction.rollback();
+//             return res.status(409).json({ 
+//                 message: "Transfer Aborted: Patient with this Name and Birthday already exists.",
+//                 existingPatientNo: duplicateCheck.recordset[0].PATIENTNO
+//             });
+//         }
+
+//         await requestCheck.query(`
+//             INSERT INTO UERMMMC.dbo.PATIENTINFO (
+//                 PATIENTNO,
+//                 LASTNAME, FIRSTNAME, MIDDLENAME, SUFFIX,
+//                 BARANGAY, MUNICIPALITY,
+//                 SEX, STATUS,
+//                 RELIGION, NATIONALITY,
+//                 DBIRTH, AGE, BPLACE,
+//                 OCCUPATION,
+//                 INCASE, RELATIONSHIP, INCASEPHONENO, INCASEADD,
+//                 PHONENOS, MOBILENO,
+//                 NAMEOFSPOUSE, SPOUSEOCCUPATION,
+//                 EMPLOYER, EMPLOYERADD, EMPLOYERTELNO,
+//                 FATHER, FADDRESS, FTEL,
+//                 MOTHER, MADDRESS, MTEL,
+//                 SSSNO, TINNO, SCIDNO, UDF_PHILHEALTHNO
+//             )
+//             SELECT 
+//                 patient_id,
+//                 lastName, firstName, middleName, suffix,
+//                 addressBarangay, addressCity,
+//                 sex, civilStatus,
+//                 religion, nationality,
+//                 birthdate, age, birthplace,
+//                 occupation,
+//                 cpName, cpRelationship, 
+//                 ISNULL(cpLandline, cpMobile), 
+//                 cpAddress,
+//                 cpLandline, cpMobile,
+//                 spouseName, spouseOccupation,
+//                 spouseEmployerName, spouseEmployerAddress, spouseEmployerContact, 
+//                 ptFatherName, ptFatherAddress, ptFatherContact,
+//                 ptMotherMaidenNam, ptMotherAddress, ptMotherContact,
+//                 sssgsisId, tinID, seniorId, philhealthId
+//             FROM PatientRegistrationDB.dbo.PatientRegistration
+//             WHERE patient_id = @id
+//         `);
+
+//         await transaction.commit();
+//         res.status(200).json({ message: "Patient data successfully transferred to Finance Statement!" });
+
+//     } catch (err) {
+//         if (transaction) await transaction.rollback();
+//         console.error("Transfer Error:", err);
+//         res.status(500).json({ message: "Transfer failed", error: err.message });
+//     }
+// };
+
+// exports.sendDataInformation = async (req, res) => {
+//     const { patient_id } = req.body;
+
+//     if (!patient_id) {
+//         return res.status(400).json({ message: "Patient ID is required" });
+//     }
+
+//     const transaction = new sql.Transaction();
+
+//     try {
+//         await transaction.begin();
+
+//         const requestSource = new sql.Request(transaction);
+//         requestSource.input('id', sql.BigInt, patient_id);
+
+//         const sourceData = await requestSource.query(`
+//             SELECT lastName, firstName, birthdate 
+//             FROM PatientRegistrationDB.dbo.PatientRegistration 
+//             WHERE patient_id = @id
+//         `);
+
+//         if (sourceData.recordset.length === 0) {
+//             await transaction.rollback();
+//             return res.status(404).json({ message: "Patient not found in Registration records." });
+//         }
+
+//         const { lastName, firstName, birthdate } = sourceData.recordset[0];
+
+//         const requestCheck = new sql.Request(transaction);
+
+//         requestCheck.input('checkID', sql.BigInt, patient_id);
+//         requestCheck.input('checkLastName', sql.VarChar, lastName.trim()); 
+//         requestCheck.input('checkFirstName', sql.VarChar, firstName.trim());
+//         requestCheck.input('checkBirthdate', sql.Date, birthdate); 
+
+//         const duplicateCheck = await requestCheck.query(`
+//             SELECT PATIENTNO, LASTNAME, FIRSTNAME
+//             FROM UERMMMC.dbo.PATIENTINFO 
+//             WHERE 
+//                 -- Check 1: Does this specific ID already exist?
+//                 PATIENTNO = @checkID
+//                 OR 
+//                 -- Check 2: Does a person with this Name + Birthday exist?
+//                 (
+//                     UPPER(LTRIM(RTRIM(LASTNAME))) = UPPER(@checkLastName) 
+//                     AND UPPER(LTRIM(RTRIM(FIRSTNAME))) = UPPER(@checkFirstName) 
+//                     AND CAST(DBIRTH as DATE) = @checkBirthdate
+//                 )
+//         `);
+
+//         if (duplicateCheck.recordset.length > 0) {
+//             const match = duplicateCheck.recordset[0];
+//             await transaction.rollback();
+            
+//             if (match.PATIENTNO == patient_id) {
+//                 return res.status(409).json({ 
+//                     message: "Transfer Aborted: This Patient ID already exists in the destination.",
+//                     existingPatientNo: match.PATIENTNO
+//                 });
+//             } else {
+//                 return res.status(409).json({ 
+//                     message: "Transfer Aborted: Patient with this Name and Birthday already exists (under a different ID).",
+//                     existingPatientNo: match.PATIENTNO
+//                 });
+//             }
+//         }
+//         const requestInsert = new sql.Request(transaction);
+//         requestInsert.input('id', sql.BigInt, patient_id);
+
+//         await requestInsert.query(`
+//             INSERT INTO UERMMMC.dbo.PATIENTINFO (
+//                 PATIENTNO,
+//                 LASTNAME, FIRSTNAME, MIDDLENAME, SUFFIX,
+//                 BARANGAY, MUNICIPALITY,
+//                 SEX, STATUS,
+//                 RELIGION, NATIONALITY,
+//                 DBIRTH, AGE, BPLACE,
+//                 OCCUPATION,
+//                 INCASE, RELATIONSHIP, INCASEPHONENO, INCASEADD,
+//                 PHONENOS, MOBILENO,
+//                 NAMEOFSPOUSE, SPOUSEOCCUPATION,
+//                 EMPLOYER, EMPLOYERADD, EMPLOYERTELNO,
+//                 FATHER, FADDRESS, FTEL,
+//                 MOTHER, MADDRESS, MTEL,
+//                 SSSNO, TINNO, SCIDNO, UDF_PHILHEALTHNO
+//             )
+//             SELECT 
+//                 patient_id,
+//                 lastName, firstName, middleName, suffix,
+//                 addressBarangay, addressCity,
+//                 sex, civilStatus,
+//                 religion, nationality,
+//                 birthdate, age, birthplace,
+//                 occupation,
+//                 cpName, cpRelationship, 
+//                 ISNULL(cpLandline, cpMobile), 
+//                 cpAddress,
+//                 cpLandline, cpMobile,
+//                 spouseName, spouseOccupation,
+//                 spouseEmployerName, spouseEmployerAddress, spouseEmployerContact, 
+//                 ptFatherName, ptFatherAddress, ptFatherContact,
+//                 ptMotherMaidenNam, ptMotherAddress, ptMotherContact,
+//                 sssgsisId, tinID, seniorId, philhealthId
+//             FROM PatientRegistrationDB.dbo.PatientRegistration
+//             WHERE patient_id = @id
+//         `);
+
+//         await transaction.commit();
+//         res.status(200).json({ message: "Patient data successfully transferred to Finance Statement!" });
+
+//     } catch (err) {
+//         if (transaction._aborted === false) { 
+//             await transaction.rollback();
+//         }
+//         console.error("Transfer Error:", err);
+//         res.status(500).json({ message: "Transfer failed", error: err.message });
+//     }
+// };
 
 exports.sendDataInformation = async (req, res) => {
     const { patient_id } = req.body;
@@ -934,14 +1234,59 @@ exports.sendDataInformation = async (req, res) => {
     }
 
     const transaction = new sql.Transaction();
-    
+
     try {
         await transaction.begin();
-        const request = new sql.Request(transaction);
-        request.input('id', sql.Int, patient_id);
 
-    
-        await request.query(`
+        const requestSource = new sql.Request(transaction);
+        requestSource.input('id', sql.BigInt, patient_id);
+
+        const sourceData = await requestSource.query(`
+            SELECT lastName, firstName, birthdate 
+            FROM PatientRegistrationDB.dbo.PatientRegistration 
+            WHERE patient_id = @id
+        `);
+
+        if (sourceData.recordset.length === 0) {
+            await transaction.rollback();
+            return res.status(404).json({ message: "Patient not found in Registration records." });
+        }
+
+        const { lastName, firstName, birthdate } = sourceData.recordset[0];
+
+        const requestCheck = new sql.Request(transaction);
+
+        requestCheck.input('checkLastName', sql.VarChar, lastName.trim()); 
+        requestCheck.input('checkFirstName', sql.VarChar, firstName.trim());
+        requestCheck.input('checkBirthdate', sql.Date, birthdate); 
+
+        const duplicateCheck = await requestCheck.query(`
+            SELECT PATIENTNO, LASTNAME, FIRSTNAME, DBIRTH
+            FROM UERMMMC.dbo.PATIENTINFO 
+            WHERE 
+            UPPER(LTRIM(RTRIM(LASTNAME))) = UPPER(@checkLastName) 
+            AND UPPER(LTRIM(RTRIM(FIRSTNAME))) = UPPER(@checkFirstName) 
+            AND CAST(DBIRTH as DATE) = @checkBirthdate
+        `);
+
+        if (duplicateCheck.recordset.length > 0) {
+            const match = duplicateCheck.recordset[0];
+            await transaction.rollback();
+
+            return res.status(409).json({ 
+                message: "Transfer Aborted: Patient with this Name and Birthday already exists.",
+                existingPatientNo: match.PATIENTNO,
+                
+                firstName: match.FIRSTNAME, 
+                lastName: match.LASTNAME,
+                birthdate: match.DBIRTH
+            });
+        }
+
+        const requestInsert = new sql.Request(transaction);
+        requestInsert.input('id', sql.BigInt, patient_id);
+
+        await requestInsert.query(`
             INSERT INTO UERMMMC.dbo.PATIENTINFO (
                 PATIENTNO,
                 LASTNAME, FIRSTNAME, MIDDLENAME, SUFFIX,
@@ -983,8 +1328,40 @@ exports.sendDataInformation = async (req, res) => {
         res.status(200).json({ message: "Patient data successfully transferred to Finance Statement!" });
 
     } catch (err) {
-        if (transaction) await transaction.rollback();
+        if (transaction._aborted === false) { 
+            await transaction.rollback();
+        }
         console.error("Transfer Error:", err);
+        
+        if (err.number === 2627) {
+            return res.status(409).json({ message: "Transfer Failed: Patient ID already exists in destination." });
+        }
+
         res.status(500).json({ message: "Transfer failed", error: err.message });
+    }
+};
+
+exports.checkPatientExists = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        if (!id) {
+            return res.status(400).json({ error: "No ID provided" });
+        }
+
+        const pool = await sql.connect();
+        
+        const result = await pool.request()
+            .input('patientId', sql.VarChar, id) 
+            .query(`SELECT TOP 1 1 FROM PatientRegistrationDB.dbo.PatientRegistration WHERE patient_id = @patientId`);
+
+
+        const exists = result.recordset.length > 0;
+
+        return res.status(200).json({ exists: exists }); 
+
+    } catch (error) {
+        console.error("Check Error:", error);
+        return res.status(500).json({ error: 'Check failed' });
     }
 };
