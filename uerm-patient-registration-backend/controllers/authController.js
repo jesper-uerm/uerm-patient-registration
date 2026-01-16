@@ -132,7 +132,7 @@ exports.register = async (req, res) => {
                 addressStreet, addressBarangay, addressCity, addressProvince, addressRegion,
                 
                 addressPermanent, ptFatherName, ptFatherAddress, 
-                ptFatherContact, ptMotherMaidenNam, ptMotherAddress, ptMotherContact, 
+                ptFatherContact, ptMotherMaidenName, ptMotherAddress, ptMotherContact, 
                 ptSourceIncome, specificSourceOfIncome, seniorId, philhealthId,
                 sssgsisId, tinID, others, ptGrossIncome, ptHomeOwnership,
                 ptYearsStay, spouseName, spouseOccupation,spouseEmployerContact, ptCars, 
@@ -147,7 +147,6 @@ exports.register = async (req, res) => {
                 @lastName, @firstName, @middleName, @suffix, @birthdate, @age, @birthplace, @gender,
                 @civilStatus, @religion, @nationality, @landline, @mobile, @email, @occupation,
                 
-                -- CHANGED HERE: Use the new variables
                 @street, @barangay, @city, @province, @region,
                 
                 @permanentAddress, @fathersName, @fathersAddress,
@@ -216,6 +215,12 @@ exports.registerTriage = async (req, res) => {
     const toInt = (val) => (val === "" || val === undefined || val === null) ? null : parseInt(val, 10);
     const toStr = (val) => (val === "" || val === undefined) ? null : val;
 
+    const processBase64 = (base64String) => {
+        if (!base64String) return null;
+        const cleanString = base64String.replace(/^data:image\/\w+;base64,/, "");
+        return Buffer.from(cleanString, 'base64');
+    };
+
     const t = {
         lastName: toStr(body.lastNameTriage),
         firstName: toStr(body.firstNameTriage),
@@ -225,15 +230,12 @@ exports.registerTriage = async (req, res) => {
         age: toInt(body.ageTriage),
         gender: toStr(body.genderTriage),
         patientType: toStr(body.patientType),
-
         chiefComplaint: toStr(body.chiefComplaintTriage),
-        
         temp: toDecimal(body.tempTriage),     
         heartRate: toInt(body.heartRateTriage),
         oxygen: toDecimal(body.oxygenTriage),
         respiRate: toInt(body.respiRateTriage),
         painScore: toInt(body.painScoreTriage),
-
         bp: toStr(body.bpTriage),
         avpu: toStr(body.avpuTriage),
         contagious: toStr(body.contagiousTriage),
@@ -241,14 +243,24 @@ exports.registerTriage = async (req, res) => {
         cpd: toStr(body.cpdTriage),
         level: toStr(body.levelTriage),
         remarks: toStr(body.remarksTriage),
-        checkforPresense: toStr(body.checkforPresense),
+        checkforPresense: Array.isArray(body.checkforPresense) 
+            ? body.checkforPresense.join(', ') 
+            : toStr(body.checkforPresense),
         personnel: toStr(body.personnelTriage),
-        dateAccomplished: body.dateTriage ? new Date(body.dateTriage) : new Date()
+        dateAccomplished: body.dateTriage ? new Date(body.dateTriage) : new Date(),
+        
+        personnelSignature: body.personnelSignature,
+        patientSignature: body.patientSignature
     };
 
+    let transaction; 
+
     try {
-        const pool = await sql.connect();
-        const request = new sql.Request(pool); 
+        const pool = await sql.connect(); 
+        transaction = new sql.Transaction(pool);
+        await transaction.begin();
+
+        const request = new sql.Request(transaction); 
 
         request
             .input('lastName', sql.NVarChar, t.lastName)
@@ -259,16 +271,13 @@ exports.registerTriage = async (req, res) => {
             .input('age', sql.Int, t.age)
             .input('gender', sql.NVarChar, t.gender)
             .input('patientType', sql.NVarChar, t.patientType)
-
             .input('chiefComplaint', sql.NVarChar, t.chiefComplaint)
-            
             .input('temp', sql.Decimal(5, 2), t.temp)     
             .input('heartRate', sql.Int, t.heartRate)
             .input('oxygen', sql.Decimal(5, 2), t.oxygen)  
             .input('bp', sql.NVarChar, t.bp)
             .input('respiRate', sql.Int, t.respiRate)     
             .input('painScore', sql.Int, t.painScore)
-            
             .input('avpu', sql.NVarChar, t.avpu)
             .input('contagious', sql.NVarChar, t.contagious)
             .input('isolation', sql.NVarChar, t.isolation)
@@ -296,65 +305,178 @@ exports.registerTriage = async (req, res) => {
         `);
 
         const patientId = result.recordset[0]?.patient_id;
-        
+
+        if (!patientId) throw new Error("Failed to generate Patient ID");
+
+        if (t.personnelSignature) {
+            const psRequest = new sql.Request(transaction); 
+            const personnelBuffer = processBase64(t.personnelSignature);
+            
+            psRequest.input('pId', sql.Int, patientId);
+            psRequest.input('signData', sql.VarBinary(sql.MAX), personnelBuffer);
+            psRequest.input('personnel', sql.NVarChar, t.personnel); 
+
+            await psRequest.query(`
+                INSERT INTO tpSignature (patient_id, eSignature, personnel_name) 
+                VALUES (@pId, @signData, @personnel)                        
+            `);
+        }
+
+        if (t.patientSignature) {
+            const ptRequest = new sql.Request(transaction); 
+            const patientBuffer = processBase64(t.patientSignature);
+
+            ptRequest.input('pId', sql.Int, patientId);
+            ptRequest.input('signData', sql.VarBinary(sql.MAX), patientBuffer);
+
+            await ptRequest.query(`
+                INSERT INTO ptSignature (patient_id, eSignature, createdAt) 
+                VALUES (@pId, @signData, GETDATE())                        
+            `);
+        }
+
+        await transaction.commit(); 
+
         res.status(201).json({ 
-            message: "Triage assessment saved successfully", 
+            message: "Triage assessment, personnel signature, and patient signature saved successfully", 
             triageId: patientId 
         });
 
     } catch (err) {
+        if (transaction) {
+            try { await transaction.rollback(); } catch (e) { console.error("Rollback failed", e); }
+        }
         console.error("Triage Save Error:", err);
         res.status(500).json({ message: "Server error: " + err.message });
     }
 };
 
-// exports.searchInpatient = async (req, res) => {
-//     try {
-//         const { query } = req.query; 
+exports.updateTriage = async (req, res) => {
+    if (!req.body) {
+        return res.status(400).json({ message: "Invalid Request: Body is missing." });
+    }
+    
+    const body = req.body;
 
-//         if (!query) {
-//             return res.status(400).json({ message: "Search query required" });
-//         }
+    if (!body.patientId) {
+        return res.status(400).json({ message: "Update failed: Patient ID is missing." });
+    }
 
-//         const pool = await sql.connect();
+    const toDecimal = (val) => (val === "" || val === undefined || val === null) ? null : parseFloat(val);
+    const toInt = (val) => (val === "" || val === undefined || val === null) ? null : parseInt(val, 10);
+    const toStr = (val) => (val === "" || val === undefined) ? null : val;
+
+    const t = {
+        patientId: toInt(body.patientId),
+        lastName: toStr(body.lastNameTriage),
+        firstName: toStr(body.firstNameTriage),
+        middleName: toStr(body.middleNameTriage),
+        suffix: toStr(body.suffixTriage),
+        birthdate: body.birthdateTriage ? new Date(body.birthdateTriage) : null,
+        age: toInt(body.ageTriage),
+        gender: toStr(body.genderTriage),
+        patientType: toStr(body.patientType),
+
+        chiefComplaint: toStr(body.chiefComplaintTriage),
         
-//         const result = await pool.request()
-//             .input('search', sql.NVarChar, `%${query}%`)
-//             .input('exactId', sql.VarChar, query) 
+        temp: toDecimal(body.tempTriage),     
+        heartRate: toInt(body.heartRateTriage),
+        oxygen: toDecimal(body.oxygenTriage),
+        respiRate: toInt(body.respiRateTriage),
+        painScore: toInt(body.painScoreTriage),
 
-//             .query(`
-//                 SELECT TOP 1000 
-//                     PATIENTNO, 
-//                     (FIRSTNAME + ' ' + ISNULL(MIDDLENAME + ' ', '') + LASTNAME) AS fullName,                    
-//                     LASTNAME, 
-//                     FIRSTNAME, 
-//                     ISNULL(MIDDLENAME, '') as MIDDLENAME, 
-                    
-//                     FORMAT(DBIRTH, 'yyyy-MM-dd') as birthdate,
-                    
-//                     AGE,
-//                     SEX as gender, 
-//                     STATUS,
-//                     NATIONALITY,
-//                     CONCAT_WS(', ', BARANGAY, MUNICIPALITY) AS addressPresent,
-//                     DATE_ENCODED
-//                 FROM UERMMMC.dbo.PATIENTINFO
-//                 WHERE 
-//                     (
-//                     LASTNAME LIKE @search 
-//                     OR FIRSTNAME LIKE @search
-//                     OR PATIENTNO = @exactId
-//                     )
-//                 ORDER BY LASTNAME, FIRSTNAME
-//             `);
+        bp: toStr(body.bpTriage),
+        avpu: toStr(body.avpuTriage),
+        contagious: toStr(body.contagiousTriage),
+        isolation: toStr(body.isolationPrecautionTriage),
+        cpd: toStr(body.cpdTriage),
+        level: toStr(body.levelTriage),
+        remarks: toStr(body.remarksTriage),
+        
+        checkforPresense: Array.isArray(body.checkforPresense) 
+            ? body.checkforPresense.join(', ') 
+            : toStr(body.checkforPresense),
+            
+        personnel: toStr(body.personnelTriage),
+        dateAccomplished: body.dateTriage ? new Date(body.dateTriage) : new Date()
+    };
 
-//         res.status(200).json(result.recordset);
+    try {
+        const pool = await sql.connect();
+        const request = new sql.Request(pool); 
 
-//     } catch (err) {
-//         console.error("Search Error:", err);
-//         res.status(500).json({ message: "Database error" });
-//     }
-// };
+        request
+            .input('patientId', sql.BigInt, t.patientId) 
+            .input('lastName', sql.NVarChar, t.lastName)
+            .input('firstName', sql.NVarChar, t.firstName)
+            .input('middleName', sql.NVarChar, t.middleName)
+            .input('suffix', sql.NVarChar, t.suffix)
+            .input('birthdate', sql.Date, t.birthdate)
+            .input('age', sql.Int, t.age)
+            .input('gender', sql.NVarChar, t.gender)
+            .input('chiefComplaint', sql.NVarChar, t.chiefComplaint)
+            
+            .input('temp', sql.Decimal(5, 2), t.temp)     
+            .input('heartRate', sql.Int, t.heartRate)
+            .input('oxygen', sql.Decimal(5, 2), t.oxygen)  
+            .input('bp', sql.NVarChar, t.bp)
+            .input('respiRate', sql.Int, t.respiRate)     
+            .input('painScore', sql.Int, t.painScore)
+            
+            .input('avpu', sql.NVarChar, t.avpu)
+            .input('contagious', sql.NVarChar, t.contagious)
+            .input('isolation', sql.NVarChar, t.isolation)
+            .input('cpd', sql.NVarChar, t.cpd)
+            .input('level', sql.NVarChar, t.level)
+            .input('remarks', sql.NVarChar, t.remarks)
+            .input('checkforPresense', sql.NVarChar, t.checkforPresense)
+            .input('personnel', sql.NVarChar, t.personnel)
+            .input('dateAccomplished', sql.Date, t.dateAccomplished);
+
+        const result = await request.query(`
+            UPDATE PatientRegistration
+            SET 
+                lastName = @lastName,
+                firstName = @firstName,
+                middleName = @middleName,
+                suffix = @suffix,
+                birthdate = @birthdate,
+                age = @age,
+                sex = @gender,
+                chiefComplaint = @chiefComplaint,
+                temp = @temp,
+                heartrate = @heartRate,
+                oxygen = @oxygen,
+                bp = @bp,
+                respirate = @respiRate,
+                painScore = @painScore,
+                avpu = @avpu,
+                contagious = @contagious,
+                isolation = @isolation,
+                cpd = @cpd,
+                level = @level,
+                remarks = @remarks,
+                symptoms = @checkforPresense,
+                personnel = @personnel,
+                dateAccomplished = @dateAccomplished,
+                patientType = 'Emergency'
+            WHERE patient_no = @patientId
+        `);
+
+        if (result.rowsAffected[0] === 0) {
+            return res.status(404).json({ message: "Patient ID not found or no changes made." });
+        }
+        
+        res.status(200).json({ 
+            message: "Triage assessment updated successfully",
+            id: t.patientId
+        });
+
+    } catch (err) {
+        console.error("Triage Update Error:", err);
+        res.status(500).json({ message: "Server error: " + err.message });
+    }
+};
 
 exports.searchInpatient = async (req, res) => {
     try {
@@ -378,10 +500,11 @@ exports.searchInpatient = async (req, res) => {
         let sqlQuery = `
             SELECT TOP ${maxResults} 
                 PATIENTNO, 
-                (FIRSTNAME + ' ' + ISNULL(MIDDLENAME + ' ', '') + LASTNAME) AS fullName,                    
+                (FIRSTNAME + ' ' + ISNULL(MIDDLENAME + ' ', '') + LASTNAME + ISNULL(' ' + SUFFIX, '')) AS fullName,                
                 LASTNAME, 
                 FIRSTNAME, 
                 ISNULL(MIDDLENAME, '') as MIDDLENAME, 
+                SUFFIX,
                 FORMAT(DBIRTH, 'yyyy-MM-dd') as birthdate,
                 AGE,
                 SEX as gender, 
@@ -411,6 +534,7 @@ exports.searchInpatient = async (req, res) => {
                         LASTNAME LIKE @${paramName} 
                         OR FIRSTNAME LIKE @${paramName}
                         OR MIDDLENAME LIKE @${paramName}
+                        OR SUFFIX LIKE @${paramName}
                     ) 
                 `;
             });
@@ -480,7 +604,7 @@ exports.fetchInpatient = async (req, res) => {
                     ptFatherName,
                     ptFatherAddress,
                     ptFatherContact,
-                    ptMotherMaidenNam,
+                    ptMotherMaidenName,
                     ptMotherAddress,
                     ptMotherContact,
 
@@ -667,7 +791,7 @@ exports.fetchOutpatient = async (req, res) => {
                     ptFatherName,
                     ptFatherAddress,
                     ptFatherContact,
-                    ptMotherMaidenNam,
+                    ptMotherMaidenName,
                     ptMotherAddress,
                     ptMotherContact,
 
@@ -805,7 +929,7 @@ exports.fetchLineChartData = async (req, res) => {
             console.error("Trend Error:", err);
             res.status(500).send("Server Error");
         }
-    };
+};
 
 exports.fetchAllPatient = async (req, res) => {
     try {
@@ -930,51 +1054,21 @@ exports.updatePatientDetails = async (req, res) => {
     }
 };
 
-exports.getpatientById = async (req, res) => {
-    try {
-        const { id } = req.params; 
-
-        if (!id) {
-            return res.status(400).json({ message: "Patient ID is required" });
-        }
-
-        const pool = await sql.connect();
-        
-        const result = await pool.request()
-            .input('patientId', sql.BigInt, id) 
-            .query(`
-                SELECT * FROM PatientRegistration 
-                WHERE patient_id = @patientId
-            `);
-
-        if (result.recordset.length === 0) {
-            return res.status(404).json({ message: "Patient not found" });
-        }
-
-        res.status(200).json(result.recordset[0]);
-
-    } catch (err) {
-        console.error("Fetch One Error:", err);
-        res.status(500).json({ message: "Database error" });
-    }
-};
-
 exports.getPatientSignature = async (req, res) => {
     try {
-        const { id } = req.params;
-
+        const { id } = req.params; 
         if (!id) {
-            return res.status(400).json({ message: "Patient ID is required" });
+            return res.status(400).json({ message: "Patient No is required" });
         }
 
         const pool = await sql.connect();
 
         const result = await pool.request()
-            .input('patientId', sql.VarChar, id) 
+            .input('pId', sql.BigInt, id) 
             .query(`
                 SELECT eSignature 
                 FROM ptSignature 
-                WHERE patient_id = @patientId
+                WHERE patient_id = @pId
             `);
 
         if (result.recordset.length > 0 && result.recordset[0].eSignature) {
@@ -993,7 +1087,7 @@ exports.getPatientSignature = async (req, res) => {
         } 
         
         else {
-            return res.status(404).json({ message: "No signature found for this Patient ID" });
+            return res.status(404).json({ message: "No signature found for this Patient No" });
         }
 
     } catch (err) {
@@ -1002,229 +1096,47 @@ exports.getPatientSignature = async (req, res) => {
     }
 };
 
-// exports.sendDataInformation = async (req, res) => {
-//     const { patient_id } = req.body;
+exports.getTpersonnelSignature = async (req, res) => {
+    try {
+        const { id } = req.params; 
+        if (!id) {
+            return res.status(400).json({ message: "Patient No is required" });
+        }
 
-//     if (!patient_id) {
-//         return res.status(400).json({ message: "Patient ID is required" });
-//     }
+        const pool = await sql.connect();
 
-//     const transaction = new sql.Transaction();
-    
-//     try {
-//         await transaction.begin();
-        
-//         const requestSource = new sql.Request(transaction);
-//         requestSource.input('id', sql.BigInt, patient_id);
-        
-//         const sourceData = await requestSource.query(`
-//             SELECT lastName, firstName, birthdate 
-//             FROM PatientRegistrationDB.dbo.PatientRegistration 
-//             WHERE patient_id = @id
-//         `);
+        const result = await pool.request()
+            .input('PATIENTNO', sql.BigInt, id) 
+            .query(`
+                SELECT eSignature 
+                FROM tpSignature 
+                WHERE patient_no = @PATIENTNO
+            `);
 
-//         if (sourceData.recordset.length === 0) {
-//             await transaction.rollback();
-//             return res.status(404).json({ message: "Patient not found in Registration records." });
-//         }
-
-//         let { lastName, firstName, birthdate } = sourceData.recordset[0];
-        
-//         const cleanLastName = lastName ? lastName.trim().toUpperCase() : '';
-//         const cleanFirstName = firstName ? firstName.trim().toUpperCase() : '';
-//         const cleanBirthdate = birthdate ? new Date(birthdate).toLocaleDateString('en-CA') : null;
-
-//         const requestCheck = new sql.Request(transaction);
-
-//         requestCheck.input('id', sql.BigInt, patient_id);
-        
-//         requestCheck.input('checkLastName', sql.VarChar, cleanLastName);
-//         requestCheck.input('checkFirstName', sql.VarChar, cleanFirstName);
-//         requestCheck.input('checkBirthdate', sql.VarChar, cleanBirthdate); 
-
-//         const duplicateCheck = await requestCheck.query(`
-//             SELECT TOP 1 PATIENTNO 
-//             FROM UERMMMC.dbo.PATIENTINFO 
-//             WHERE 
-//                 UPPER(LTRIM(RTRIM(LASTNAME))) = @checkLastName 
-//                 AND UPPER(LTRIM(RTRIM(FIRSTNAME))) = @checkFirstName 
-//                 AND CAST(DBIRTH as DATE) = CAST(@checkBirthdate as DATE)
-//         `);
-
-//         if (duplicateCheck.recordset.length > 0) {
-//             await transaction.rollback();
-//             return res.status(409).json({ 
-//                 message: "Transfer Aborted: Patient with this Name and Birthday already exists.",
-//                 existingPatientNo: duplicateCheck.recordset[0].PATIENTNO
-//             });
-//         }
-
-//         await requestCheck.query(`
-//             INSERT INTO UERMMMC.dbo.PATIENTINFO (
-//                 PATIENTNO,
-//                 LASTNAME, FIRSTNAME, MIDDLENAME, SUFFIX,
-//                 BARANGAY, MUNICIPALITY,
-//                 SEX, STATUS,
-//                 RELIGION, NATIONALITY,
-//                 DBIRTH, AGE, BPLACE,
-//                 OCCUPATION,
-//                 INCASE, RELATIONSHIP, INCASEPHONENO, INCASEADD,
-//                 PHONENOS, MOBILENO,
-//                 NAMEOFSPOUSE, SPOUSEOCCUPATION,
-//                 EMPLOYER, EMPLOYERADD, EMPLOYERTELNO,
-//                 FATHER, FADDRESS, FTEL,
-//                 MOTHER, MADDRESS, MTEL,
-//                 SSSNO, TINNO, SCIDNO, UDF_PHILHEALTHNO
-//             )
-//             SELECT 
-//                 patient_id,
-//                 lastName, firstName, middleName, suffix,
-//                 addressBarangay, addressCity,
-//                 sex, civilStatus,
-//                 religion, nationality,
-//                 birthdate, age, birthplace,
-//                 occupation,
-//                 cpName, cpRelationship, 
-//                 ISNULL(cpLandline, cpMobile), 
-//                 cpAddress,
-//                 cpLandline, cpMobile,
-//                 spouseName, spouseOccupation,
-//                 spouseEmployerName, spouseEmployerAddress, spouseEmployerContact, 
-//                 ptFatherName, ptFatherAddress, ptFatherContact,
-//                 ptMotherMaidenNam, ptMotherAddress, ptMotherContact,
-//                 sssgsisId, tinID, seniorId, philhealthId
-//             FROM PatientRegistrationDB.dbo.PatientRegistration
-//             WHERE patient_id = @id
-//         `);
-
-//         await transaction.commit();
-//         res.status(200).json({ message: "Patient data successfully transferred to Finance Statement!" });
-
-//     } catch (err) {
-//         if (transaction) await transaction.rollback();
-//         console.error("Transfer Error:", err);
-//         res.status(500).json({ message: "Transfer failed", error: err.message });
-//     }
-// };
-
-// exports.sendDataInformation = async (req, res) => {
-//     const { patient_id } = req.body;
-
-//     if (!patient_id) {
-//         return res.status(400).json({ message: "Patient ID is required" });
-//     }
-
-//     const transaction = new sql.Transaction();
-
-//     try {
-//         await transaction.begin();
-
-//         const requestSource = new sql.Request(transaction);
-//         requestSource.input('id', sql.BigInt, patient_id);
-
-//         const sourceData = await requestSource.query(`
-//             SELECT lastName, firstName, birthdate 
-//             FROM PatientRegistrationDB.dbo.PatientRegistration 
-//             WHERE patient_id = @id
-//         `);
-
-//         if (sourceData.recordset.length === 0) {
-//             await transaction.rollback();
-//             return res.status(404).json({ message: "Patient not found in Registration records." });
-//         }
-
-//         const { lastName, firstName, birthdate } = sourceData.recordset[0];
-
-//         const requestCheck = new sql.Request(transaction);
-
-//         requestCheck.input('checkID', sql.BigInt, patient_id);
-//         requestCheck.input('checkLastName', sql.VarChar, lastName.trim()); 
-//         requestCheck.input('checkFirstName', sql.VarChar, firstName.trim());
-//         requestCheck.input('checkBirthdate', sql.Date, birthdate); 
-
-//         const duplicateCheck = await requestCheck.query(`
-//             SELECT PATIENTNO, LASTNAME, FIRSTNAME
-//             FROM UERMMMC.dbo.PATIENTINFO 
-//             WHERE 
-//                 -- Check 1: Does this specific ID already exist?
-//                 PATIENTNO = @checkID
-//                 OR 
-//                 -- Check 2: Does a person with this Name + Birthday exist?
-//                 (
-//                     UPPER(LTRIM(RTRIM(LASTNAME))) = UPPER(@checkLastName) 
-//                     AND UPPER(LTRIM(RTRIM(FIRSTNAME))) = UPPER(@checkFirstName) 
-//                     AND CAST(DBIRTH as DATE) = @checkBirthdate
-//                 )
-//         `);
-
-//         if (duplicateCheck.recordset.length > 0) {
-//             const match = duplicateCheck.recordset[0];
-//             await transaction.rollback();
+        if (result.recordset.length > 0 && result.recordset[0].eSignature) {
             
-//             if (match.PATIENTNO == patient_id) {
-//                 return res.status(409).json({ 
-//                     message: "Transfer Aborted: This Patient ID already exists in the destination.",
-//                     existingPatientNo: match.PATIENTNO
-//                 });
-//             } else {
-//                 return res.status(409).json({ 
-//                     message: "Transfer Aborted: Patient with this Name and Birthday already exists (under a different ID).",
-//                     existingPatientNo: match.PATIENTNO
-//                 });
-//             }
-//         }
-//         const requestInsert = new sql.Request(transaction);
-//         requestInsert.input('id', sql.BigInt, patient_id);
+            const binaryData = result.recordset[0].eSignature;
+            const base64Signature = binaryData.toString('base64');
 
-//         await requestInsert.query(`
-//             INSERT INTO UERMMMC.dbo.PATIENTINFO (
-//                 PATIENTNO,
-//                 LASTNAME, FIRSTNAME, MIDDLENAME, SUFFIX,
-//                 BARANGAY, MUNICIPALITY,
-//                 SEX, STATUS,
-//                 RELIGION, NATIONALITY,
-//                 DBIRTH, AGE, BPLACE,
-//                 OCCUPATION,
-//                 INCASE, RELATIONSHIP, INCASEPHONENO, INCASEADD,
-//                 PHONENOS, MOBILENO,
-//                 NAMEOFSPOUSE, SPOUSEOCCUPATION,
-//                 EMPLOYER, EMPLOYERADD, EMPLOYERTELNO,
-//                 FATHER, FADDRESS, FTEL,
-//                 MOTHER, MADDRESS, MTEL,
-//                 SSSNO, TINNO, SCIDNO, UDF_PHILHEALTHNO
-//             )
-//             SELECT 
-//                 patient_id,
-//                 lastName, firstName, middleName, suffix,
-//                 addressBarangay, addressCity,
-//                 sex, civilStatus,
-//                 religion, nationality,
-//                 birthdate, age, birthplace,
-//                 occupation,
-//                 cpName, cpRelationship, 
-//                 ISNULL(cpLandline, cpMobile), 
-//                 cpAddress,
-//                 cpLandline, cpMobile,
-//                 spouseName, spouseOccupation,
-//                 spouseEmployerName, spouseEmployerAddress, spouseEmployerContact, 
-//                 ptFatherName, ptFatherAddress, ptFatherContact,
-//                 ptMotherMaidenNam, ptMotherAddress, ptMotherContact,
-//                 sssgsisId, tinID, seniorId, philhealthId
-//             FROM PatientRegistrationDB.dbo.PatientRegistration
-//             WHERE patient_id = @id
-//         `);
+            let mimeType = 'image/png'; 
+            if (base64Signature.startsWith('/9j/')) {
+                mimeType = 'image/jpeg';
+            }
 
-//         await transaction.commit();
-//         res.status(200).json({ message: "Patient data successfully transferred to Finance Statement!" });
+            const dataUrl = `data:${mimeType};base64,${base64Signature}`;
 
-//     } catch (err) {
-//         if (transaction._aborted === false) { 
-//             await transaction.rollback();
-//         }
-//         console.error("Transfer Error:", err);
-//         res.status(500).json({ message: "Transfer failed", error: err.message });
-//     }
-// };
+            return res.status(200).json({ signature: dataUrl });
+        } 
+        
+        else {
+            return res.status(404).json({ message: "No signature found for this Patient No" });
+        }
+
+    } catch (err) {
+        console.error("Signature Fetch Error:", err);
+        res.status(500).json({ message: "Server Error" });
+    }
+};
 
 exports.sendDataInformation = async (req, res) => {
     const { patient_id } = req.body;
@@ -1255,7 +1167,6 @@ exports.sendDataInformation = async (req, res) => {
         const { lastName, firstName, birthdate } = sourceData.recordset[0];
 
         const requestCheck = new sql.Request(transaction);
-
         requestCheck.input('checkLastName', sql.VarChar, lastName.trim()); 
         requestCheck.input('checkFirstName', sql.VarChar, firstName.trim());
         requestCheck.input('checkBirthdate', sql.Date, birthdate); 
@@ -1276,19 +1187,22 @@ exports.sendDataInformation = async (req, res) => {
             return res.status(409).json({ 
                 message: "Transfer Aborted: Patient with this Name and Birthday already exists.",
                 existingPatientNo: match.PATIENTNO,
-                
                 firstName: match.FIRSTNAME, 
                 lastName: match.LASTNAME,
                 birthdate: match.DBIRTH
             });
         }
 
-        const requestInsert = new sql.Request(transaction);
-        requestInsert.input('id', sql.BigInt, patient_id);
+        const requestTransfer = new sql.Request(transaction);
+        requestTransfer.input('id', sql.BigInt, patient_id);
 
-        await requestInsert.query(`
+        await requestTransfer.query(`
+            DECLARE @generatedPATIENTNO BIGINT;
+            SELECT @generatedPATIENTNO = ISNULL(MAX(CAST(PATIENTNO AS BIGINT)), 0) + 1 
+            FROM UERMMMC.dbo.PATIENTINFO;
+
             INSERT INTO UERMMMC.dbo.PATIENTINFO (
-                PATIENTNO,
+                PATIENTNO, 
                 LASTNAME, FIRSTNAME, MIDDLENAME, SUFFIX,
                 BARANGAY, MUNICIPALITY,
                 SEX, STATUS,
@@ -1304,7 +1218,7 @@ exports.sendDataInformation = async (req, res) => {
                 SSSNO, TINNO, SCIDNO, UDF_PHILHEALTHNO
             )
             SELECT 
-                patient_id,
+                @generatedPATIENTNO, 
                 lastName, firstName, middleName, suffix,
                 addressBarangay, addressCity,
                 sex, civilStatus,
@@ -1318,14 +1232,26 @@ exports.sendDataInformation = async (req, res) => {
                 spouseName, spouseOccupation,
                 spouseEmployerName, spouseEmployerAddress, spouseEmployerContact, 
                 ptFatherName, ptFatherAddress, ptFatherContact,
-                ptMotherMaidenNam, ptMotherAddress, ptMotherContact,
+                ptMotherMaidenName, ptMotherAddress, ptMotherContact,
                 sssgsisId, tinID, seniorId, philhealthId
             FROM PatientRegistrationDB.dbo.PatientRegistration
-            WHERE patient_id = @id
+            WHERE patient_id = @id;
+
+            UPDATE PatientRegistrationDB.dbo.PatientRegistration
+            SET patient_no = @generatedPATIENTNO
+            WHERE patient_id = @id;
+
+            UPDATE PatientRegistrationDB.dbo.ptSignature
+            SET patient_no = @generatedPATIENTNO
+            WHERE patient_id = @id;
+
+            UPDATE PatientRegistrationDB.dbo.tpSignature
+            SET patient_no = @generatedPATIENTNO
+            WHERE patient_id = @id;
         `);
 
         await transaction.commit();
-        res.status(200).json({ message: "Patient data successfully transferred to Finance Statement!" });
+        res.status(200).json({ message: "Patient data successfully transferred and linked!" });
 
     } catch (err) {
         if (transaction._aborted === false) { 
@@ -1344,24 +1270,112 @@ exports.sendDataInformation = async (req, res) => {
 exports.checkPatientExists = async (req, res) => {
     try {
         const { id } = req.params;
-        
-        if (!id) {
-            return res.status(400).json({ error: "No ID provided" });
+
+        if (!id || id === 'undefined' || id === 'null') {
+            return res.status(400).json({ error: "Invalid Patient ID provided" });
+        }
+        const pool = await sql.connect();
+
+        let result = await pool.request()
+            .input('patientId', sql.BigInt, id) 
+            .query(`SELECT TOP 1 1 FROM PatientRegistration WHERE patient_no = @patientId`);
+
+        if (result.recordset.length > 0) {
+            return res.status(200).json({ exists: true, source: 'REGISTRATION' });
         }
 
-        const pool = await sql.connect();
-        
-        const result = await pool.request()
-            .input('patientId', sql.VarChar, id) 
-            .query(`SELECT TOP 1 1 FROM PatientRegistrationDB.dbo.PatientRegistration WHERE patient_id = @patientId`);
+        result = await pool.request()
+            .input('patientId', sql.BigInt, id) 
+            .query(`SELECT TOP 1 1 FROM UERMMMC.dbo.PATIENTINFO WHERE PATIENTNO = @patientId`);
 
+        if (result.recordset.length > 0) {
+            return res.status(200).json({ exists: true, source: 'INFO' });
+        }
 
-        const exists = result.recordset.length > 0;
-
-        return res.status(200).json({ exists: exists }); 
+        return res.status(200).json({ exists: false, source: null });
 
     } catch (error) {
         console.error("Check Error:", error);
         return res.status(500).json({ error: 'Check failed' });
+    }
+};
+
+exports.getpatientById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!id || id === 'undefined' || id === 'null') {
+            return res.status(400).json({ message: "Invalid Patient ID provided" });
+        }
+        
+        const pool = await sql.connect();
+        
+        let result = await pool.request()
+            .input('patientId', sql.BigInt, id)
+            .query(`
+            SELECT 
+                    PR.*, 
+                    PS.eSignature, 
+                    TPS.eSignature AS personnelSignature, 
+                    TPS.personnel_name                    
+                FROM PatientRegistration PR
+                LEFT JOIN PatientRegistrationDB.dbo.ptSignature PS 
+                    ON (PR.patient_id = PS.patient_id OR (PR.patient_no IS NOT NULL AND PR.patient_no = PS.patient_no))
+                    
+                LEFT JOIN PatientRegistrationDB.dbo.tpSignature TPS 
+                    ON (PR.patient_id = TPS.patient_id OR (PR.patient_no IS NOT NULL AND PR.patient_no = TPS.patient_no))
+
+                WHERE 
+                    PR.patient_id = @patientId OR PR.patient_no = @patientId
+            `);
+
+        if (result.recordset.length > 0) {
+            return res.status(200).json(result.recordset[0]);
+        }
+
+        result = await pool.request()
+            .input('patientId', sql.BigInt, id)
+            .query(`
+                SELECT 
+                    PATIENTINFO.*, 
+                    RELIGION.DESCRIPTION AS RELIGION_NAME,
+                    OCCUPATION.DESCRIPTION AS OCCUPATION_NAME,
+                    NATIONALITY.DESCRIPTION AS NATIONALITY_NAME,
+                    MUNICIPALITY.DESCRIPTION AS MUNICIPALITY_NAME,
+                    BARANGAYS.DESCRIPTION AS BARANGAY_NAME,
+                    PS.eSignature 
+                FROM 
+                    UERMMMC.dbo.PATIENTINFO 
+                LEFT JOIN 
+                    UERMMMC.dbo.RELIGION ON PATIENTINFO.RELIGION = RELIGION.CODE 
+                LEFT JOIN 
+                    UERMMMC.dbo.OCCUPATION ON PATIENTINFO.OCCUPATION = OCCUPATION.CODE
+                LEFT JOIN 
+                    UERMMMC.dbo.NATIONALITY ON PATIENTINFO.NATIONALITY = NATIONALITY.CODE
+                LEFT JOIN 
+                    UERMMMC.dbo.MUNICIPALITY ON PATIENTINFO.MUNICIPALITY = MUNICIPALITY.CODE
+                LEFT JOIN 
+                    UERMMMC.dbo.BARANGAYS ON PATIENTINFO.BARANGAY = BARANGAYS.CODE
+                
+                LEFT JOIN 
+                    PatientRegistrationDB.dbo.ptSignature PS 
+                ON 
+                    PATIENTINFO.PATIENTNO = PS.patient_no
+
+                WHERE 
+                    PATIENTINFO.PATIENTNO = @patientId
+            `);
+
+        if (result.recordset.length > 0) {
+            return res.status(200).json(result.recordset[0]);
+        }
+
+        return res.status(404).json({ message: "Patient not found" });
+
+    } catch (err) {
+        console.error("Fetch Error:", err);
+        if (err.number === 8115) {
+            return res.status(400).json({ message: "Error: The Patient ID is too large." });
+        }
+        res.status(500).json({ message: "Database error" });
     }
 };

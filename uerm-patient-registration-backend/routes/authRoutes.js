@@ -6,6 +6,8 @@ router.post('/register', authController.register);
 
 router.post('/registerTriage', authController.registerTriage);
 
+router.put('/updateTriage', authController.updateTriage);
+
 router.get('/searchInpatient', authController.searchInpatient);
 
 router.get('/searchOutpatient', authController.searchOutpatient);
@@ -22,8 +24,6 @@ router.get('/fetchPieChartData', authController.fetchPieChartData);
 
 router.get('/fetchLineChartData', authController.fetchLineChartData);
 
-router.get('/fetchLineChartData', authController.fetchLineChartData);
-
 router.get('/fetchAllPatient', authController.fetchAllPatient);
 
 router.put('/updatePatientDetails', authController.updatePatientDetails);
@@ -32,11 +32,10 @@ router.get('/getPatient/:id', authController.getpatientById);
 
 router.get('/getpatientSignature/:id', authController.getPatientSignature);
 
+router.get('/getTpersonnelSignature/:id', authController.getTpersonnelSignature);
+
 router.post('/sendDataInformation', authController.sendDataInformation);
 
 router.get('/checkPatientExists/:id', authController.checkPatientExists);
-
-
-
 
 module.exports = router;
