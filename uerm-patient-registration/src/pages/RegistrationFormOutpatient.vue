@@ -57,6 +57,17 @@
               @update:form="(val) => (formData.contactPersonOutpatient = val)"
               @update:signature="(val) => (formData.signatureOutpatient = val)"
               @prev="step = 1"
+              @next="step = 3"
+            />
+          </q-step>
+          <q-step :name="3" title="Patient Consent" icon="security" :done="step > 3">
+            <patient-consent
+              ref="patientConsentRef"
+              :form="formData.patientConsent"
+              :relationshipOptions="relationshipOptions"
+              @update:form="(val) => (formData.patientConsent = val)"
+              @update:signature="(val) => (formData.signatureOutpatient = val)"
+              @prev="step = 3"
               @submit="onSubmit"
             />
           </q-step>
@@ -69,6 +80,8 @@
 <script>
 import ContactPerson from "../components/OutpatientForm/ContactPerson.vue";
 import PatientDetailsOutpatient from "../components/OutpatientForm/PatientDetailsOutpatient.vue";
+import PatientConsent from "../components/OutpatientForm/PatientConsent.vue";
+
 import axios from "axios";
 
 export default {
@@ -76,6 +89,7 @@ export default {
   components: {
     PatientDetailsOutpatient,
     ContactPerson,
+    PatientConsent,
   },
   data() {
     return {
@@ -132,8 +146,8 @@ export default {
     },
 
     async validateFinalStep() {
-      if (this.$refs.contactPersonRef) {
-        const isContactValid = await this.$refs.contactPersonRef.validate();
+      if (this.$refs.patientConsentRef) {
+        const isContactValid = await this.$refs.patientConsentRef.validate();
 
         const isSignatureValid = !!this.formData.signatureOutpatient;
 

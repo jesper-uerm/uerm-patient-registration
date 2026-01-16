@@ -41,6 +41,19 @@
             <patient-details-triage
               :form="formData.personalInfoTriage"
               @update:form="(val) => (formData.personalInfoTriage = val)"
+              :initial-signature="formData.personnelSignature"
+              @update:signature="(val) => (formData.personnelSignature = val)"
+              @next="step = 2"
+            />
+          </q-step>
+
+          <q-step :name="2" title="Patient Consent" icon="verified_user" :done="step > 2">
+            <patient-consent-triage
+              :form="formData.PatientConsentTriageForm"
+              @update:form="(val) => (formData.PatientConsentTriageForm = val)"
+              :initial-signature="formData.patientSignature"
+              @update:signature="(val) => (formData.patientSignature = val)"
+              @prev="step = 1"
               @submit="onSubmit"
             />
           </q-step>
@@ -52,17 +65,20 @@
 
 <script>
 import PatientDetailsTriage from "../components/TriageAssessment/PatientDetailsTriage.vue";
+import PatientConsentTriage from "../components/TriageAssessment/PatientConsentTriage.vue";
 import axios from "axios";
 
 export default {
-  name: "RegistrationFormOutpatient",
+  name: "TraigeAssessment",
   components: {
     PatientDetailsTriage,
+    PatientConsentTriage,
   },
   data() {
     return {
       TriageAssessmentFormDialog: false,
       step: 1,
+      submitting: false,
 
       formData: {
         personalInfoTriage: {
@@ -73,7 +89,6 @@ export default {
           birthdateTriage: "",
           ageTriage: "",
           genderTriage: "",
-
           chiefComplaintTriage: "",
           tempTriage: "",
           heartRateTriage: "",
@@ -87,10 +102,15 @@ export default {
           cpdTriage: "",
           levelTriage: "",
           remarksTriage: "",
-          checkforPresense: "",
+          checkforPresense: [],
           personnelTriage: "",
           dateTriage: "",
         },
+        // Consent Data (if any fields exist besides signature)
+        PatientConsentTriageForm: {},
+
+        personnelSignature: null,
+        patientSignature: null,
       },
     };
   },
@@ -102,6 +122,25 @@ export default {
     },
 
     async onSubmit() {
+      if (!this.formData.personnelSignature) {
+        this.$q.notify({
+          type: "warning",
+          message: "Step 1 incomplete: Personnel Signature is required.",
+          position: "top",
+        });
+        this.step = 1;
+        return;
+      }
+
+      if (!this.formData.patientSignature) {
+        this.$q.notify({
+          type: "warning",
+          message: "Step 2 incomplete: Patient Consent Signature is required.",
+          position: "top",
+        });
+        return;
+      }
+
       if (this.submitting) return;
       this.submitting = true;
       this.$q.loading.show({ message: "Submitting Registration..." });
@@ -109,6 +148,8 @@ export default {
       const finalData = {
         ...this.formData.personalInfoTriage,
         patientType: "Emergency",
+        personnelSignature: this.formData.personnelSignature,
+        patientSignature: this.formData.patientSignature,
       };
 
       try {
@@ -130,7 +171,6 @@ export default {
       } catch (error) {
         console.error(error);
         const errorMsg = error.response?.data?.message || "Server Error: Could not save.";
-
         this.$q.notify({
           type: "negative",
           message: errorMsg,
@@ -144,6 +184,7 @@ export default {
   },
 };
 </script>
+
 <style scoped>
 :deep(.q-stepper__title) {
   font-size: 12px;
@@ -157,23 +198,7 @@ export default {
   height: 40px;
   font-size: 20px;
 }
-
 :deep(.q-stepper__step-inner) {
   padding-top: 0 !important;
-}
-@media (max-width: 900px) {
-  :deep(.q-stepper__title) {
-    font-size: 12px;
-    letter-spacing: 0px;
-    line-height: 1.2;
-  }
-  :deep(.q-stepper__dot) {
-    width: 30px;
-    height: 30px;
-    font-size: 15px;
-  }
-  :deep(.q-stepper__tab) {
-    padding: 12px;
-  }
 }
 </style>

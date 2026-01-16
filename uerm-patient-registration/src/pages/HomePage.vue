@@ -1,12 +1,6 @@
 <template>
   <div class="column flex-center q-pa-md" style="min-height: 85vh">
     <div class="column flex-center q-mb-xl">
-      <!-- <img
-        src="~assets/uermmc-white-logo.png"
-        alt="UERM Logo"
-        class="q-mb-auto animate-logo"
-        style="max-width: 100%; height: auto; max-height: 350px"
-      /> -->
       <div class="animate-text text-center">
         <div
           class="text-h4 text-white text-weight-bold q-mb-sm"
@@ -23,162 +17,206 @@
       </div>
     </div>
 
-    <div :class="$q.screen.gt.xs ? 'row' : 'row'" class="flex-center q-pa-md q-gutter-xl">
-      <q-card
-        class="cursor-pointer hover-card animate-card delay-1"
-        @click="openInpatientForm"
-        v-ripple
-        :class="{
-          row: $q.screen.lt.md,
-          column: !$q.screen.lt.md,
-        }"
-        :style="{
-          width: $q.screen.lt.md ? '250px' : '260px',
-          height: $q.screen.lt.md ? '160px' : '200px',
-        }"
+    <div
+      style="min-height: 250px; position: relative; width: 100%"
+      class="column flex-center"
+    >
+      <transition
+        appear
+        enter-active-class="animated fadeIn"
+        leave-active-class="animated fadeOut"
+        mode="out-in"
       >
-        <q-card-section class="col column flex-center full-height">
-          <q-icon
-            name="airline_seat_flat"
-            class="q-mb-md transition-icon card-icon"
-            :class="{
-              'q-mb-md': !$q.screen.lt.md,
-              'q-mb-xs': $q.screen.lt.md,
-            }"
-            :size="$q.screen.lt.md ? '55px' : '70px'"
-            :style="{ marginBottom: $q.screen.lt.md ? '3px' : '' }"
-          />
-          <div
-            class="text-h5 text-weight-bold"
-            :class="{
-              'text-h5': !$q.screen.lt.md,
-              'text-subtitle1': $q.screen.lt.md,
-            }"
-          >
-            INPATIENT
-          </div>
-          <div class="text-caption text-uppercase q-mt-sm opacity-fade">
-            Admit Patient
-          </div>
-        </q-card-section>
-      </q-card>
-
-      <q-card
-        class="cursor-pointer hover-card animate-card delay-2"
-        @click="openOutpatientForm"
-        v-ripple
-        :class="{
-          row: $q.screen.lt.md,
-          column: !$q.screen.lt.md,
-        }"
-        :style="{
-          width: $q.screen.lt.md ? '250px' : '260px',
-          height: $q.screen.lt.md ? '160px' : '200px',
-        }"
-      >
-        <q-card-section class="col column flex-center full-height">
-          <q-icon
-            name="directions_walk"
-            class="q-mb-md transition-icon card-icon"
-            :class="{
-              'q-mb-md': !$q.screen.lt.md,
-              'q-mb-xs': $q.screen.lt.md,
-            }"
-            :size="$q.screen.lt.md ? '55px' : '70px'"
-            :style="{ marginBottom: $q.screen.lt.md ? '3px' : '' }"
-          />
-          <div
-            class="text-h5 text-weight-bold text-uppercase"
-            :class="{
-              'text-h5': !$q.screen.lt.md,
-              'text-subtitle1': $q.screen.lt.md,
-            }"
-          >
-            OUTPATIENT
-          </div>
-          <div class="text-caption text-uppercase q-mt-sm opacity-fade">
-            Consultation / Check-up
-          </div>
-        </q-card-section>
-      </q-card>
-
-      <q-card
-        class="cursor-pointer hover-card animate-card delay-3"
-        @click="openReturningPatientForm"
-        v-ripple
-        :class="{
-          row: $q.screen.lt.md,
-          column: !$q.screen.lt.md,
-        }"
-        :style="{
-          width: $q.screen.lt.md ? '250px' : '260px',
-          height: $q.screen.lt.md ? '160px' : '200px',
-        }"
-      >
-        <q-card-section class="col column flex-center full-height">
-          <q-icon
-            name="assignment_return"
-            class="q-mb-md transition-icon card-icon"
+        <div
+          v-if="page === 1"
+          key="page1"
+          :class="$q.screen.gt.xs ? 'row' : 'row'"
+          class="flex-center q-gutter-xl"
+        >
+          <q-card
+            class="cursor-pointer hover-card animate-card delay-1"
+            @click="openInpatientForm"
+            v-ripple
             :class="{
               row: $q.screen.lt.md,
               column: !$q.screen.lt.md,
             }"
-            :size="$q.screen.lt.md ? '55px' : '70px'"
-            :style="{ marginBottom: $q.screen.lt.md ? '3px' : '' }"
-          />
-          <div
-            class="text-h5 text-weight-bold text-uppercase"
-            :class="{
-              'text-h5': !$q.screen.lt.md,
-              'text-subtitle1': $q.screen.lt.md,
+            :style="{
+              width: $q.screen.lt.md ? '250px' : '260px',
+              height: $q.screen.lt.md ? '160px' : '200px',
             }"
           >
-            RETURNING
-          </div>
-          <div class="text-caption text-uppercase q-mt-sm opacity-fade">
-            Update Patient Record
-          </div>
-        </q-card-section>
-      </q-card>
+            <q-card-section class="col column flex-center full-height">
+              <q-icon
+                name="airline_seat_flat"
+                class="q-mb-md transition-icon card-icon"
+                :class="{
+                  'q-mb-md': !$q.screen.lt.md,
+                  'q-mb-xs': $q.screen.lt.md,
+                }"
+                :size="$q.screen.lt.md ? '55px' : '70px'"
+                :style="{ marginBottom: $q.screen.lt.md ? '3px' : '' }"
+              />
+              <div
+                class="text-h5 text-weight-bold"
+                :class="{
+                  'text-h5': !$q.screen.lt.md,
+                  'text-subtitle1': $q.screen.lt.md,
+                }"
+              >
+                INPATIENT
+              </div>
+              <div class="text-caption text-uppercase q-mt-sm opacity-fade">
+                Admit Patient
+              </div>
+            </q-card-section>
+          </q-card>
 
-      <q-card
-        class="cursor-pointer hover-card animate-card delay-3"
-        @click="personalInfoTriage"
-        v-ripple
-        :class="{
-          row: $q.screen.lt.md,
-          column: !$q.screen.lt.md,
-        }"
-        :style="{
-          width: $q.screen.lt.md ? '250px' : '260px',
-          height: $q.screen.lt.md ? '160px' : '200px',
-        }"
-      >
-        <q-card-section class="col column flex-center full-height">
-          <q-icon
-            name="medical_services"
-            class="q-mb-md transition-icon card-icon"
+          <q-card
+            class="cursor-pointer hover-card animate-card delay-2"
+            @click="openOutpatientForm"
+            v-ripple
             :class="{
               row: $q.screen.lt.md,
               column: !$q.screen.lt.md,
             }"
-            :size="$q.screen.lt.md ? '55px' : '70px'"
-            :style="{ marginBottom: $q.screen.lt.md ? '3px' : '' }"
-          />
-          <div
-            class="text-h5 text-weight-bold text-uppercase"
-            :class="{
-              'text-h5': !$q.screen.lt.md,
-              'text-subtitle1': $q.screen.lt.md,
+            :style="{
+              width: $q.screen.lt.md ? '250px' : '260px',
+              height: $q.screen.lt.md ? '160px' : '200px',
             }"
           >
-            Triage Form
-          </div>
-          <div class="text-caption text-uppercase q-mt-sm opacity-fade">
-            Initial Assessment
-          </div>
-        </q-card-section>
-      </q-card>
+            <q-card-section class="col column flex-center full-height">
+              <q-icon
+                name="directions_walk"
+                class="q-mb-md transition-icon card-icon"
+                :class="{
+                  'q-mb-md': !$q.screen.lt.md,
+                  'q-mb-xs': $q.screen.lt.md,
+                }"
+                :size="$q.screen.lt.md ? '55px' : '70px'"
+                :style="{ marginBottom: $q.screen.lt.md ? '3px' : '' }"
+              />
+              <div
+                class="text-h5 text-weight-bold text-uppercase"
+                :class="{
+                  'text-h5': !$q.screen.lt.md,
+                  'text-subtitle1': $q.screen.lt.md,
+                }"
+              >
+                OUTPATIENT
+              </div>
+              <div class="text-caption text-uppercase q-mt-sm opacity-fade">
+                Consultation / Check-up
+              </div>
+            </q-card-section>
+          </q-card>
+        </div>
+
+        <div
+          v-else
+          key="page2"
+          :class="$q.screen.gt.xs ? 'row' : 'row'"
+          class="flex-center q-gutter-xl"
+        >
+          <q-card
+            class="cursor-pointer hover-card animate-card delay-1"
+            @click="openReturningPatientForm"
+            v-ripple
+            :class="{
+              row: $q.screen.lt.md,
+              column: !$q.screen.lt.md,
+            }"
+            :style="{
+              width: $q.screen.lt.md ? '250px' : '260px',
+              height: $q.screen.lt.md ? '160px' : '200px',
+            }"
+          >
+            <q-card-section class="col column flex-center full-height">
+              <q-icon
+                name="assignment_return"
+                class="q-mb-md transition-icon card-icon"
+                :class="{
+                  row: $q.screen.lt.md,
+                  column: !$q.screen.lt.md,
+                }"
+                :size="$q.screen.lt.md ? '55px' : '70px'"
+                :style="{ marginBottom: $q.screen.lt.md ? '3px' : '' }"
+              />
+              <div
+                class="text-h5 text-weight-bold text-uppercase"
+                :class="{
+                  'text-h5': !$q.screen.lt.md,
+                  'text-subtitle1': $q.screen.lt.md,
+                }"
+              >
+                RETURNING
+              </div>
+              <div class="text-caption text-uppercase q-mt-sm opacity-fade">
+                Update Patient Record
+              </div>
+            </q-card-section>
+          </q-card>
+
+          <q-card
+            class="cursor-pointer hover-card animate-card delay-2"
+            @click="personalInfoTriage"
+            v-ripple
+            :class="{
+              row: $q.screen.lt.md,
+              column: !$q.screen.lt.md,
+            }"
+            :style="{
+              width: $q.screen.lt.md ? '250px' : '260px',
+              height: $q.screen.lt.md ? '160px' : '200px',
+            }"
+          >
+            <q-card-section class="col column flex-center full-height">
+              <q-icon
+                name="medical_services"
+                class="q-mb-md transition-icon card-icon"
+                :class="{
+                  row: $q.screen.lt.md,
+                  column: !$q.screen.lt.md,
+                }"
+                :size="$q.screen.lt.md ? '55px' : '70px'"
+                :style="{ marginBottom: $q.screen.lt.md ? '3px' : '' }"
+              />
+              <div
+                class="text-h5 text-weight-bold text-uppercase"
+                :class="{
+                  'text-h5': !$q.screen.lt.md,
+                  'text-subtitle1': $q.screen.lt.md,
+                }"
+              >
+                Triage Form
+              </div>
+              <div class="text-caption text-uppercase q-mt-sm opacity-fade">
+                Initial Assessment
+              </div>
+            </q-card-section>
+          </q-card>
+        </div>
+      </transition>
+    </div>
+
+    <div class="row justify-center q-mt-xl animate-text" style="animation-delay: 1s">
+      <q-btn
+        v-if="page === 2"
+        flat
+        color="white"
+        icon="arrow_back"
+        label="Back to Admission"
+        @click="page = 1"
+        class="q-mr-sm"
+      />
+      <q-btn
+        v-if="page === 1"
+        flat
+        color="white"
+        icon-right="arrow_forward"
+        label="Proceed to Emergency"
+        @click="page = 2"
+      />
     </div>
 
     <RegistrationForm ref="registrationFormDialog" />
@@ -201,6 +239,12 @@ export default {
     RegistrationFormOutpatient,
     ReturningPatient,
     TriageAssessment,
+  },
+  data() {
+    return {
+      // 1 = Inpatient/Outpatient, 2 = Returning/Triage
+      page: 1,
+    };
   },
   methods: {
     openInpatientForm() {

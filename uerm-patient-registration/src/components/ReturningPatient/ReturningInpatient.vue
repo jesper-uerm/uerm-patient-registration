@@ -13,7 +13,7 @@
         class="column text-center text-white q-py-md relative-position"
         style="background-color: #004aad"
       >
-        <div class="text-h6 text-bold">RETURNING INPATIENT FORM</div>
+        <div class="text-h6 text-bold">RETURNING INPATIENT</div>
         <div class="text-caption text-white-7" style="line-height: 1.2">
           Please enter valid name to search.
         </div>
@@ -98,28 +98,34 @@
 
           <template v-slot:body-cell-actions="props">
             <q-td :props="props" class="text-center">
-              <!-- <q-btn
-                flat
-                round
-                color="grey-7"
-                icon="visibility"
-                size="md"
-                class="q-mr-sm hover-blue"
-                @click="viewPatient(props.row)"
-              >
-                <q-tooltip class="bg-blue-10">View Profile</q-tooltip>
-              </q-btn> -->
-              <q-btn
-                flat
-                round
-                color="grey-7"
-                icon="print"
-                size="md"
-                class="hover-green"
-                @click="handlePrint(props.row)"
-              >
-                <q-tooltip class="bg-green-8">Print Record</q-tooltip>
-              </q-btn>
+              <q-item-section side>
+                <q-btn flat round color="grey-7" icon="more_vert" @click.stop>
+                  <q-menu cover auto-close>
+                    <q-list style="min-width: 150px">
+                      <q-item clickable @click="updateTriage(props.row)">
+                        <q-item-section avatar>
+                          <q-icon name="edit" size="xs" />
+                        </q-item-section>
+                        <q-item-section>Update Triage Form</q-item-section>
+                      </q-item>
+
+                      <q-item clickable @click="handlePrintConsent(props.row)">
+                        <q-item-section avatar>
+                          <q-icon name="download" size="xs" />
+                        </q-item-section>
+                        <q-item-section>Download Consent</q-item-section>
+                      </q-item>
+
+                      <q-item clickable @click="handlePrint(props.row)">
+                        <q-item-section avatar>
+                          <q-icon name="print" size="xs" />
+                        </q-item-section>
+                        <q-item-section>Print Information</q-item-section>
+                      </q-item>
+                    </q-list>
+                  </q-menu>
+                </q-btn>
+              </q-item-section>
             </q-td>
           </template>
 
@@ -167,13 +173,18 @@ import { date } from "quasar";
 import axios from "axios";
 
 import { printInpatientInformation } from "src/composables/printInpatientInformation";
+import { printPatientInfo } from "src/composables/printPatientInfo";
+import { printPatientConsent } from "src/composables/printPatientConsent";
 
 export default {
   name: "ReturningInpatient",
 
   setup() {
     const { generatePatientPdf } = printInpatientInformation();
-    return { generatePatientPdf };
+    const { generatePatientInfoPdf } = printPatientInfo();
+    const { generatePatientConsentPdf } = printPatientConsent();
+
+    return { generatePatientPdf, generatePatientInfoPdf, generatePatientConsentPdf };
   },
 
   data() {
@@ -285,7 +296,7 @@ export default {
 
     async handlePrint(row) {
       if (!row || !row.PATIENTNO) {
-        this.$q.notify({ type: "warning", message: "Invalid Patient ID selected" });
+        this.$q.notify({ type: "warning", message: "Invalid Patient ID" });
         return;
       }
 
@@ -296,27 +307,64 @@ export default {
           `http://10.107.0.2:3000/api/auth/checkPatientExists/${row.PATIENTNO}`
         );
 
-        if (!checkResponse.data.exists) {
+        const { exists, source } = checkResponse.data;
+
+        if (!exists) {
           this.$q.notify({
             type: "warning",
-            message:
-              "This patient has not been validated yet (ID not found in PatientRegistration).",
+            message: "Patient not found in Registration or Info tables.",
             position: "top",
           });
           return;
         }
 
-        const response = await this.$axios.get(
+        const dataResponse = await this.$axios.get(
           `http://10.107.0.2:3000/api/auth/getPatient/${row.PATIENTNO}`
         );
+        const patientData = dataResponse.data;
 
-        const fullPatientData = response.data;
-        await this.generatePatientPdf(fullPatientData);
+        console.log("DATA FOR PDF:", patientData);
+
+        if (source === "REGISTRATION") {
+          console.log("Printing Inpatient Record...");
+          const { generatePatientPdf } = printInpatientInformation();
+          await generatePatientPdf(patientData);
+        } else if (source === "INFO") {
+          console.log("Printing Info Record...");
+          const { generatePatientInfoPdf } = printPatientInfo();
+          await generatePatientInfoPdf(patientData);
+        }
       } catch (error) {
         console.error("Print Error:", error);
         this.$q.notify({
           type: "negative",
           message: "An error occurred while processing.",
+          position: "top",
+        });
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async handlePrintConsent(row) {
+      this.loading = true;
+
+      try {
+        const response = await axios.get(
+          `http://10.107.0.2:3000/api/auth/getPatient/${row.PATIENTNO}`
+        );
+
+        const fullPatientData = {
+          ...response.data,
+          patientId: row.PATIENTNO,
+        };
+
+        await this.generatePatientConsentPdf(fullPatientData);
+      } catch (error) {
+        console.error("Print Error:", error);
+        this.$q.notify({
+          type: "negative",
+          message: "Failed to fetch full details for printing",
           position: "top",
         });
       } finally {
@@ -347,5 +395,10 @@ export default {
 .clean-table :deep(td),
 .clean-table :deep(th) {
   border-bottom: 1px solid #f5f5f5;
+}
+
+.hover-green:hover {
+  color: #388e3c !important;
+  background-color: #e8f5e9;
 }
 </style>

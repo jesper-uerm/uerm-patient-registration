@@ -62,7 +62,7 @@
             />
           </q-step>
 
-          <q-step :name="3" title="Patient Consent" icon="payments" :done="step > 3">
+          <q-step :name="3" title="Patient Consent" icon="security" :done="step > 3">
             <mode-of-payment
               ref="patientConsent"
               :form="formData.patientConsent"
@@ -194,7 +194,6 @@ export default {
     async validateFinalStep() {
       if (this.$refs.patientConsent) {
         const isFormValid = await this.$refs.patientConsent.validateFinalStep();
-        const isSignatureValid = !!this.formData.signature;
 
         if (!isFormValid) {
           this.$q.notify({
@@ -205,14 +204,6 @@ export default {
           return false;
         }
 
-        if (!isSignatureValid) {
-          this.$q.notify({
-            type: "warning",
-            position: "top",
-            message: "Patient Signature is required.",
-          });
-          return false;
-        }
         return true;
       }
       return false;

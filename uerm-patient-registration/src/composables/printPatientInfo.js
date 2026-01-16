@@ -11,17 +11,17 @@ export function printPatientInfo() {
     });
   };
 
-  const getSignatureFromAPI = async (patientId) => {
-    try {
-      const response = await fetch(`http://10.107.0.2:3000/api/auth/getpatientSignature/${patientId}`);
-      if (!response.ok) return null;
-      const data = await response.json();
-      return (data && data.signature) ? data.signature : null;
-    } catch (error) {
-      console.warn('Failed to fetch signature:', error);
-      return null;
-    }
-  };
+  // const getSignatureFromAPI = async (patientId) => {
+  //   try {
+  //     const response = await fetch(`http://10.107.0.2:3000/api/auth/getpatientSignature/${patientId}`);
+  //     if (!response.ok) return null;
+  //     const data = await response.json();
+  //     return (data && data.signature) ? data.signature : null;
+  //   } catch (error) {
+  //     console.warn('Failed to fetch signature:', error);
+  //     return null;
+  //   }
+  // };
 
   const getBase64ImageFromURL = (url) => {
     return new Promise((resolve) => {
@@ -60,59 +60,59 @@ export function printPatientInfo() {
       const pdf = window.pdfMake;
 
       const leftLogo = await getBase64ImageFromURL('src/assets/uerm-logo.png');
-      const rightLogo = await getBase64ImageFromURL('src/assets/uermmc-blue-logo.png');
-      const signatureData = await getSignatureFromAPI(patient.patient_id);
+      const rightLogo = await getBase64ImageFromURL('src/assets/uerm-logo-white.png');
+      // const signatureData = await getSignatureFromAPI(patient.patient_id);
 
-      const lastname = patient.lastName || '-';
-      const firstname = patient.firstName || '-';
-      const middlename = patient.middleName || '-';
-      const suffix = patient.suffix || '';
+      const lastname = patient.LASTNAME || '-';
+      const firstname = patient.FIRSTNAME || '-';
+      const middlename = patient.MIDDLENAME || '-';
+      const suffix = patient.SUFFIX || '';
       const fullName = `${lastname}, ${firstname} ${middlename} ${suffix}`.trim();
 
-      const patientId = patient.patient_id || '-';
-      const sex = patient.sex || '-';
-      const civilStatus = patient.civilStatus || '-';
-      const religion = patient.religion || '-';
-      const nationality = patient.nationality || '-';
-      const age = patient.age ? patient.age.toString() : '-';
-      const birthdate = patient.birthdate
-        ? new Date(patient.birthdate).toLocaleDateString('en-US', {month: 'long', day: 'numeric', year: 'numeric'})
+      const patientId = patient.PATIENTNO || '-';
+      const sex = patient.SEX || '-';
+      const civilStatus = patient.STATUS || '-';
+      const religion = patient.RELIGION_NAME || '-';
+      const nationality = patient.NATIONALITY_NAME || '-';
+      const age = (patient.AGE !== undefined && patient.AGE !== null) ? patient.AGE.toString() : '-';
+      const birthdate = patient.DBIRTH
+        ? new Date(patient.DBIRTH).toLocaleDateString('en-US', {month: 'long', day: 'numeric', year: 'numeric'})
         : '-';
-      const birthplace = patient.birthplace || '-';
-      const occupation = patient.occupation || '-';
+      const birthplace = patient.BPLACE || '-';
+      const occupation = patient.OCCUPATION_NAME || '-';
 
-      const barangay = patient.addressBarangay || '';
-      const municipality = patient.addressCity || '';
+      const barangay = patient.BARANGAY_NAME || '';
+      const municipality = patient. MUNICIPALITY_NAME || '';
       const fullAddress = [barangay, municipality].filter(Boolean).join(', ') || '-';
 
-      const sssNo = patient.sssgsisId || '-';
-      const tinNo = patient.tinID || '-';
-      const scidNo = patient.seniorId || '-';
-      const philhealthNo = patient.philhealthId || '-';
+      const sssNo = patient.SSSNO || '-';
+      const tinNo = patient.TINNO || '-';
+      const scidNo = patient.SCIDNO || '-';
+      const philhealthNo = patient.UDF_PHILHEALTHNO || '-';
 
-      const spouseName = patient.spouseName || '-';
-      const spouseOccupation = patient.spouseOccupation || '-';
-      const employer = patient.employerName || '-';
-      const employerAdd = patient.employerAddress || '-';
-      const employerTel = patient.spouseEmployerContact || '-';
+      const spouseName = patient.NOFSPOUSE || '-';
+      const spouseOccupation = patient.SPOUSEOCCUPATION || '-';
+      const employer = patient.EMPLOYER || '-';
+      const employerAdd = patient.EMPLOYERADD || '-';
+      const employerTel = patient.EMPLOYERTELNO || '-';
 
-      const fatherName = patient.ptFatherName || '-';
-      const fatherAddress = patient.ptFatherAddress || '-';
-      const fatherTel = patient.ptFatherContact || '-';
+      const fatherName = patient.FATHER || '-';
+      const fatherAddress = patient.FADDRESS || '-';
+      const fatherTel = patient.FTEL || '-';
 
-      const motherName = patient.ptMotherMaidenNam || '-';
-      const motherAddress = patient.ptMotherAddress || '-';
-      const motherTel = patient.ptMotherContact || '-';
+      const motherName = patient.MOTHER || '-';
+      const motherAddress = patient.MADDRESS || '-';
+      const motherTel = patient.MTEL || '-';
 
-      const incaseName = patient.cpName || '-';
-      const incaseRel = patient.cpRelationship || '-';
-      const incaseAddress = patient.cpAddress || '-';
-      const incasePhone = [patient.cpLandline, patient.cpMobile].filter(Boolean).join(' / ') || '-';
+      const incaseName = patient.INCASE || '-';
+      const incaseRel = patient.RELATIONSHIP || '-';
+      const incaseAddress = patient.INCASEADD || '-';
+      const incasePhone = [patient.PHONENOS, patient.MOBILENO].filter(Boolean).join(' / ') || '-';
 
       const phoneNos = patient.landline || '-';
       const mobileNo = patient.mobile || '-';
 
-      const createdAt = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      // const createdAt = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
       const createCell = (label, value, colSpan = 1) => ({
         stack: [
@@ -141,7 +141,7 @@ export function printPatientInfo() {
                 stack: [
                   { text: 'UNIVERSITY OF THE EAST RAMON MAGSAYSAY MEMORIAL MEDICAL CENTER, INC.', style: 'header', alignment: 'center' },
                   { text: '64 Aurora Blvd, Doña Imelda, Quezon City', style: 'subheader', alignment: 'center' },
-                  { text: 'INPATIENT INFORMATION SHEET', style: 'headerTitle', alignment: 'center', margin: [0, 10, 0, 0] },
+                  { text: 'PATIENT INFORMATION SHEET', style: 'headerTitle', alignment: 'center', margin: [0, 10, 0, 0] },
                 ]
               },
               getLogoColumn(rightLogo, 'right')
@@ -211,25 +211,25 @@ export function printPatientInfo() {
             }
           },
 
-          {
-            margin: [0, 30, 0, 0],
-            columns: [
-              { width: '*', text: '' },
-              {
-                width: 200,
-                stack: [
-                  signatureData
-                    ? { image: signatureData, width: 120, alignment: 'center', margin: [0, 0, 0, 5] }
-                    : { text: '(Signature)', color: '#ccc', alignment: 'center', margin: [0, 0, 0, 20] },
-                  { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1 }] },
-                  { text: fullName.toUpperCase(), style: 'subheader', alignment: 'center', bold: true, margin: [0, 5, 0, 0] },
-                  { text: 'Signature over Printed Name', style: 'subheader', alignment: 'center', color: '#555' },
-                  { text: `Date Printed: ${createdAt}`, fontSize: 8, alignment: 'center', margin: [0, 5, 0, 0] }
-                ]
-              },
-              { width: '*', text: '' }
-            ]
-          }
+          // {
+          //   margin: [0, 30, 0, 0],
+          //   columns: [
+          //     { width: '*', text: '' },
+          //     {
+          //       width: 200,
+          //       stack: [
+          //         signatureData
+          //           ? { image: signatureData, width: 120, alignment: 'center', margin: [0, 0, 0, 5] }
+          //           : { text: '(Signature)', color: '#ccc', alignment: 'center', margin: [0, 0, 0, 20] },
+          //         { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1 }] },
+          //         { text: fullName.toUpperCase(), style: 'subheader', alignment: 'center', bold: true, margin: [0, 5, 0, 0] },
+          //         { text: 'Signature over Printed Name', style: 'subheader', alignment: 'center', color: '#555' },
+          //         { text: `Date Printed: ${createdAt}`, fontSize: 8, alignment: 'center', margin: [0, 5, 0, 0] }
+          //       ]
+          //     },
+          //     { width: '*', text: '' }
+          //   ]
+          // }
         ],
 
         styles: {

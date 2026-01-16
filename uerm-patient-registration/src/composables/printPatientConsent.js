@@ -66,10 +66,10 @@ export function printPatientConsent() {
 
       const signatureData = await getSignatureFromAPI(patient.patientId || patient.id);
 
-      const lastname = patient.lastName || 'Unknown';
-      const firstname = patient.firstName || 'Unknown';
+      const lastname = patient.lastName || patient.LASTNAME || 'Unknown';
+      const firstname = patient.firstName || patient.FIRSTNAME || 'Unknown';
       const fullName = `${firstname} ${lastname}`.toUpperCase();
-      const createdAt = patient.createdAt
+      const createdAt = patient.createdAt || patient.DATE_ENCODED
         ? new Date(patient.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
         : new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
@@ -192,7 +192,7 @@ export function printPatientConsent() {
                     text: fullName,
                     style: 'signatureName',
                     alignment: 'center',
-                    margin: [0, 5, 0, 0]
+                    margin: [0, 5, 0, 5]
                   },
 
                   { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1 }] },
@@ -200,7 +200,8 @@ export function printPatientConsent() {
                   {
                     text: 'Patient / Guardian Signature',
                     style: 'signatureLabel',
-                    alignment: 'center'
+                    alignment: 'center',
+                    margin: [0, 5, 0, ]
                   },
 
                   {
@@ -225,7 +226,7 @@ export function printPatientConsent() {
         }
       };
 
-      pdf.createPdf(docDefinition).download();
+      pdf.createPdf(docDefinition).open();
 
     } catch (err) {
       console.error('PDF Generation Error:', err);

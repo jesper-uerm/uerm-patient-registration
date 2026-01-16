@@ -1,5 +1,5 @@
 <template>
-  <q-form ref="patientConsent" @submit.prevent="trySubmit">
+  <q-form ref="PatientConsentForm">
     <div class="row q-col-gutter-md">
       <div class="col-12">
         <div class="text-subtitle2 text-center q-mb-md">Data Privacy Consent</div>
@@ -40,33 +40,31 @@
           </q-scroll-area>
         </div>
       </div>
-      <div class="col-12 items-center">
-        <SignaturePad v-model="localSignature" />
-        <div
-          v-if="hasError"
-          class="col-12 text-center text-negative text-caption q-mt-sm"
-        >
-          <q-icon name="warning" class="q-mr-xs" />
-          Signature is required to proceed.
+      <div class="row col-12 q-col-gutter-md">
+        <div class="col-12 items-center">
+          <SignaturePadOutpatient v-model="localSignature" />
+          <div
+            v-if="hasError"
+            class="col-12 text-center text-negative text-caption q-mt-sm"
+          >
+            <q-icon name="warning" class="q-mr-xs" /> Signature is required to proceed.
+          </div>
         </div>
       </div>
     </div>
-
-    <q-stepper-navigation class="row justify-center q-gutter-md q-mt-lg">
+    <q-stepper-navigation class="text-center q-gutter-md">
       <q-btn
-        flat
-        color="orange-10"
+        style="width: 100%; height: 45px; max-width: 130px"
+        color="amber-14"
         icon="arrow_back"
         label="Back"
-        class="q-px-lg"
         @click="onBack"
       />
       <q-btn
-        unelevated
+        style="width: 100%; height: 45px; max-width: 130px"
         color="blue-10"
         icon-right="upload"
         label="Submit"
-        class="q-px-lg"
         @click="trySubmit"
       />
     </q-stepper-navigation>
@@ -74,47 +72,32 @@
 </template>
 
 <script>
-import SignaturePad from "src/components/InpatientForm/SignaturePad.vue";
+import SignaturePadOutpatient from "src/components/OutpatientForm/SignaturePadOutpatient.vue";
 
 export default {
   name: "PatientConsent",
   components: {
-    SignaturePad,
+    SignaturePadOutpatient,
   },
   props: {
-    form: {
-      type: Object,
-      required: true,
-      default: () => ({ items: [] }),
-    },
+    form: Object,
+    relationshipOptions: Array,
     initialSignature: {
       type: String,
       default: null,
     },
   },
   emits: ["update:form", "next", "prev", "submit", "update:signature"],
-
   data() {
     return {
-      localForm: { ...this.form },
+      localForm: {
+        ...this.form,
+      },
       localSignature: this.initialSignature || null,
       hasError: false,
-
-      itemOptions: [
-        { label: "UERM Brochure", value: "UERM Brochure" },
-        { label: "Admission Kit", value: "Admission Kit" },
-        { label: "Patient Satisfaction Survey", value: "Patient Satisfaction Survey" },
-      ],
     };
   },
-
   watch: {
-    form: {
-      handler(newVal) {
-        this.localForm = { ...newVal };
-      },
-      deep: true,
-    },
     localForm: {
       handler(val) {
         this.$emit("update:form", val);
@@ -124,15 +107,15 @@ export default {
     localSignature(val) {
       if (val) {
         this.hasError = false;
+        this.$emit("update:signature", val);
       }
-      this.$emit("update:signature", val);
     },
   },
-
   methods: {
-    async validateFinalStep() {
-      const isFormValid = await this.$refs.patientConsent.validate();
-      const isSignatureValid = !!this.localSignature && this.localSignature.length > 0;
+    async validate() {
+      const isFormValid = await this.$refs.PatientConsentForm.validate();
+
+      const isSignatureValid = !!this.localSignature;
 
       this.hasError = !isSignatureValid;
 
@@ -140,7 +123,7 @@ export default {
     },
 
     async trySubmit() {
-      const valid = await this.validateFinalStep();
+      const valid = await this.validate();
 
       if (valid) {
         this.$emit("submit");
@@ -148,7 +131,7 @@ export default {
         this.$q.notify({
           type: "warning",
           position: "top",
-          message: "Please ensure the form is complete and signed.",
+          message: "Please fill all fields and provide a signature.",
         });
       }
     },
@@ -159,3 +142,5 @@ export default {
   },
 };
 </script>
+
+<style scoped></style>

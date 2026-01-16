@@ -31,6 +31,7 @@
                 </div>
                 <q-scroll-area
                   style="height: 320px; border: 1px solid #e0e0e0; border-radius: 8px"
+                  :style="{ height: $q.screen.lt.sm ? '200px' : '450px' }"
                   class="q-pa-lg bg-grey-1 text-justify"
                 >
                   <p>

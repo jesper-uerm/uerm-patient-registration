@@ -593,6 +593,7 @@ import axios from "axios";
 import FinancialStatement from "./FinancialStatement.vue";
 
 import { printEmergencyPatientInformation } from "src/composables/printEmergencyPatientInformation";
+import { printPatientConsent } from "src/composables/printPatientConsent";
 
 export default {
   name: "EmergencyList",
@@ -601,8 +602,10 @@ export default {
   },
 
   setup() {
-    const { generatePatientPdf } = printEmergencyPatientInformation();
-    return { generatePatientPdf };
+    const { generateTriagePatientPdf } = printEmergencyPatientInformation();
+    const { generatePatientConsentPdf } = printPatientConsent();
+
+    return { generateTriagePatientPdf, generatePatientConsentPdf };
   },
 
   data() {
@@ -766,7 +769,33 @@ export default {
           patientId: row.patient_id,
         };
 
-        await this.generatePatientPdf(fullPatientData);
+        await this.generateTriagePatientPdf(fullPatientData);
+      } catch (error) {
+        console.error("Print Error:", error);
+        this.$q.notify({
+          type: "negative",
+          message: "Failed to fetch full details for printing",
+          position: "top",
+        });
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async handlePrintConsent(row) {
+      this.loading = true;
+
+      try {
+        const response = await axios.get(
+          `http://10.107.0.2:3000/api/auth/getPatient/${row.patient_id}`
+        );
+
+        const fullPatientData = {
+          ...response.data,
+          patientId: row.patient_id,
+        };
+
+        await this.generatePatientConsentPdf(fullPatientData);
       } catch (error) {
         console.error("Print Error:", error);
         this.$q.notify({
