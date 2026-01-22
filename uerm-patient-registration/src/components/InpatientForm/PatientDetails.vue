@@ -42,15 +42,20 @@
           v-model="localForm.birthdate"
           label="Birthdate *"
           mask="date"
-          :rules="[
-            'date',
-            (val) => new Date(val) <= new Date() || 'Date cannot be in the future',
-          ]"
+          :rules="['date', isDateInPast]"
         >
           <template v-slot:append>
             <q-icon name="event" class="cursor-pointer">
-              <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                <q-date v-model="localForm.birthdate">
+              <q-popup-proxy
+                cover
+                transition-show="scale"
+                transition-hide="scale"
+                ref="qDateProxy"
+              >
+                <q-date
+                  v-model="localForm.birthdate"
+                  @update:model-value="$refs.qDateProxy.hide()"
+                >
                   <div class="row items-center justify-end">
                     <q-btn v-close-popup label="Close" color="primary" flat />
                   </div>
@@ -398,16 +403,25 @@ export default {
     onBack() {
       this.$emit("prev");
     },
+
     calculateAge(birthDateString) {
       if (!birthDateString) {
         this.localForm.age = "";
         return;
       }
       const timeStamp = Date.now();
-      const birthDate = new Date(birthDateString);
+      const formattedString = birthDateString.replace(/-/g, "/");
+      const birthDate = date.extractDate(formattedString, "YYYY/MM/DD");
       const age = date.getDateDiff(timeStamp, birthDate, "years");
       this.localForm.age = age;
     },
+
+    isDateInPast(val) {
+      if (!val) return true;
+      const inputDate = date.extractDate(val, "YYYY/MM/DD");
+      return inputDate <= new Date() || "Date cannot be in the future";
+    },
+
     constructPresentAddress() {
       const parts = [
         this.localForm.streetName,

@@ -47,8 +47,8 @@ export function printInpatientInformation() {
       await initSdk();
       const pdf = window.pdfMake;
 
-      const leftLogo = await getBase64ImageFromURL('src/assets/uerm-logo.png');
-      const rightLogo = await getBase64ImageFromURL('src/assets/uerm-logo-white.png');
+      const rightLogo = await getBase64ImageFromURL('src/assets/uerm-logo.png');
+      const leftLogo = await getBase64ImageFromURL('src/assets/uerm-logo-white.png');
 
 
       let signatureData = null;
@@ -117,15 +117,15 @@ export function printInpatientInformation() {
       const birthdate = patient.birthdate ? new Date(patient.birthdate).toLocaleDateString('en-US', {month: 'long', day: 'numeric', year: 'numeric'}) : '-';
       const birthplace = patient.birthplace || '-';
       const nationality = patient.NATIONALITY_NAME || patient.nationality || '-';
-
       const presentAddress = [
-            patient.addressStreet,
-            patient.addressBarangay,
-            patient.addressCity,
-            patient.addressProvince,
-            patient.addressRegion ]
-            .filter(part => part && part.trim() !== '')
-            .join(', ') || '-';
+              patient.addressStreet,
+              patient.BARANGAY_NAME || patient.addressBarangay,
+              patient.MUNICIPALITY_NAME || patient.addressCity,
+              patient.addressProvince,
+              patient.addressRegion
+          ]
+          .filter(part => part && part.trim() !== '')
+          .join(', ') || '-';
       const permanentAddress = patient.addressPermanent || '-';
 
       const spousename = patient.spouseName || '-';
@@ -178,7 +178,10 @@ export function printInpatientInformation() {
         content: [
           {
             columns: [
-              getLogoColumn(leftLogo, 'left'),
+                {
+                ...getLogoColumn(leftLogo, 'right'),
+                margin: [0, 12, 0, 0]
+              },
               {
                 width: '*',
                 stack: [
@@ -187,7 +190,9 @@ export function printInpatientInformation() {
                   { text: 'Telephone: +632 715 0861-77 local 215          Website: https://www.uerm.edu.ph', style: 'subheader', alignment: 'center', margin: [0, 2, 0, 0] }
                 ]
               },
+
               getLogoColumn(rightLogo, 'right')
+
             ],
             margin: [0, 0, 0, 10]
           },

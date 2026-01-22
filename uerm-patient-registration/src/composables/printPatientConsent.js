@@ -61,8 +61,8 @@ export function printPatientConsent() {
       await initSdk();
       const pdf = window.pdfMake;
 
-      const leftLogo = await getBase64ImageFromURL('src/assets/uerm-logo.png');
-      const rightLogo = await getBase64ImageFromURL('src/assets/uermmc-blue-logo.png');
+      const rightLogo = await getBase64ImageFromURL('src/assets/uerm-logo.png');
+      const leftLogo = await getBase64ImageFromURL('src/assets/uerm-logo-white.png');
 
       const signatureData = await getSignatureFromAPI(patient.patientId || patient.id);
 
@@ -74,9 +74,11 @@ export function printPatientConsent() {
         : new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
       const getLogoColumn = (imgData, align) => {
-        if (imgData) return { image: imgData, width: 60, alignment: align };
-        return { text: '', width: 60 };
-      };
+          if (imgData) {
+            return { image: imgData, width: 50, alignment: align };
+          }
+          return { text: '', width: 50 };
+        };
 
       pdf.fonts = {
         Roboto: {
@@ -88,13 +90,16 @@ export function printPatientConsent() {
       };
 
       const docDefinition = {
-        pageMargins: [40, 40, 40, 40],
+        pageMargins: [30, 30, 30, 30],
         info: { title: `Consent_${lastname}_${firstname}` },
 
         content: [
-          {
+            {
             columns: [
-              getLogoColumn(leftLogo, 'left'),
+              {
+                ...getLogoColumn(leftLogo, 'right'),
+                margin: [0, 12, 0, 0]
+              },
               {
                 width: '*',
                 stack: [
@@ -110,17 +115,16 @@ export function printPatientConsent() {
                     margin: [0, 2, 0, 0],
                   },
                   {
-                    text: 'Data Privacy Office',
+                    text: 'Telephone: +632 715 0861-77 local 215      Website: https://www.uerm.edu.ph',
                     style: 'subheader',
                     alignment: 'center',
-                    margin: [0, 2, 0, 0],
-                    bold: true
+                    margin: [0, 0, 0, 0],
                   }
                 ]
               },
               getLogoColumn(rightLogo, 'right')
             ],
-            margin: [0, 0, 0, 20]
+            margin: [0, 0, 0, 15]
           },
 
           { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 1.5, lineColor: '#004aad' }] },
@@ -177,52 +181,50 @@ export function printPatientConsent() {
           },
 
           {
-            columns: [
-              { width: '*', text: '' },
-              {
-                width: 200,
-                stack: [
+          columns: [
+            { width: '*', text: '' },
+            {
+              width: 200,
+              unbreakable: true,
+              stack: [
+                signatureData
+                  ? { image: signatureData, width: 120, alignment: 'center', margin: [0, 0, 0, 5] }
+                  : { text: '', height: 60 },
 
-                  signatureData
-                    ? { image: signatureData, width: 120, alignment: 'center', margin: [0, 0, 0, 5] }
-                    : { text: '', height: 60 },
+                {
+                  text: fullName,
+                  style: 'signatureName',
+                  alignment: 'center',
+                  margin: [0, 5, 0, 5]
+                },
 
+                { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1 }] },
 
-                  {
-                    text: fullName,
-                    style: 'signatureName',
-                    alignment: 'center',
-                    margin: [0, 5, 0, 5]
-                  },
+                {
+                  text: 'Patient / Guardian Signature',
+                  style: 'signatureLabel',
+                  alignment: 'center',
+                  margin: [0, 5, 0, 0]
+                },
 
-                  { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1 }] },
-
-                  {
-                    text: 'Patient / Guardian Signature',
-                    style: 'signatureLabel',
-                    alignment: 'center',
-                    margin: [0, 5, 0, ]
-                  },
-
-                  {
-                    text: `Date Signed: ${createdAt}`,
-                    style: 'signatureLabel',
-                    alignment: 'center',
-                    margin: [0, 5, 0, 0]
-                  }
-                ]
-              },
-              { width: '*', text: '' }
-            ]
-          }
+                {
+                  text: `Date Signed: ${createdAt}`,
+                  style: 'signatureLabel',
+                  alignment: 'center',
+                  margin: [0, 5, 0, 0]
+                }
+              ]
+            },
+            { width: '*', text: '' }
+          ]
+        }
         ],
 
         styles: {
-          header: { fontSize: 11, bold: true, margin: [5, 5, 5, 0] },
-          headerTitle: { fontSize: 16, bold: true, letterSpacing: 1 },
-          subheader: { fontSize: 8, color: '#555' },
-          signatureName: { fontSize: 10, bold: true },
-          signatureLabel: { fontSize: 8, italics: true, color: '#444' }
+          header: { fontSize: 10, bold: true, margin: [0, 5, 0, 0] },
+          subheader: { fontSize: 8, margin: [0, 0, 0, 0] },
+          headerTitle: { fontSize: 14, bold: true },
+          sectionHeader: { fontSize: 9, bold: true, letterSpacing: 1, margin: [0, 2, 0, 2] }
         }
       };
 

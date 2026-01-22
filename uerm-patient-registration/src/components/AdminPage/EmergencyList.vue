@@ -55,7 +55,7 @@
           :loading="loading"
           flat
           :dense="$q.screen.lt.xl"
-          :grid="$q.screen.lt.md"
+          :grid="$q.screen.lt.sm"
           virtual-scroll
           :rows-per-page-options="[10]"
           class="clean-table fit"
@@ -69,7 +69,29 @@
 
           <template v-slot:body-cell-fullName="props">
             <q-td :props="props">
-              <div class="text-weight-medium">{{ props.value }}</div>
+              <div class="text-weight-medium text-uppercase">
+                {{ props.value }}
+              </div>
+            </q-td>
+          </template>
+
+          <template v-slot:body-cell-isAdmitted="props">
+            <q-td :props="props">
+              <q-badge
+                v-if="props.value == 1"
+                color="red-6"
+                label="For Admission"
+                outline
+              />
+
+              <q-badge
+                v-else-if="props.value == 2"
+                color="green-6"
+                label="Admitted"
+                outline
+              />
+
+              <q-badge v-else color="grey-6" label="Emergency Patient" outline />
             </q-td>
           </template>
 
@@ -82,16 +104,21 @@
             </q-td>
           </template>
 
+          <!-- large/mmedium screen -->
           <template v-slot:body-cell-actions="props">
             <q-td :props="props" class="text-center">
               <q-btn flat round color="grey-7" icon="more_vert">
                 <q-menu cover auto-close>
                   <q-list style="min-width: 150px">
-                    <q-item clickable @click="viewPatient(props.row)">
+                    <q-item
+                      v-if="props.row.isAdmitted == 0 || props.row.isAdmitted == null"
+                      @click="updatePatientStatus(props.row)"
+                      clickable
+                    >
                       <q-item-section avatar>
-                        <q-icon name="visibility" color="blue-10" />
+                        <q-icon name="update" color="blue-10" />
                       </q-item-section>
-                      <q-item-section>View Profile</q-item-section>
+                      <q-item-section>Update Patient Status</q-item-section>
                     </q-item>
 
                     <q-item clickable @click="validatePatient(props.row)">
@@ -107,7 +134,7 @@
                       <q-item-section avatar>
                         <q-icon name="print" color="green-8" />
                       </q-item-section>
-                      <q-item-section>Print Record</q-item-section>
+                      <q-item-section>Print Triage</q-item-section>
                     </q-item>
 
                     <q-item clickable @click="handlePrintConsent(props.row)">
@@ -136,6 +163,7 @@
                     <q-item-label caption>ID: {{ props.row.patient_id }}</q-item-label>
                   </q-item-section>
 
+                  <!-- small screen -->
                   <q-item-section side>
                     <q-btn flat round color="grey-7" icon="more_vert" @click.stop>
                       <q-menu cover auto-close>
@@ -158,7 +186,7 @@
                             <q-item-section avatar>
                               <q-icon name="print" size="xs" />
                             </q-item-section>
-                            <q-item-section>Print Information</q-item-section>
+                            <q-item-section>Print Triage</q-item-section>
                           </q-item>
                         </q-list>
                       </q-menu>
@@ -287,7 +315,7 @@
             </q-item>
           </q-list>
 
-          <div class="text-subtitle2 text-grey-8 text-uppercase q-mt-lg q-mb-sm">
+          <!-- <div class="text-subtitle2 text-grey-8 text-uppercase q-mt-lg q-mb-sm">
             Admission Details
           </div>
           <div class="bg-grey-1 q-pa-md rounded-borders text-grey-8">
@@ -313,7 +341,7 @@
                 </div>
               </div>
             </div>
-          </div>
+          </div> -->
         </q-card-section>
 
         <q-separator />
@@ -321,9 +349,9 @@
         <q-card-actions align="center" class="q-pa-md bg-grey-1">
           <q-btn
             unelevated
-            label="Update Financial Statement"
+            label="Update Patient Status"
             color="blue-10"
-            @click="updateFinanceStatement(selectedPatient)"
+            @click="updatePatientStatus(selectedPatient)"
           />
         </q-card-actions>
       </q-card>
@@ -331,6 +359,7 @@
 
     <q-dialog
       v-model="viewPatientValidationDialog"
+      backdrop-filter="blur(4px)"
       transition-show="scale"
       transition-hide="scale"
     >
@@ -582,7 +611,7 @@
       </q-card>
     </q-dialog>
 
-    <financial-statement ref="financialRef" />
+    <!-- <financial-statement ref="financialRef" /> -->
   </q-page>
 </template>
 
@@ -590,16 +619,16 @@
 import { date } from "quasar";
 import axios from "axios";
 
-import FinancialStatement from "./FinancialStatement.vue";
+// import FinancialStatement from "./FinancialStatement.vue";
 
 import { printEmergencyPatientInformation } from "src/composables/printEmergencyPatientInformation";
 import { printPatientConsent } from "src/composables/printPatientConsent";
 
 export default {
   name: "EmergencyList",
-  components: {
-    FinancialStatement,
-  },
+  // components: {
+  //   FinancialStatement,
+  // },
 
   setup() {
     const { generateTriagePatientPdf } = printEmergencyPatientInformation();
@@ -626,7 +655,7 @@ export default {
           field: "patient_id",
           align: "left",
           sortable: true,
-          style: "width: 80px",
+          style: "width: 80px; font-weight: bold",
         },
         {
           name: "fullName",
@@ -634,31 +663,25 @@ export default {
           field: "fullName",
           align: "center",
           sortable: true,
+          style: "width: 250px",
         },
         {
           name: "birthdate",
           label: "Birthdate",
           field: "birthdate",
-          align: "right",
+          align: "center",
           format: (val) => (val ? date.formatDate(val, "MMM D, YYYY") : "-"),
           classes: "text-grey-7",
           style: "width: 180px",
         },
         {
-          name: "gender",
-          label: "Sex",
-          field: "gender",
+          name: "isAdmitted",
+          label: "Status",
+          field: "isAdmitted",
           align: "center",
-          style: "width: 200px",
+          sortable: true,
+          style: "width: 120px",
         },
-        // {
-        //   name: "addressPresent",
-        //   label: "Address",
-        //   field: "addressPresent",
-        //   align: "left",
-        //   classes: "ellipsis",
-        //   style: "max-width: 250px; min-width: 150px",
-        // },
         {
           name: "actions",
           label: "Actions",
@@ -717,7 +740,7 @@ export default {
       this.loading = true;
       try {
         const response = await axios.get(
-          "http://10.107.0.2:3000/api/auth/searchInpatient",
+          "http://10.107.0.2:3000/api/auth/searchErpatient",
           {
             params: { query: this.searchQuery },
           }
@@ -746,10 +769,10 @@ export default {
       }
     },
 
-    viewPatient(row) {
-      this.selectedPatient = row;
-      this.viewDialog = true;
-    },
+    // viewPatient(row) {
+    //   this.selectedPatient = row;
+    //   this.viewDialog = true;
+    // },
 
     validatePatient(row) {
       this.selectedPatient = row;
@@ -827,7 +850,7 @@ export default {
 
       this.loading = true;
       try {
-        await this.$axios.post("http://10.107.0.2:3000/api/auth/sendDataInformation", {
+        await axios.post("http://10.107.0.2:3000/api/auth/sendDataInformation", {
           patient_id: patient.patient_id,
         });
 
@@ -839,34 +862,42 @@ export default {
         this.viewPatientValidationDialog = false;
         this.loadInitialData();
       } catch (error) {
-        console.error(error);
+        if (!error.response || error.response.status !== 409) {
+          console.error(error);
+        }
 
         if (error.response && error.response.status === 409) {
           const {
             existingPatientNo,
             firstName,
             lastName,
+            middleName,
+            suffix,
             birthdate,
           } = error.response.data;
 
           const formattedBirthdate = new Date(birthdate).toLocaleDateString();
 
+          const fullName = `${firstName} ${middleName || ""} ${lastName} ${suffix || ""}`
+            .trim()
+            .replace(/\s+/g, " ");
+
           this.$q
             .dialog({
-              title: '<span class="text-negative">Validation Failed</span>',
+              title: '<span class="text-negative">Patient Record Already Exists</span>',
               message: `
                       <div class="q-mb-md">
                         This patient already exists in the Hospital System.
                       </div>
 
-                      <div style="background: #f5f5f5; padding: 10px; border-radius: 4px; border: 1px solid #e0e0e0;">
+                      <div style="background: #fff3e0; padding: 10px; border-radius: 4px; border: 1px solid #ffe0b2;">
                         <div class="row no-wrap q-mb-xs">
                           <span class="text-grey-8" style="min-width: 100px;">Patient No:</span>
-                          <span class="text-weight-bold">${existingPatientNo}</span>
+                          <span class="text-weight-bold text-primary">${existingPatientNo}</span>
                         </div>
                         <div class="row no-wrap q-mb-xs">
                           <span class="text-grey-8" style="min-width: 100px;">Name:</span>
-                          <span class="text-weight-bold">${firstName} ${lastName}</span>
+                          <span class="text-weight-bold">${fullName}</span>
                         </div>
                         <div class="row no-wrap">
                           <span class="text-grey-8" style="min-width: 100px;">Birthday:</span>
@@ -874,13 +905,13 @@ export default {
                         </div>
                       </div>
 
-                      <div class="q-mt-md">
-                        Do you want to update their record?
+                      <div class="q-mt-md text-weight-medium">
+                        Do you want to link this registration to the existing record?
+                        <br><span class="text-caption text-grey-7">(Do you want to link this registration to the existing record?)</span>
                       </div>
                     `,
               html: true,
               persistent: true,
-
               ok: {
                 label: "Yes",
                 color: "primary",
@@ -892,12 +923,37 @@ export default {
                 flat: true,
               },
             })
-            .onOk(() => {
-              console.log("User clicked Yes");
+            .onOk(async () => {
+              this.loading = true;
+              try {
+                await axios.post(
+                  "http://10.107.0.2:3000/api/auth/linkExistingPatientInfo",
+                  {
+                    patient_id: patient.patient_id,
+                    patientno: existingPatientNo,
+                  }
+                );
+
+                this.$q.notify({
+                  type: "positive",
+                  message: "Patient record linked successfully!",
+                });
+
+                this.viewPatientValidationDialog = false;
+                this.loadInitialData();
+              } catch (linkError) {
+                console.error("Linking failed:", linkError);
+                this.$q.notify({
+                  type: "negative",
+                  message:
+                    linkError.response?.data?.message ||
+                    "Failed to link records. Please try again.",
+                });
+              } finally {
+                this.loading = false;
+              }
             })
-            .onCancel(() => {
-              console.log("User clicked No");
-            });
+            .onCancel(() => {});
         } else {
           this.$q.notify({
             type: "negative",
@@ -907,7 +963,7 @@ export default {
           });
         }
       } finally {
-        this.loading = false;
+        if (this.loading) this.loading = false;
       }
     },
 
@@ -927,9 +983,39 @@ export default {
       return fullName;
     },
 
-    updateFinanceStatement(row) {
-      this.$refs.financialRef.openFinancialDialog(row);
-      this.viewDialog = false;
+    async updatePatientStatus(patient) {
+      this.$q
+        .dialog({
+          title: "Confirm Admission",
+          message: `Are you sure you want to mark ${patient.fullName} for admission?`,
+          cancel: true,
+          persistent: true,
+        })
+        .onOk(async () => {
+          this.$q.loading.show({ message: "Updating status..." });
+
+          try {
+            await axios.put("http://10.107.0.2:3000/api/auth/admitErPatient", {
+              patient_id: patient.patient_id,
+            });
+            patient.isAdmitted = 1;
+
+            this.$q.notify({
+              type: "positive",
+              message: "Patient status updated successfully!",
+              position: "top",
+            });
+          } catch (error) {
+            console.error("Update failed:", error);
+            this.$q.notify({
+              type: "negative",
+              message: "Failed to update status. Please try again.",
+              position: "top",
+            });
+          } finally {
+            this.$q.loading.hide();
+          }
+        });
     },
   },
 };

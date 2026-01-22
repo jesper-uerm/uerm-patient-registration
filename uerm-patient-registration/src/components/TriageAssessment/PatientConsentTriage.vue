@@ -44,7 +44,9 @@
       </div>
 
       <div class="col-12 items-center q-mt-md">
-        <div class="text-caption text-grey-8 q-mb-xs">Patient / Relative Signature *</div>
+        <div class="text-caption text-center text-grey-8 q-mb-xs">
+          Patient / Relative Signature *
+        </div>
         <div :class="hasError ? 'bg-red-1' : ''" style="border-radius: 4px; padding: 4px">
           <SignaturePad v-model="localConsentSignature" />
         </div>

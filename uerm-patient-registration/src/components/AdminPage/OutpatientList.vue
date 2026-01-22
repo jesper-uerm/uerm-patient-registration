@@ -55,7 +55,7 @@
           :loading="loading"
           flat
           :dense="$q.screen.lt.xl"
-          :grid="$q.screen.lt.md"
+          :grid="$q.screen.lt.sm"
           virtual-scroll
           :rows-per-page-options="[10]"
           class="clean-table fit"
@@ -708,7 +708,7 @@ export default {
       this.loading = true;
       try {
         const response = await axios.get(
-          "http://10.107.0.2:3000/api/auth/searchInpatient",
+          "http://10.107.0.2:3000/api/auth/searchOutpatient",
           {
             params: { query: this.searchQuery },
           }
@@ -837,7 +837,7 @@ export default {
 
       this.loading = true;
       try {
-        await this.$axios.post("http://10.107.0.2:3000/api/auth/sendDataInformation", {
+        await axios.post("http://10.107.0.2:3000/api/auth/sendDataInformation", {
           patient_id: patient.patient_id,
         });
 
@@ -849,31 +849,98 @@ export default {
         this.viewPatientValidationDialog = false;
         this.loadInitialData();
       } catch (error) {
-        console.error(error);
+        if (!error.response || error.response.status !== 409) {
+          console.error(error);
+        }
 
         if (error.response && error.response.status === 409) {
           const {
             existingPatientNo,
             firstName,
             lastName,
+            middleName,
+            suffix,
             birthdate,
           } = error.response.data;
 
           const formattedBirthdate = new Date(birthdate).toLocaleDateString();
 
-          this.$q.dialog({
-            title: "Transfer Aborted",
-            message: `This patient already exists in the Hospital System.<br><br>
-                  Existing Patient No: <b>${existingPatientNo}</b><br>
-                  Name: <b>${firstName} ${lastName}</b><br>
-                  Birthday: <b>${formattedBirthdate}</b>`,
-            html: true,
-            ok: {
-              label: "OK",
-              color: "warning",
-            },
-            persistent: true,
-          });
+          const fullName = `${firstName} ${middleName || ""} ${lastName} ${suffix || ""}`
+            .trim()
+            .replace(/\s+/g, " ");
+
+          this.$q
+            .dialog({
+              title: '<span class="text-negative">Patient Record Already Exists"</span>',
+              message: `
+                      <div class="q-mb-md">
+                        This patient already exists in the Hospital System.
+                      </div>
+
+                      <div style="background: #fff3e0; padding: 10px; border-radius: 4px; border: 1px solid #ffe0b2;">
+                        <div class="row no-wrap q-mb-xs">
+                          <span class="text-grey-8" style="min-width: 100px;">Patient No:</span>
+                          <span class="text-weight-bold text-primary">${existingPatientNo}</span>
+                        </div>
+                        <div class="row no-wrap q-mb-xs">
+                          <span class="text-grey-8" style="min-width: 100px;">Name:</span>
+                          <span class="text-weight-bold">${fullName}</span>
+                        </div>
+                        <div class="row no-wrap">
+                          <span class="text-grey-8" style="min-width: 100px;">Birthday:</span>
+                          <span class="text-weight-bold">${formattedBirthdate}</span>
+                        </div>
+                      </div>
+
+                      <div class="q-mt-md text-weight-medium">
+                        Do you want to link this registration to the existing record?
+                        <br><span class="text-caption text-grey-7">(This will update the Registration ID to match the Hospital Patient No)</span>
+                      </div>
+                    `,
+              html: true,
+              persistent: true,
+              ok: {
+                label: "Yes, Link Records",
+                color: "primary",
+                flat: false,
+              },
+              cancel: {
+                label: "No, Cancel",
+                color: "negative",
+                flat: true,
+              },
+            })
+            .onOk(async () => {
+              this.loading = true;
+              try {
+                await axios.post(
+                  "http://10.107.0.2:3000/api/auth/linkExistingPatientInfo",
+                  {
+                    patient_id: patient.patient_id,
+                    patientno: existingPatientNo,
+                  }
+                );
+
+                this.$q.notify({
+                  type: "positive",
+                  message: "Patient record linked successfully!",
+                });
+
+                this.viewPatientValidationDialog = false;
+                this.loadInitialData();
+              } catch (linkError) {
+                console.error("Linking failed:", linkError);
+                this.$q.notify({
+                  type: "negative",
+                  message:
+                    linkError.response?.data?.message ||
+                    "Failed to link records. Please try again.",
+                });
+              } finally {
+                this.loading = false;
+              }
+            })
+            .onCancel(() => {});
         } else {
           this.$q.notify({
             type: "negative",
@@ -883,7 +950,7 @@ export default {
           });
         }
       } finally {
-        this.loading = false;
+        if (this.loading) this.loading = false;
       }
     },
   },

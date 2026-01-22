@@ -11,17 +11,6 @@ export function printPatientInfo() {
     });
   };
 
-  // const getSignatureFromAPI = async (patientId) => {
-  //   try {
-  //     const response = await fetch(`http://10.107.0.2:3000/api/auth/getpatientSignature/${patientId}`);
-  //     if (!response.ok) return null;
-  //     const data = await response.json();
-  //     return (data && data.signature) ? data.signature : null;
-  //   } catch (error) {
-  //     console.warn('Failed to fetch signature:', error);
-  //     return null;
-  //   }
-  // };
 
   const getBase64ImageFromURL = (url) => {
     return new Promise((resolve) => {
@@ -135,8 +124,10 @@ export function printPatientInfo() {
         content: [
           {
             columns: [
-              getLogoColumn(leftLogo, 'left'),
-              {
+                {
+                  ...getLogoColumn(leftLogo, 'right'),
+                  margin: [0, 12, 0, 0]
+                },              {
                 width: '*',
                 stack: [
                   { text: 'UNIVERSITY OF THE EAST RAMON MAGSAYSAY MEMORIAL MEDICAL CENTER, INC.', style: 'header', alignment: 'center' },
@@ -211,25 +202,6 @@ export function printPatientInfo() {
             }
           },
 
-          // {
-          //   margin: [0, 30, 0, 0],
-          //   columns: [
-          //     { width: '*', text: '' },
-          //     {
-          //       width: 200,
-          //       stack: [
-          //         signatureData
-          //           ? { image: signatureData, width: 120, alignment: 'center', margin: [0, 0, 0, 5] }
-          //           : { text: '(Signature)', color: '#ccc', alignment: 'center', margin: [0, 0, 0, 20] },
-          //         { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1 }] },
-          //         { text: fullName.toUpperCase(), style: 'subheader', alignment: 'center', bold: true, margin: [0, 5, 0, 0] },
-          //         { text: 'Signature over Printed Name', style: 'subheader', alignment: 'center', color: '#555' },
-          //         { text: `Date Printed: ${createdAt}`, fontSize: 8, alignment: 'center', margin: [0, 5, 0, 0] }
-          //       ]
-          //     },
-          //     { width: '*', text: '' }
-          //   ]
-          // }
         ],
 
         styles: {

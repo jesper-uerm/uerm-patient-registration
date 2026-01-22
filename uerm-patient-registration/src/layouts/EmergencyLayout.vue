@@ -70,7 +70,7 @@
         <q-item
           clickable
           v-ripple
-          to="/admin/"
+          to="/adminEr/"
           exact
           active-class="active-link"
           class="q-mx-sm rounded-borders q-mb-xs"
@@ -84,27 +84,27 @@
         <q-item
           clickable
           v-ripple
-          to="/admin/InpatientList"
+          to="/adminEr/EmergencyList"
+          active-class="active-link"
+          class="q-mx-sm rounded-borders q-mb-xs"
+        >
+          <q-item-section avatar>
+            <q-icon name="emergency" />
+          </q-item-section>
+          <q-item-section>Emergency</q-item-section>
+        </q-item>
+
+        <q-item
+          clickable
+          v-ripple
+          to="/adminEr/ForAdmissionER"
           active-class="active-link"
           class="q-mx-sm rounded-borders q-mb-xs"
         >
           <q-item-section avatar>
             <q-icon name="bed" />
           </q-item-section>
-          <q-item-section>Inpatients</q-item-section>
-        </q-item>
-
-        <q-item
-          clickable
-          v-ripple
-          to="/admin/OutpatientList"
-          active-class="active-link"
-          class="q-mx-sm rounded-borders q-mb-xs"
-        >
-          <q-item-section avatar>
-            <q-icon name="accessibility_new" />
-          </q-item-section>
-          <q-item-section>Outpatients</q-item-section>
+          <q-item-section>For Admission</q-item-section>
         </q-item>
 
         <q-separator spaced class="q-mx-md" />
@@ -134,7 +134,7 @@
 import { defineComponent } from "vue";
 import { date } from "quasar";
 export default defineComponent({
-  name: "AdminLayout",
+  name: "EmergencyLayout",
 
   data() {
     return {

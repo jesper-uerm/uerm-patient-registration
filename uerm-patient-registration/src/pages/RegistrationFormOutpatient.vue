@@ -188,17 +188,15 @@ export default {
       };
 
       try {
-        const response = await axios.post(
-          "http://10.107.0.2:3000/api/auth/register",
-          finalData
-        );
+        await axios.post("http://10.107.0.2:3000/api/auth/register", finalData);
 
         this.$q.notify({
           type: "positive",
-          message: "Registration Successful! ID: " + (response.data.patientId || "Saved"),
+          message: "Registration Successful!",
           position: "top",
           timeout: 4000,
         });
+
         setTimeout(() => {
           this.OutpatientregistrationFormDialog = false;
         }, 1500);

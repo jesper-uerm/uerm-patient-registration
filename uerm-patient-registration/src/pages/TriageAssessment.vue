@@ -153,14 +153,11 @@ export default {
       };
 
       try {
-        const response = await axios.post(
-          "http://10.107.0.2:3000/api/auth/registerTriage",
-          finalData
-        );
+        await axios.post("http://10.107.0.2:3000/api/auth/registerTriage", finalData);
 
         this.$q.notify({
           type: "positive",
-          message: "Registration Successful! ID: " + (response.data.triageId || "Saved"),
+          message: "Registration Successful! ID:",
           position: "top",
           timeout: 4000,
         });

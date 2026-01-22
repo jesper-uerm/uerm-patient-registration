@@ -55,7 +55,7 @@
           :loading="loading"
           flat
           :dense="$q.screen.lt.xl"
-          :grid="$q.screen.lt.md"
+          :grid="$q.screen.lt.sm"
           virtual-scroll
           :rows-per-page-options="[10]"
           class="clean-table fit"
@@ -190,7 +190,12 @@
       </q-card-section>
     </q-card>
 
-    <q-dialog v-model="viewDialog" transition-show="scale" transition-hide="scale">
+    <q-dialog
+      v-model="viewDialog"
+      backdrop-filter="blur(4px)"
+      transition-show="scale"
+      transition-hide="scale"
+    >
       <q-card style="width: 900px; max-width: 80vw" class="rounded-borders">
         <q-card-section class="bg-gradient-primary text-white q-pa-md">
           <div class="row items-center text-center justify-center justify-between">
@@ -336,6 +341,7 @@
       v-model="viewPatientValidationDialog"
       transition-show="scale"
       transition-hide="scale"
+      backdrop-filter="blur(4px)"
     >
       <q-card style="width: 1000px; max-width: 90vw" class="rounded-borders">
         <q-card-section
@@ -849,7 +855,7 @@ export default {
 
       this.loading = true;
       try {
-        await this.$axios.post("http://10.107.0.2:3000/api/auth/sendDataInformation", {
+        await axios.post("http://10.107.0.2:3000/api/auth/sendDataInformation", {
           patient_id: patient.patient_id,
         });
 
@@ -861,34 +867,42 @@ export default {
         this.viewPatientValidationDialog = false;
         this.loadInitialData();
       } catch (error) {
-        console.error(error);
+        if (!error.response || error.response.status !== 409) {
+          console.error(error);
+        }
 
         if (error.response && error.response.status === 409) {
           const {
             existingPatientNo,
             firstName,
             lastName,
+            middleName,
+            suffix,
             birthdate,
           } = error.response.data;
 
           const formattedBirthdate = new Date(birthdate).toLocaleDateString();
 
+          const fullName = `${firstName} ${middleName || ""} ${lastName} ${suffix || ""}`
+            .trim()
+            .replace(/\s+/g, " ");
+
           this.$q
             .dialog({
-              title: '<span class="text-negative">Validation Failed</span>',
+              title: '<span class="text-negative">Patient Record Already Exists"</span>',
               message: `
                       <div class="q-mb-md">
                         This patient already exists in the Hospital System.
                       </div>
 
-                      <div style="background: #f5f5f5; padding: 10px; border-radius: 4px; border: 1px solid #e0e0e0;">
+                      <div style="background: #fff3e0; padding: 10px; border-radius: 4px; border: 1px solid #ffe0b2;">
                         <div class="row no-wrap q-mb-xs">
                           <span class="text-grey-8" style="min-width: 100px;">Patient No:</span>
-                          <span class="text-weight-bold">${existingPatientNo}</span>
+                          <span class="text-weight-bold text-primary">${existingPatientNo}</span>
                         </div>
                         <div class="row no-wrap q-mb-xs">
                           <span class="text-grey-8" style="min-width: 100px;">Name:</span>
-                          <span class="text-weight-bold">${firstName} ${lastName}</span>
+                          <span class="text-weight-bold">${fullName}</span>
                         </div>
                         <div class="row no-wrap">
                           <span class="text-grey-8" style="min-width: 100px;">Birthday:</span>
@@ -896,30 +910,55 @@ export default {
                         </div>
                       </div>
 
-                      <div class="q-mt-md">
-                        Do you want to update their record?
+                      <div class="q-mt-md text-weight-medium">
+                        Do you want to link this registration to the existing record?
+                        <br><span class="text-caption text-grey-7">(This will update the Registration ID to match the Hospital Patient No)</span>
                       </div>
                     `,
               html: true,
               persistent: true,
-
               ok: {
-                label: "Yes",
+                label: "Yes, Link Records",
                 color: "primary",
                 flat: false,
               },
               cancel: {
-                label: "No",
+                label: "No, Cancel",
                 color: "negative",
                 flat: true,
               },
             })
-            .onOk(() => {
-              console.log("User clicked Yes");
+            .onOk(async () => {
+              this.loading = true;
+              try {
+                await axios.post(
+                  "http://10.107.0.2:3000/api/auth/linkExistingPatientInfo",
+                  {
+                    patient_id: patient.patient_id,
+                    patientno: existingPatientNo,
+                  }
+                );
+
+                this.$q.notify({
+                  type: "positive",
+                  message: "Patient record linked successfully!",
+                });
+
+                this.viewPatientValidationDialog = false;
+                this.loadInitialData();
+              } catch (linkError) {
+                console.error("Linking failed:", linkError);
+                this.$q.notify({
+                  type: "negative",
+                  message:
+                    linkError.response?.data?.message ||
+                    "Failed to link records. Please try again.",
+                });
+              } finally {
+                this.loading = false;
+              }
             })
-            .onCancel(() => {
-              console.log("User clicked No");
-            });
+            .onCancel(() => {});
         } else {
           this.$q.notify({
             type: "negative",
@@ -929,7 +968,7 @@ export default {
           });
         }
       } finally {
-        this.loading = false;
+        if (this.loading) this.loading = false;
       }
     },
   },

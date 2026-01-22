@@ -45,7 +45,7 @@ const routes = [
   children: [
     {
       path: '',
-      name: 'dashboard',
+      name: 'admin-dashboard',
       component: () => import('src/components/AdminPage/AdminDashboard.vue')
     },
     {
@@ -59,10 +59,32 @@ const routes = [
       component: () => import('src/components/AdminPage/OutpatientList.vue')
     },
 
+    // {
+    //   path: 'EmergencyList',
+    //   name: 'emergency-patient-list',
+    //   component: () => import('src/components/AdminPage/EmergencyList.vue')
+    // }
+  ]
+},
+
+  {
+  path: '/adminER',
+  component: () => import('layouts/EmergencyLayout.vue'),
+  children: [
+    {
+      path: '',
+      name: 'er-dashboard',
+      component: () => import('src/components/AdminPage/AdminErDashboard.vue')
+    },
     {
       path: 'EmergencyList',
       name: 'emergency-patient-list',
       component: () => import('src/components/AdminPage/EmergencyList.vue')
+    },
+    {
+      path: 'ForAdmissionER',
+      name: 'for-admission-list',
+      component: () => import('src/components/AdminPage/ForAdmissionER.vue')
     }
   ]
 },

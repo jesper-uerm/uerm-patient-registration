@@ -276,7 +276,9 @@
       </div>
 
       <div class="col-12">
-        <div class="text-caption text-grey-8 q-mb-xs">Triage Personnel Signature *</div>
+        <div class="text-caption text-center text-grey-8 q-mb-xs">
+          Triage Personnel Signature *
+        </div>
         <div
           class="rounded-borders q-pa-sm"
           :class="hasError ? 'bg-red-1' : 'bg-grey-1'"

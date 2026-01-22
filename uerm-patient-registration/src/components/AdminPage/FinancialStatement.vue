@@ -4,6 +4,7 @@
     persistent
     transition-show="scale"
     transition-hide="scale"
+    backdrop-filter="blur(4px)"
   >
     <q-card
       class="column no-wrap"

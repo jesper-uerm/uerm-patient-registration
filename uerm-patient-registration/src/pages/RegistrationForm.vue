@@ -1,6 +1,7 @@
 <template>
   <q-dialog
     v-model="regFormdialogVisible"
+    backdrop-filter="blur(4px)"
     persistent
     transition-show="scale"
     transition-hide="scale"
@@ -140,7 +141,6 @@ export default {
           birthdate: "",
           birthplace: "",
           nationality: "",
-          // presentAddress: "",
           selectedRegion: "",
           selectedProvince: "",
           selectedCity: "",
@@ -191,6 +191,91 @@ export default {
       this.regFormdialogVisible = true;
     },
 
+    openFormDialog(patientData) {
+      this.step = 1;
+      this.regFormdialogVisible = true;
+      if (patientData) {
+        this.populateForm(patientData);
+      } else {
+        this.resetForm();
+      }
+    },
+
+    populateForm(data) {
+      this.formData.personalInfo = {
+        ...this.formData.personalInfo,
+        lastName: data.lastName || "",
+        firstName: data.firstName || "",
+        middleName: data.middleName || "",
+        suffix: data.suffix || "",
+        age: data.age || "",
+        gender: data.gender || null,
+        civilStatus: data.civilStatus || null,
+        religion: data.religion || null,
+        birthdate: data.birthdate || "",
+        birthplace: data.birthplace || "",
+        nationality: data.nationality || "",
+        occupation: data.occupation || "",
+
+        landline: data.landline || "",
+        mobile: data.mobile || "",
+        email: data.email || "",
+
+        selectedRegion: data.region || data.selectedRegion || "",
+        selectedProvince: data.province || data.selectedProvince || "",
+        selectedCity: data.city || data.selectedCity || "",
+        selectedBarangay: data.barangay || data.selectedBarangay || "",
+        streetName: data.streetName || "",
+
+        fathersName: data.fathersName || "",
+        fathersAddress: data.fathersAddress || "",
+        fatherContactNumber: data.fatherContactNumber || "",
+        mothersName: data.mothersName || "",
+        mothersAddress: data.mothersAddress || "",
+        motherContactNumber: data.motherContactNumber || "",
+      };
+
+      this.formData.contactDetails = {
+        ...this.formData.contactDetails,
+        seniorpwd: data.seniorpwd || "",
+        philhealth: data.philhealth || "",
+        sssgsis: data.sssgsis || "",
+        tin: data.tin || "",
+
+        spouseName: data.spouseName || "",
+        spouseOccupation: data.spouseOccupation || "",
+        spouseEmployerName: data.spouseEmployerName || "",
+        spouseEmployerContact: data.spouseEmployerContact || "",
+        spouseEmployerAddress: data.spouseEmployerAddress || "",
+
+        contactPersonInpatient: data.contactPersonInpatient || "",
+        contactPersonInpatientRelationship:
+          data.contactPersonInpatientRelationship || null,
+        contactPersonInpatientMobile: data.contactPersonInpatientMobile || "",
+      };
+
+      if (data.mop) {
+        this.formData.patientConsent.mop = data.mop;
+      }
+    },
+
+    resetForm() {
+      this.formData = {
+        personalInfo: {
+          lastName: "",
+          firstName: "",
+          middleName: "",
+          suffix: "",
+          age: "",
+          gender: null,
+          civilStatus: null,
+        },
+        contactDetails: {},
+        patientConsent: { mop: "", items: [] },
+        signature: null,
+      };
+    },
+
     async validateFinalStep() {
       if (this.$refs.patientConsent) {
         const isFormValid = await this.$refs.patientConsent.validateFinalStep();
@@ -228,18 +313,15 @@ export default {
       };
 
       try {
-        const response = await axios.post(
-          "http://10.107.0.2:3000/api/auth/register",
-
-          finalData
-        );
+        await axios.post("http://10.107.0.2:3000/api/auth/register", finalData);
 
         this.$q.notify({
           type: "positive",
-          message: "Registration Successful! ID: " + (response.data.patientId || "Saved"),
+          message: "Registration Successful!",
           position: "top",
           timeout: 4000,
         });
+
         setTimeout(() => {
           this.regFormdialogVisible = false;
         }, 1500);
