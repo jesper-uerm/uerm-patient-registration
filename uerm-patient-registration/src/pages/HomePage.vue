@@ -111,138 +111,26 @@
             </q-card-section>
           </q-card>
         </div>
-
-        <div
-          v-else
-          key="page2"
-          :class="$q.screen.gt.xs ? 'row' : 'row'"
-          class="flex-center q-gutter-xl"
-        >
-          <q-card
-            class="cursor-pointer hover-card animate-card delay-1"
-            @click="openReturningPatientForm"
-            v-ripple
-            :class="{
-              row: $q.screen.lt.md,
-              column: !$q.screen.lt.md,
-            }"
-            :style="{
-              width: $q.screen.lt.md ? '250px' : '260px',
-              height: $q.screen.lt.md ? '160px' : '200px',
-            }"
-          >
-            <q-card-section class="col column flex-center full-height">
-              <q-icon
-                name="assignment_return"
-                class="q-mb-md transition-icon card-icon"
-                :class="{
-                  row: $q.screen.lt.md,
-                  column: !$q.screen.lt.md,
-                }"
-                :size="$q.screen.lt.md ? '55px' : '70px'"
-                :style="{ marginBottom: $q.screen.lt.md ? '3px' : '' }"
-              />
-              <div
-                class="text-h5 text-weight-bold text-uppercase"
-                :class="{
-                  'text-h5': !$q.screen.lt.md,
-                  'text-subtitle1': $q.screen.lt.md,
-                }"
-              >
-                RETURNING
-              </div>
-              <div class="text-caption text-uppercase q-mt-sm opacity-fade">
-                Update Patient Record
-              </div>
-            </q-card-section>
-          </q-card>
-
-          <q-card
-            class="cursor-pointer hover-card animate-card delay-2"
-            @click="personalInfoTriage"
-            v-ripple
-            :class="{
-              row: $q.screen.lt.md,
-              column: !$q.screen.lt.md,
-            }"
-            :style="{
-              width: $q.screen.lt.md ? '250px' : '260px',
-              height: $q.screen.lt.md ? '160px' : '200px',
-            }"
-          >
-            <q-card-section class="col column flex-center full-height">
-              <q-icon
-                name="medical_services"
-                class="q-mb-md transition-icon card-icon"
-                :class="{
-                  row: $q.screen.lt.md,
-                  column: !$q.screen.lt.md,
-                }"
-                :size="$q.screen.lt.md ? '55px' : '70px'"
-                :style="{ marginBottom: $q.screen.lt.md ? '3px' : '' }"
-              />
-              <div
-                class="text-h5 text-weight-bold text-uppercase"
-                :class="{
-                  'text-h5': !$q.screen.lt.md,
-                  'text-subtitle1': $q.screen.lt.md,
-                }"
-              >
-                Triage Form
-              </div>
-              <div class="text-caption text-uppercase q-mt-sm opacity-fade">
-                Initial Assessment
-              </div>
-            </q-card-section>
-          </q-card>
-        </div>
       </transition>
-    </div>
-
-    <div class="row justify-center q-mt-xl animate-text" style="animation-delay: 1s">
-      <q-btn
-        v-if="page === 2"
-        flat
-        color="white"
-        icon="arrow_back"
-        label="Back to Admission"
-        @click="page = 1"
-        class="q-mr-sm"
-      />
-      <q-btn
-        v-if="page === 1"
-        flat
-        color="white"
-        icon-right="arrow_forward"
-        label="Proceed to Emergency"
-        @click="page = 2"
-      />
     </div>
 
     <RegistrationForm ref="registrationFormDialog" />
     <RegistrationFormOutpatient ref="OutpatientregistrationFormDialog" />
-    <ReturningPatient ref="ReturningPatientFormDialog" />
-    <TriageAssessment ref="TraigeAssessmentFormDialog" />
   </div>
 </template>
 
 <script>
 import RegistrationForm from "pages/RegistrationForm.vue";
 import RegistrationFormOutpatient from "./RegistrationFormOutpatient.vue";
-import ReturningPatient from "./ReturningPatient.vue";
-import TriageAssessment from "./TriageAssessment.vue";
 
 export default {
   name: "HomePage",
   components: {
     RegistrationForm,
     RegistrationFormOutpatient,
-    ReturningPatient,
-    TriageAssessment,
   },
   data() {
     return {
-      // 1 = Inpatient/Outpatient, 2 = Returning/Triage
       page: 1,
     };
   },
@@ -252,12 +140,6 @@ export default {
     },
     openOutpatientForm() {
       this.$refs.OutpatientregistrationFormDialog?.show();
-    },
-    openReturningPatientForm() {
-      this.$refs.ReturningPatientFormDialog?.show();
-    },
-    personalInfoTriage() {
-      this.$refs.TraigeAssessmentFormDialog?.show();
     },
   },
 };

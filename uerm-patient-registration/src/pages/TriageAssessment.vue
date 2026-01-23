@@ -157,7 +157,7 @@ export default {
 
         this.$q.notify({
           type: "positive",
-          message: "Registration Successful! ID:",
+          message: "Registration Successful!",
           position: "top",
           timeout: 4000,
         });

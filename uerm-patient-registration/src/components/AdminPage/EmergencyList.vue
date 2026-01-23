@@ -56,7 +56,6 @@
           flat
           :dense="$q.screen.lt.xl"
           :grid="$q.screen.lt.sm"
-          virtual-scroll
           :rows-per-page-options="[10]"
           class="clean-table fit"
           header-class="bg-grey-1 text-grey-8 text-weight-bold text-uppercase"
@@ -769,11 +768,6 @@ export default {
       }
     },
 
-    // viewPatient(row) {
-    //   this.selectedPatient = row;
-    //   this.viewDialog = true;
-    // },
-
     validatePatient(row) {
       this.selectedPatient = row;
       this.viewPatientValidationDialog = true;
@@ -1042,6 +1036,8 @@ export default {
 .clean-table :deep(th) {
   border-bottom: 1px solid #f5f5f5;
 }
+
+
 
 .border-bottom {
   border-bottom: 1px solid #e0e0e0;

@@ -224,7 +224,18 @@
           dense
           v-model="localForm.checkforPresense"
           multiple
-          :options="['Fever', 'Cough', 'Sore Throat', 'Headache', 'Rash']"
+          :options="[
+            'Fever',
+            'Cough',
+            'Sore Throat',
+            'Headache',
+            'Diarrhea',
+            'Shortness of Breath',
+            'Joint pains',
+            'Muscle pains',
+            'Decreased sense of taste/smell',
+            'Rash',
+          ]"
           label="Symptoms Present"
         />
       </div>

@@ -1,7 +1,7 @@
 <template>
   <q-layout view="lHh Lpr lFf" class="main-background">
     <q-header class="bg-uerm-blue text-white">
-      <q-toolbar class="q-py-sm">
+      <q-toolbar>
         <q-avatar
           square
           size="80px"
@@ -19,14 +19,21 @@
           </div>
         </q-toolbar-title>
 
-        <q-btn
-          to="/admin"
-          class="bg-white text-blue-10 text-weight-bold q-py-sm q-mr-md header-btn"
-          icon-right="login"
-          label="Login As AIS"
-        >
-          <q-tooltip>Sign In</q-tooltip>
-        </q-btn>
+        <div class="row items-center q-gutter-sm">
+          <div class="column items-end q-mr-sm">
+            <div class="text-weight-bold text-white-10" style="font-size: 0.85rem">
+              {{ formattedTime }}
+            </div>
+            <div
+              class="text-caption text-white-7"
+              style="font-size: 0.7rem; line-height: 1"
+            >
+              {{ formattedDate }}
+            </div>
+          </div>
+
+          <q-icon name="schedule" color="white-10" size="md" class="q-mr-sm" />
+        </div>
       </q-toolbar>
     </q-header>
 
@@ -43,12 +50,38 @@
 </template>
 
 <script>
+import { date } from "quasar";
+
 export default {
   name: "MainLayout",
+
+  data() {
+    return {
+      now: Date.now(),
+    };
+  },
+
+  mounted() {
+    this.timer = setInterval(() => {
+      this.now = Date.now();
+    }, 1000);
+  },
+
+  beforeUnmount() {
+    if (this.timer) {
+      clearInterval(this.timer);
+    }
+  },
 
   computed: {
     currentYear() {
       return new Date().getFullYear();
+    },
+    formattedTime() {
+      return date.formatDate(this.now, "h:mm:ss A");
+    },
+    formattedDate() {
+      return date.formatDate(this.now, "ddd, MMM D, YYYY");
     },
   },
 };

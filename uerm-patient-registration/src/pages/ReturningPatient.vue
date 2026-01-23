@@ -532,6 +532,25 @@
                   </template>
                 </q-input>
               </div>
+              <div class="col-12">
+                <div class="text-caption text-center text-grey-8 q-mb-xs">
+                  Triage Personnel Signature *
+                </div>
+                <div
+                  class="rounded-borders q-pa-sm"
+                  :class="hasError ? 'bg-red-1' : 'bg-grey-1'"
+                  style="border: 1px solid #dcdcdc"
+                >
+                  <SignaturePad v-model="localSignature" />
+
+                  <div
+                    v-if="hasError"
+                    class="text-negative text-caption q-mt-xs text-center"
+                  >
+                    <q-icon name="warning" class="q-mr-xs" /> Signature is required
+                  </div>
+                </div>
+              </div>
             </div>
           </q-form>
         </q-card-section>
@@ -559,6 +578,8 @@
 import { date } from "quasar";
 import axios from "axios";
 
+import SignaturePad from "src/components/InpatientForm/SignaturePad.vue";
+
 import { printInpatientInformation } from "src/composables/printInpatientInformation";
 import { printPatientInfo } from "src/composables/printPatientInfo";
 import { printPatientConsent } from "src/composables/printPatientConsent";
@@ -566,6 +587,7 @@ import { printEmergencyPatientInformation } from "src/composables/printEmergency
 
 export default {
   name: "ReturningInpatient",
+  components: { SignaturePad },
 
   setup() {
     const { generatePatientPdf } = printInpatientInformation();
@@ -658,8 +680,20 @@ export default {
         remarksTriage: "",
         personnelTriage: "",
         dateTriage: "",
+        localSignature: this.initialSignature || null,
       },
     };
+  },
+  watch: {
+    localSignature(val) {
+      if (val) this.hasError = false;
+      this.$emit("update:signature", val);
+    },
+    initialSignature(val) {
+      if (val !== this.localSignature) {
+        this.localSignature = val;
+      }
+    },
   },
 
   methods: {
@@ -699,11 +733,24 @@ export default {
 
     async updateTriageRecord() {
       const valid = await this.$refs.personalInfoTriage.validate();
+      const isSignatureValid = !!this.localSignature;
 
-      if (!valid) {
+      if (!isSignatureValid) this.hasError = true;
+
+      if (!valid || !isSignatureValid) {
+        let msg = "Please complete the requirements.";
+
+        if (!valid && !isSignatureValid) {
+          msg = "Please fill out missing fields and provide a signature.";
+        } else if (!valid) {
+          msg = "Please fill out the missing fields.";
+        } else if (!isSignatureValid) {
+          msg = "Personnel signature is required.";
+        }
+
         this.$q.notify({
           type: "warning",
-          message: "Please fill out missing fields before updating.",
+          message: msg,
           position: "top",
         });
         return;
@@ -717,6 +764,7 @@ export default {
         return;
       }
 
+      this.localForm.personnelSignature = this.localSignature;
       this.loading = true;
 
       try {

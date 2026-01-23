@@ -47,8 +47,8 @@ export function printEmergencyPatientInformation() {
         await initSdk();
         const pdf = window.pdfMake;
 
-        const leftLogo = await getBase64ImageFromURL('src/assets/uerm-logo.png');
-        const rightLogo = await getBase64ImageFromURL('src/assets/uerm-logo-white.png');
+        const rightLogo = await getBase64ImageFromURL('src/assets/uerm-logo.png');
+        const leftLogo = await getBase64ImageFromURL('src/assets/uerm-logo-white.png');
 
         const processSignature = (rawSig) => {
             if (!rawSig) return null;
@@ -131,7 +131,10 @@ export function printEmergencyPatientInformation() {
             content: [
                 {
                     columns: [
-                        getLogoColumn(leftLogo, 'left'),
+                        {
+                          ...getLogoColumn(leftLogo, 'right'),
+                          margin: [0, 12, 0, 0]
+                        },
                         {
                             width: '*',
                             stack: [

@@ -70,7 +70,7 @@
         <q-item
           clickable
           v-ripple
-          to="/adminEr/"
+          to="/er/"
           exact
           active-class="active-link"
           class="q-mx-sm rounded-borders q-mb-xs"
@@ -84,7 +84,7 @@
         <q-item
           clickable
           v-ripple
-          to="/adminEr/EmergencyList"
+          to="/er/EmergencyList"
           active-class="active-link"
           class="q-mx-sm rounded-borders q-mb-xs"
         >
@@ -97,7 +97,7 @@
         <q-item
           clickable
           v-ripple
-          to="/adminEr/ForAdmissionER"
+          to="/er/ForAdmissionER"
           active-class="active-link"
           class="q-mx-sm rounded-borders q-mb-xs"
         >

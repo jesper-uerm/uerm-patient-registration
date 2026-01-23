@@ -204,15 +204,17 @@ export default {
     populateForm(data) {
       this.formData.personalInfo = {
         ...this.formData.personalInfo,
+
         lastName: data.lastName || "",
         firstName: data.firstName || "",
         middleName: data.middleName || "",
         suffix: data.suffix || "",
         age: data.age || "",
+        birthdate: data.birthdateStr || data.birthdate || "",
+
         gender: data.gender || null,
         civilStatus: data.civilStatus || null,
         religion: data.religion || null,
-        birthdate: data.birthdate || "",
         birthplace: data.birthplace || "",
         nationality: data.nationality || "",
         occupation: data.occupation || "",
@@ -221,37 +223,40 @@ export default {
         mobile: data.mobile || "",
         email: data.email || "",
 
-        selectedRegion: data.region || data.selectedRegion || "",
-        selectedProvince: data.province || data.selectedProvince || "",
-        selectedCity: data.city || data.selectedCity || "",
-        selectedBarangay: data.barangay || data.selectedBarangay || "",
-        streetName: data.streetName || "",
+        selectedRegion: data.addressRegion || "",
+        selectedProvince: data.addressProvince || "",
+        selectedCity: data.addressCity || "",
+        selectedBarangay: data.addressBarangay || "",
+        streetName: data.addressStreet || "",
 
-        fathersName: data.fathersName || "",
-        fathersAddress: data.fathersAddress || "",
-        fatherContactNumber: data.fatherContactNumber || "",
-        mothersName: data.mothersName || "",
-        mothersAddress: data.mothersAddress || "",
-        motherContactNumber: data.motherContactNumber || "",
+        fathersName: data.ptFatherName || "",
+        fathersAddress: data.ptFatherAddress || "",
+        fatherContactNumber: data.ptFatherContact || "",
+
+        mothersName: data.ptMotherMaidenName || "",
+        mothersAddress: data.ptMotherAddress || "",
+        motherContactNumber: data.ptMotherContact || "",
       };
 
       this.formData.contactDetails = {
         ...this.formData.contactDetails,
-        seniorpwd: data.seniorpwd || "",
-        philhealth: data.philhealth || "",
-        sssgsis: data.sssgsis || "",
-        tin: data.tin || "",
-
+        seniorpwd: data.seniorId || data.seniorpwd || "",
+        philhealth: data.philhealthId || data.philhealth || "",
+        sssgsis: data.sssgsisId || data.sssgsis || "",
+        tin: data.tinID || data.tin || "",
         spouseName: data.spouseName || "",
         spouseOccupation: data.spouseOccupation || "",
         spouseEmployerName: data.spouseEmployerName || "",
         spouseEmployerContact: data.spouseEmployerContact || "",
         spouseEmployerAddress: data.spouseEmployerAddress || "",
-
-        contactPersonInpatient: data.contactPersonInpatient || "",
-        contactPersonInpatientRelationship:
-          data.contactPersonInpatientRelationship || null,
-        contactPersonInpatientMobile: data.contactPersonInpatientMobile || "",
+        contactPersonInpatient: data.cpName || "",
+        contactPersonInpatientRelationship: data.cpRelationship || null,
+        contactPersonInpatientMobile: data.cpMobile || "",
+        contactPersonInpatientLandline: data.cpLandline || "",
+        contactPersonInpatientEmail: data.cpEmail || "",
+        contactPersonInpatientAddress: data.cpAddress || "",
+        // contactPersonInpatientOccupation: "",
+        // contactPersonInpatientEmployerNumber: "",
       };
 
       if (data.mop) {

@@ -70,7 +70,7 @@
         <q-item
           clickable
           v-ripple
-          to="/admin/"
+          to="/admitting/"
           exact
           active-class="active-link"
           class="q-mx-sm rounded-borders q-mb-xs"
@@ -84,7 +84,7 @@
         <q-item
           clickable
           v-ripple
-          to="/admin/InpatientList"
+          to="/admitting/InpatientList"
           active-class="active-link"
           class="q-mx-sm rounded-borders q-mb-xs"
         >
@@ -97,7 +97,7 @@
         <q-item
           clickable
           v-ripple
-          to="/admin/OutpatientList"
+          to="/admitting/OutpatientList"
           active-class="active-link"
           class="q-mx-sm rounded-borders q-mb-xs"
         >

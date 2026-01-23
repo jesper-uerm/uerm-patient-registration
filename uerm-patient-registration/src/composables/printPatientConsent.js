@@ -75,9 +75,9 @@ export function printPatientConsent() {
 
       const getLogoColumn = (imgData, align) => {
           if (imgData) {
-            return { image: imgData, width: 50, alignment: align };
+            return { image: imgData, width: 60, alignment: align };
           }
-          return { text: '', width: 50 };
+          return { text: '', width: 60 };
         };
 
       pdf.fonts = {
@@ -118,13 +118,13 @@ export function printPatientConsent() {
                     text: 'Telephone: +632 715 0861-77 local 215      Website: https://www.uerm.edu.ph',
                     style: 'subheader',
                     alignment: 'center',
-                    margin: [0, 0, 0, 0],
+                    margin: [0, 2, 0, 30],
                   }
                 ]
               },
               getLogoColumn(rightLogo, 'right')
             ],
-            margin: [0, 0, 0, 15]
+            margin: [0, 0, 0, 10]
           },
 
           { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 1.5, lineColor: '#004aad' }] },
@@ -221,7 +221,7 @@ export function printPatientConsent() {
         ],
 
         styles: {
-          header: { fontSize: 10, bold: true, margin: [0, 5, 0, 0] },
+          header: { fontSize: 10, bold: true, margin: [5, 15, 5, 0] },
           subheader: { fontSize: 8, margin: [0, 0, 0, 0] },
           headerTitle: { fontSize: 14, bold: true },
           sectionHeader: { fontSize: 9, bold: true, letterSpacing: 1, margin: [0, 2, 0, 2] }

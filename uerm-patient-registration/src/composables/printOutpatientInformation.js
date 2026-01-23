@@ -48,7 +48,7 @@ export function printOutpatientInformation() {
       const pdf = window.pdfMake;
 
       const rightLogo = await getBase64ImageFromURL('src/assets/uerm-logo.png');
-      const leftLogo = await getBase64ImageFromURL('src/assets/uermmc-blue-logo.png');
+      const leftLogo = await getBase64ImageFromURL('src/assets/uerm-logo-white.png');
 
       let signatureData = null;
 
