@@ -1,6 +1,9 @@
 const { sql } = require('../config/db');
+const bcrypt = require('bcryptjs'); 
+
 
 exports.register = async (req, res) => {
+    console.log("Received Signature Length:", req.body.signature?.length);
     if (!req.body) {
         return res.status(400).json({ message: "Invalid Request: Body is missing." });
     }
@@ -123,7 +126,6 @@ exports.register = async (req, res) => {
             .input('medicalProcedure', sql.NVarChar, body.outpatientProcedure)
             .input('physician', sql.NVarChar, body.outpatientPhysician);
 
-
         const patientResult = await request.query(`
             DECLARE @ExistingID INT;
 
@@ -152,7 +154,7 @@ exports.register = async (req, res) => {
                     cpAddress = @cpAddress, cpOccupation = @cpOccupation, cpEmployerNumber = @cpEmployerNumber, spouseEmployerName = @spouseEmployerName, spouseEmployerAddress = @spouseEmployerAddress,
                     cpIncomeSource = @cpIncomeSource, cpGrossIncome = @cpGrossIncome, cpHomeOwnership = @cpHomeOwnership, cpHomeStay = @cpHomeStay,
                     cpHasCar = @cpHasCar, cpCarOwnership = @cpCarOwnership, cpNumberOfCars = @cpNumberOfCars, modeOfPayment = @mop, specificModeOfPayment = @specificmop, creditCards = @creditCard,
-                    bankAffiliations = @bank, itemsReceived = @items, patientType = 'Emergency', hmo = @hmo, scidnoOutpatient = @scidnoOutpatient, philHealth = @philHealth, medicalProcedure = @medicalProcedure, physician = @physician, isAdmitted = '2'
+                    bankAffiliations = @bank, itemsReceived = @items, patientType = 'Emergency', hmo = @hmo, scidnoOutpatient = @scidnoOutpatient, philHealth = @philHealth, medicalProcedure = @medicalProcedure, physician = @physician, isAdmitted = 2
                 WHERE patient_id = @ExistingID;
 
                 SELECT @ExistingID AS patient_id, 'UPDATED' AS status;
@@ -269,14 +271,18 @@ exports.registerTriage = async (req, res) => {
         birthdate: body.birthdateTriage || null,        
         age: toInt(body.ageTriage),
         gender: toStr(body.genderTriage),
+        civilStatus: toStr(body.civilStatus),
+        
         patientType: toStr(body.patientType),
         chiefComplaint: toStr(body.chiefComplaintTriage),
+        
         temp: toDecimal(body.tempTriage),     
         heartRate: toInt(body.heartRateTriage),
         oxygen: toDecimal(body.oxygenTriage),
         respiRate: toInt(body.respiRateTriage),
         painScore: toInt(body.painScoreTriage),
         bp: toStr(body.bpTriage),
+        
         avpu: toStr(body.avpuTriage),
         contagious: toStr(body.contagiousTriage),
         isolation: toStr(body.isolationPrecautionTriage),
@@ -286,10 +292,18 @@ exports.registerTriage = async (req, res) => {
         checkforPresense: Array.isArray(body.checkforPresense) 
             ? body.checkforPresense.join(', ') 
             : toStr(body.checkforPresense),
+
+        contactPerson: toStr(body.contactPersonTriage),
+        contactAddress: toStr(body.contactPersonTriageAddress),
+        contactNumber: toStr(body.contactPersonTriageMobile),
+        seniorId: toStr(body.scidnoTriage),
+        hmo: toStr(body.hmoName),
+        infirmary: toStr(body.infirmary), 
+
         personnel: toStr(body.personnelTriage),
         dateAccomplished: body.dateTriage ? new Date(body.dateTriage) : new Date(),
         
-        isAdmitted: 0,
+        isAdmitted: 0, 
 
         personnelSignature: body.personnelSignature,
         patientSignature: body.patientSignature
@@ -312,6 +326,9 @@ exports.registerTriage = async (req, res) => {
             .input('birthdate', sql.VarChar, t.birthdate)
             .input('age', sql.Int, t.age)
             .input('gender', sql.NVarChar, t.gender)
+            .input('civilStatus', sql.NVarChar, t.civilStatus)
+            .input('infirmary', sql.NVarChar, t.infirmary)
+            
             .input('patientType', sql.NVarChar, t.patientType)
             .input('chiefComplaint', sql.NVarChar, t.chiefComplaint)
             .input('temp', sql.Decimal(5, 2), t.temp)     
@@ -320,6 +337,7 @@ exports.registerTriage = async (req, res) => {
             .input('bp', sql.NVarChar, t.bp)
             .input('respiRate', sql.Int, t.respiRate)     
             .input('painScore', sql.Int, t.painScore)
+            
             .input('avpu', sql.NVarChar, t.avpu)
             .input('contagious', sql.NVarChar, t.contagious)
             .input('isolation', sql.NVarChar, t.isolation)
@@ -327,24 +345,33 @@ exports.registerTriage = async (req, res) => {
             .input('level', sql.NVarChar, t.level)
             .input('remarks', sql.NVarChar, t.remarks)
             .input('checkforPresense', sql.NVarChar, t.checkforPresense)
+
+            .input('cpName', sql.NVarChar, t.contactPerson)    
+            .input('cpAddress', sql.NVarChar, t.contactAddress) 
+            .input('cpMobile', sql.NVarChar, t.contactNumber)  
+            .input('hmo', sql.NVarChar, t.hmo)                  
+            .input('seniorId', sql.NVarChar, t.seniorId)     
+
             .input('personnel', sql.NVarChar, t.personnel)
             .input('dateAccomplished', sql.Date, t.dateAccomplished)
-            
-            // NEW: Bind isAdmitted input
             .input('isAdmitted', sql.Bit, t.isAdmitted);
 
         const result = await request.query(`
             INSERT INTO PatientRegistration (
-                lastName, firstName, middleName, suffix, birthdate, age, sex, patientType,
-                chiefComplaint, temp, heartrate, oxygen, bp, respirate, painScore,
+                lastName, firstName, middleName, suffix, birthdate, age, sex, 
+                civilStatus, infirmary,
+                patientType, chiefComplaint, temp, heartrate, oxygen, bp, respirate, painScore,
                 avpu, contagious, isolation, cpd, level, remarks, symptoms,
+                cpName, cpAddress, cpMobile, hmo, seniorId,  -- Fixed column list (removed duplicate infirmary)
                 personnel, dateAccomplished, isAdmitted
             )
             OUTPUT INSERTED.patient_id
             VALUES (
-                @lastName, @firstName, @middleName, @suffix, @birthdate, @age, @gender, @patientType,
-                @chiefComplaint, @temp, @heartRate, @oxygen, @bp, @respiRate, @painScore,
+                @lastName, @firstName, @middleName, @suffix, @birthdate, @age, @gender, 
+                @civilStatus, @infirmary,
+                @patientType, @chiefComplaint, @temp, @heartRate, @oxygen, @bp, @respiRate, @painScore,
                 @avpu, @contagious, @isolation, @cpd, @level, @remarks, @checkforPresense,
+                @cpName, @cpAddress, @cpMobile, @hmo, @seniorId, 
                 @personnel, @dateAccomplished, @isAdmitted
             )
         `);
@@ -383,7 +410,7 @@ exports.registerTriage = async (req, res) => {
         await transaction.commit(); 
 
         res.status(201).json({ 
-            message: "Triage assessment, personnel signature, and patient signature saved successfully", 
+            message: "Triage assessment saved successfully", 
             triageId: patientId 
         });
 
@@ -397,6 +424,7 @@ exports.registerTriage = async (req, res) => {
 };
 
 exports.updateTriage = async (req, res) => {
+
     if (!req.body) {
         return res.status(400).json({ message: "Invalid Request: Body is missing." });
     }
@@ -411,16 +439,27 @@ exports.updateTriage = async (req, res) => {
     const toInt = (val) => (val === "" || val === undefined || val === null) ? null : parseInt(val, 10);
     const toStr = (val) => (val === "" || val === undefined) ? null : val;
 
+    const processBase64 = (base64String) => {
+        if (!base64String) return null;
+        const cleanString = base64String.replace(/^data:image\/\w+;base64,/, "");
+        return Buffer.from(cleanString, 'base64');
+    };
+
     const t = {
-        patientId: toInt(body.patientId),
+        idInput: toInt(body.patientId), 
+        
         lastName: toStr(body.lastNameTriage),
         firstName: toStr(body.firstNameTriage),
         middleName: toStr(body.middleNameTriage),
         suffix: toStr(body.suffixTriage),
-        birthdate: body.birthdateTriage ? new Date(body.birthdateTriage) : null,
+        birthdate: body.birthdateTriage || null,        
         age: toInt(body.ageTriage),
         gender: toStr(body.genderTriage),
-        patientType: toStr(body.patientType),
+        
+        weightTriage: toStr(body.weightTriage),
+        broughtBy: toStr(body.broughtBy),
+        philHealthCateg: toStr(body.philHealthCateg),
+        ptCondition: toStr(body.ptCondition),
 
         chiefComplaint: toStr(body.chiefComplaintTriage),
         
@@ -443,22 +482,36 @@ exports.updateTriage = async (req, res) => {
             : toStr(body.checkforPresense),
             
         personnel: toStr(body.personnelTriage),
-        dateAccomplished: body.dateTriage ? new Date(body.dateTriage) : new Date()
+        dateAccomplished: body.dateTriage ? new Date(body.dateTriage) : new Date(),
+
+        personnelSignature: body.personnelSignature 
     };
+
+    let transaction;
 
     try {
         const pool = await sql.connect();
-        const request = new sql.Request(pool); 
+        transaction = new sql.Transaction(pool);
+        await transaction.begin();
+
+        const request = new sql.Request(transaction); 
 
         request
-            .input('patientId', sql.BigInt, t.patientId) 
+            .input('idInput', sql.BigInt, t.idInput) 
+            
             .input('lastName', sql.NVarChar, t.lastName)
             .input('firstName', sql.NVarChar, t.firstName)
             .input('middleName', sql.NVarChar, t.middleName)
             .input('suffix', sql.NVarChar, t.suffix)
-            .input('birthdate', sql.Date, t.birthdate)
+            .input('birthdate', sql.VarChar, t.birthdate)
             .input('age', sql.Int, t.age)
             .input('gender', sql.NVarChar, t.gender)
+            
+            .input('weightTriage', sql.NVarChar, t.weightTriage)
+            .input('broughtBy', sql.NVarChar, t.broughtBy)
+            .input('philHealthCateg', sql.NVarChar, t.philHealthCateg)
+            .input('ptCondition', sql.NVarChar, t.ptCondition)
+
             .input('chiefComplaint', sql.NVarChar, t.chiefComplaint)
             
             .input('temp', sql.Decimal(5, 2), t.temp)     
@@ -488,6 +541,12 @@ exports.updateTriage = async (req, res) => {
                 birthdate = @birthdate,
                 age = @age,
                 sex = @gender,
+                
+                weight = @weightTriage,
+                broughtBy = @broughtBy,
+                philHealthCateg = @philHealthCateg,
+                ptCondition = @ptCondition,
+
                 chiefComplaint = @chiefComplaint,
                 temp = @temp,
                 heartrate = @heartRate,
@@ -505,20 +564,62 @@ exports.updateTriage = async (req, res) => {
                 personnel = @personnel,
                 dateAccomplished = @dateAccomplished,
                 patientType = 'Emergency'
-            WHERE patient_no = @patientId
+            
+            OUTPUT inserted.patient_id, inserted.patient_no
+            
+            WHERE patient_no = @idInput OR patient_id = @idInput
         `);
 
-        if (result.rowsAffected[0] === 0) {
-            return res.status(404).json({ message: "Patient ID not found or no changes made." });
+        if (!result.recordset || result.recordset.length === 0) {
+            throw new Error("Patient ID not found or no changes made.");
         }
-        
+
+        const dbPatientPk = result.recordset[0].patient_id; 
+        const dbPatientNo = result.recordset[0].patient_no; 
+
+        if (t.personnelSignature) {
+            
+            const psRequest = new sql.Request(transaction); 
+            const personnelBuffer = processBase64(t.personnelSignature);
+            
+            psRequest.input('pId', sql.Int, dbPatientPk); 
+            psRequest.input('pNo', sql.BigInt, dbPatientNo); 
+            
+            psRequest.input('signData', sql.VarBinary(sql.MAX), personnelBuffer);
+            psRequest.input('personnel', sql.NVarChar, t.personnel); 
+
+            await psRequest.query(`
+                IF EXISTS (SELECT 1 FROM tpSignature WHERE patient_no = @pNo)
+                BEGIN
+                    UPDATE tpSignature 
+                    SET eSignature = @signData, 
+                        personnel_name = @personnel,
+                        patient_id = @pId 
+                    WHERE patient_no = @pNo
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO tpSignature (patient_id, patient_no, eSignature, personnel_name) 
+                    VALUES (@pId, @pNo, @signData, @personnel)
+                END
+            `);
+        }
+
+        await transaction.commit();
+
         res.status(200).json({ 
-            message: "Triage assessment updated successfully",
-            id: t.patientId
+            message: "Triage assessment and signature updated successfully",
+            id: t.idInput
         });
 
     } catch (err) {
+        if (transaction) {
+            try { await transaction.rollback(); } catch (e) { console.error("Rollback failed", e); }
+        }
         console.error("Triage Update Error:", err);
+        if (err.message === "Patient ID not found or no changes made.") {
+            return res.status(404).json({ message: err.message });
+        }
         res.status(500).json({ message: "Server error: " + err.message });
     }
 };
@@ -603,69 +704,21 @@ exports.fetchInpatient = async (req, res) => {
         
         const result = await pool.request()
             .query(`
-                SELECT TOP 100 
-                    -- Basic Identifiers
-                    patient_id,
-                    
-                    (firstName + ' ' + ISNULL(middleName + ' ', '') + lastName + ISNULL(' ' + suffix, '')) AS fullName,                    
-                    
-                    lastName, 
-                    firstName, 
-                    ISNULL(middleName, '') as middleName, 
-                    ISNULL(suffix, '') as suffix,
+            SELECT 
+                *, 
+                
+                (firstName + ' ' + ISNULL(middleName + ' ', '') + lastName + ISNULL(' ' + suffix, '')) AS fullName, 
+                ISNULL(middleName, '') as middleName, 
+                ISNULL(suffix, '') as suffix,
+                sex as gender, 
+                    FORMAT(birthdate, 'yyyy-MM-dd') as birthdateStr,
+                CONCAT_WS(', ', addressStreet, addressBarangay, addressCity, addressProvince, addressRegion) AS addressPresent
 
-                    sex as gender, 
-                    civilStatus,
-                    religion,
-                    nationality,
-                    occupation,
-
-                    FORMAT(birthdate, 'yyyy-MM-dd') as birthdate,
-                    age,
-                    birthplace,
-
-                    addressStreet,  
-                    addressBarangay,  
-                    addressCity,  
-                    addressRegion,  
-                    addressProvince,
-
-                    CONCAT_WS(', ', addressStreet, addressBarangay, addressCity, addressProvince, addressRegion) AS addressPresent,
-                    
-                    mobile,
-                    landline,
-                    email,
-
-                    cpName,
-                    cpRelationship,
-                    cpAddress,
-                    cpLandline,
-                    cpMobile,
-
-                    spouseName,
-                    spouseOccupation,
-                    spouseEmployerContact,
-
-                    ptFatherName,
-                    ptFatherAddress,
-                    ptFatherContact,
-                    ptMotherMaidenName,
-                    ptMotherAddress,
-                    ptMotherContact,
-
-                    sssgsisId,
-                    tinID,
-                    seniorId, 
-                    philhealthId,
-
-                    createdAt,
-                    patientType,
-                    physician
-
-                FROM PatientRegistration
-                WHERE 
-                    patientType = 'Inpatient' 
-                ORDER BY createdAt DESC
+            FROM PatientRegistration
+            WHERE 
+                patientType = 'Inpatient' 
+                OR isAdmitted = 2
+            ORDER BY createdAt DESC
             `);
 
         res.status(200).json(result.recordset);
@@ -745,26 +798,13 @@ exports.searchErpatient = async (req, res) => {
             .input('exactId', sql.Int, isNaN(query) ? 0 : parseInt(query)) 
             .query(`
                 SELECT TOP 20 
-                    patient_id, 
+                    *, -- 1. 
 
                     (firstName + ' ' + ISNULL(middleName + ' ', '') + lastName) AS fullName,                    
-
-                    lastName, 
-                    firstName, 
-                    ISNULL(middleName, '') as middleName, 
-                    
-                    FORMAT(birthdate, 'yyyy-MM-dd') as birthdate,
-                    
-                    age,
                     sex as gender, 
-                    civilStatus,
-                    nationality,
-                    CONCAT_WS(', ', addressStreet, addressBarangay, addressCity, addressProvince, addressRegion) AS addressPresent,
-                    mobile,
-                    email,
-                    createdAt,
-                    patientType,
-                    physician
+                    
+                    CONCAT_WS(', ', addressStreet, addressBarangay, addressCity, addressProvince, addressRegion) AS addressPresent
+
                 FROM PatientRegistration
                 WHERE 
                     (
@@ -790,70 +830,24 @@ exports.fetchOutpatient = async (req, res) => {
         
         const result = await pool.request()
             .query(`
-                SELECT TOP 100 
-                    -- Basic Identifiers
-                    patient_id,
-                    
-                    (firstName + ' ' + ISNULL(middleName + ' ', '') + lastName + ISNULL(' ' + suffix, '')) AS fullName,                    
-                    
-                    lastName, 
-                    firstName, 
-                    ISNULL(middleName, '') as middleName, 
-                    ISNULL(suffix, '') as suffix,
+            SELECT 
+                *, 
 
-                    sex as gender, 
-                    civilStatus,
-                    religion,
-                    nationality,
-                    occupation,
+                (firstName + ' ' + ISNULL(middleName + ' ', '') + lastName + ISNULL(' ' + suffix, '')) AS fullName, 
+                
+                ISNULL(middleName, '') as middleName, 
+                ISNULL(suffix, '') as suffix,
 
-                    FORMAT(birthdate, 'yyyy-MM-dd') as birthdate,
-                    age,
-                    birthplace,
+                sex as gender, 
+                FORMAT(birthdate, 'yyyy-MM-dd') as birthdateStr, 
+                
+                CONCAT_WS(', ', addressStreet, addressBarangay, addressCity, addressProvince, addressRegion) AS addressPresent
 
-                    addressStreet,  
-                    addressBarangay,  
-                    addressCity,  
-                    addressRegion,  
-                    addressProvince,
-
-                    CONCAT_WS(', ', addressStreet, addressBarangay, addressCity, addressProvince, addressRegion) AS addressPresent,
-                    
-                    mobile,
-                    landline,
-                    email,
-
-                    cpName,
-                    cpRelationship,
-                    cpAddress,
-                    cpLandline,
-                    cpMobile,
-
-                    spouseName,
-                    spouseOccupation,
-                    spouseEmployerContact,
-
-                    ptFatherName,
-                    ptFatherAddress,
-                    ptFatherContact,
-                    ptMotherMaidenName,
-                    ptMotherAddress,
-                    ptMotherContact,
-
-                    sssgsisId,
-                    tinID,
-                    seniorId, 
-                    philhealthId,
-
-                    createdAt,
-                    patientType,
-                    physician
-
-                FROM PatientRegistration
-                WHERE 
-                    patientType = 'Outpatient' 
-                ORDER BY createdAt DESC
-            `);
+            FROM PatientRegistration
+            WHERE 
+                patientType = 'Outpatient' 
+            ORDER BY createdAt DESC
+        `);
 
         res.status(200).json(result.recordset);
 
@@ -869,30 +863,18 @@ exports.fetchErpatient = async (req, res) => {
         
         const result = await pool.request()
             .query(`
-                SELECT TOP 100 
-                    patient_id,
-                    
-                    (firstName + ' ' + ISNULL(middleName + ' ', '') + lastName) AS fullName,                    
-                        
-                    lastName, 
-                    firstName, 
-                    ISNULL(middleName, '') as middleName, 
-                    
-                    FORMAT(birthdate, 'yyyy-MM-dd') as birthdate,
-                    age,
+                SELECT 
+                    *,  
+
+                    (firstName + ' ' + ISNULL(middleName + ' ', '') + lastName) AS fullName,
+                    FORMAT(birthdate, 'yyyy-MM-dd') as birthdateStr,
                     sex as gender, 
-                    civilStatus,
-                    nationality,
-                    CONCAT_WS(', ', addressStreet, addressBarangay, addressCity, addressProvince, addressRegion) AS addressPresent,
-                    mobile,
-                    email,
-                    createdAt,
-                    patientType,
-                    physician,
-                    isAdmitted
+                    CONCAT_WS(', ', addressStreet, addressBarangay, addressCity, addressProvince, addressRegion) AS addressPresent
+
                 FROM PatientRegistration
                 WHERE 
                     patientType = 'Emergency' 
+                    AND (isAdmitted = '0' OR isAdmitted = '1') 
                 ORDER BY createdAt DESC
             `);
 
@@ -921,7 +903,7 @@ exports.fetchAdmitErpatient = async (req, res) => {
                 FROM PatientRegistration
                 WHERE 
                     patientType = 'Emergency' 
-                    AND (isAdmitted = '1' OR isAdmitted = '2') 
+                    AND (isAdmitted = '1') 
                 ORDER BY createdAt DESC
             `);
 
@@ -1606,3 +1588,66 @@ exports.admitErPatient = async (req, res) => {
         res.status(500).json({ message: "Server error: " + err.message });
     }
 };
+
+exports.login = async (req, res) => {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+        return res.status(400).json({ message: "Username and password are required." });
+    }
+
+    try {
+        const pool = await sql.connect();
+        
+        const result = await pool.request()
+            .input('uName', sql.VarChar, username) 
+            .query(`
+                SELECT USERID, USERNAME, PASSWORD, DEPARTMENT
+                FROM UERMMMC.dbo.USERS 
+                WHERE USERNAME = @uName
+            `);
+
+        const user = result.recordset[0];
+
+        if (!user) {
+            return res.status(401).json({ message: "Invalid credentials." });
+        }
+
+        // const isMatch = await bcrypt.compare(password, user.PASSWORD);
+
+        // if (!isMatch) {
+        //     return res.status(401).json({ message: "Invalid credentials." });
+        // }
+
+        if (password !== user.PASSWORD) {
+            return res.status(401).json({ message: "Invalid credentials." });
+        }
+
+        const userRole = user.DEPARTMENT; 
+        let redirectPath = '/';
+
+        if (userRole === 'EMERGENCY ROOM' || userRole === 'ER') {
+            redirectPath = '/er';
+        } else if (userRole === 'ADMITTING SECTION' || userRole === 'Admitting') {
+            redirectPath = '/admitting';
+        } else {
+            return res.status(403).json({ message: "Unauthorized role access." });
+        }
+
+        res.status(200).json({
+            message: "Login successful",
+            user: {
+                id: user.USERID,        
+                username: user.USERNAME, 
+                role: userRole           
+            },
+            redirectPath: redirectPath 
+        });
+
+    } catch (err) {
+        console.error("Login Error:", err);
+        res.status(500).json({ message: "Server error: " + err.message });
+    }
+};
+
+
