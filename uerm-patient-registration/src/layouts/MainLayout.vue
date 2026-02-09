@@ -4,35 +4,61 @@
       <q-toolbar>
         <q-avatar
           square
-          size="80px"
-          class="q-mr-xs"
+          :class="$q.screen.lt.sm ? '' : 'q-mr-xs'"
           @click="$router.push('/')"
           style="cursor: pointer"
+          :style="{
+            fontSize: $q.screen.lt.sm ? '50px' : '80px',
+          }"
         >
           <img src="~assets/uermmc-white-logo-header.png" alt="UERM Logo" />
         </q-avatar>
 
-        <q-toolbar-title class="text-weight-bold header-title">
+        <q-toolbar-title
+          class="text-weight-bold header-title"
+          :style="{
+            fontSize: $q.screen.lt.sm ? '12px' : '',
+          }"
+        >
           UERM Admission Portal
-          <div class="text-caption text-grey-4" style="line-height: 1.2">
+          <div
+            class="text-caption text-grey-4"
+            style="line-height: 1.2"
+            :style="{
+              fontSize: $q.screen.lt.sm ? '10px' : '',
+            }"
+          >
             Patient Online Registration System
           </div>
         </q-toolbar-title>
 
         <div class="row items-center q-gutter-sm">
-          <div class="column items-end q-mr-sm">
-            <div class="text-weight-bold text-white-10" style="font-size: 0.85rem">
+          <div class="column items-end" :class="$q.screen.lt.sm ? '' : 'q-mr-sm'">
+            <div
+              class="text-weight-bold text-white-10"
+              :style="{
+                fontSize: $q.screen.lt.sm ? '9px' : '0.85rem',
+              }"
+            >
               {{ formattedTime }}
             </div>
             <div
               class="text-caption text-white-7"
-              style="font-size: 0.7rem; line-height: 1"
+              style="line-height: 1"
+              :style="{
+                fontSize: $q.screen.lt.sm ? '9px' : '0.7rem',
+              }"
             >
               {{ formattedDate }}
             </div>
           </div>
 
-          <q-icon name="schedule" color="white-10" size="md" class="q-mr-sm" />
+          <q-icon
+            name="schedule"
+            color="white-10"
+            :size="$q.screen.lt.sm ? 'sm' : 'md'"
+            :class="$q.screen.lt.sm ? '' : 'q-mr-sm'"
+          />
         </div>
       </q-toolbar>
     </q-header>
@@ -42,7 +68,12 @@
     </q-page-container>
 
     <q-footer class="bg-transparent text-white text-center q-pb-md">
-      <div class="text-caption">
+      <div
+        class="text-caption"
+        :style="{
+          fontSize: $q.screen.lt.sm ? '10px' : '',
+        }"
+      >
         &copy; {{ currentYear }} UERM Memorial Medical Center. All rights reserved.
       </div>
     </q-footer>

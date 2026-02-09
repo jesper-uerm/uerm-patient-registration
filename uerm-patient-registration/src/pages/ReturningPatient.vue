@@ -175,6 +175,7 @@
 
     <q-dialog
       v-model="triageDialog"
+      backdrop-filter="blur(4px)"
       persistent
       transition-show="scale"
       transition-hide="scale"
@@ -578,7 +579,7 @@
 import { date } from "quasar";
 import axios from "axios";
 
-import SignaturePad from "src/components/InpatientForm/SignaturePad.vue";
+import SignaturePad from "src/components/TriageAssessment/SignaturePad.vue";
 
 import { printInpatientInformation } from "src/composables/printInpatientInformation";
 import { printPatientInfo } from "src/composables/printPatientInfo";

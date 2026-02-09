@@ -7,14 +7,16 @@
   >
     <q-card
       class="column no-wrap"
-      style="width: 1300px; max-width: 95vw; max-height: 95vh; border-radius: 20px"
+      style="width: 1300px; max-width: 95vw; max-height: 87vh; border-radius: 20px"
     >
       <q-card-section
         class="column text-center text-white q-py-md relative-position"
         style="background-color: #004aad"
       >
-        <div class="text-h6 text-bold">TRIAGE ASSESSMENT FORM</div>
-        <div class="text-caption text-white-7" style="line-height: 1.2">
+        <div :class="$q.screen.lt.sm ? 'text-subtitle2 text-bold' : 'text-h6 text-bold'">
+          TRIAGE ASSESSMENT FORM
+        </div>
+        <div class="text-caption text-white-7" style="line-height: 1">
           Please complete the steps below
         </div>
         <q-btn
@@ -23,7 +25,8 @@
           round
           dense
           v-close-popup
-          class="absolute-right q-ma-lg"
+          class="absolute-right"
+          :class="$q.screen.lt.sm ? 'q-ma-md' : 'q-ma-lg'"
         />
       </q-card-section>
 
@@ -35,14 +38,13 @@
           done-color="positive"
           animated
           flat
-          alternative-labels
+          :alternative-labels="!$q.screen.lt.sm"
+          :contracted="$q.screen.lt.sm"
         >
           <q-step :name="1" title="Personal Info" icon="person" :done="step > 1">
             <patient-details-triage
               :form="formData.personalInfoTriage"
               @update:form="(val) => (formData.personalInfoTriage = val)"
-              :initial-signature="formData.personnelSignature"
-              @update:signature="(val) => (formData.personnelSignature = val)"
               @next="step = 2"
             />
           </q-step>
@@ -64,119 +66,32 @@
 </template>
 
 <script>
+import { mapWritableState, mapActions } from "pinia";
+import { useTriageStore } from "../stores/triageStore";
 import PatientDetailsTriage from "../components/TriageAssessment/PatientDetailsTriage.vue";
 import PatientConsentTriage from "../components/TriageAssessment/PatientConsentTriage.vue";
-import axios from "axios";
 
 export default {
-  name: "TraigeAssessment",
+  name: "TriageAssessment",
   components: {
     PatientDetailsTriage,
     PatientConsentTriage,
   },
-  data() {
-    return {
-      TriageAssessmentFormDialog: false,
-      step: 1,
-      submitting: false,
 
-      formData: {
-        personalInfoTriage: {
-          lastNameTriage: "",
-          firstNameTriage: "",
-          middleNameTriage: "",
-          suffixTriage: "",
-          birthdateTriage: "",
-          ageTriage: "",
-          genderTriage: "",
-          chiefComplaintTriage: "",
-          tempTriage: "",
-          heartRateTriage: "",
-          oxygenTriage: "",
-          bpTriage: "",
-          respiRateTriage: "",
-          painScoreTriage: "",
-          avpuTriage: "",
-          contagiousTriage: "",
-          isolationPrecautionTriage: "",
-          cpdTriage: "",
-          levelTriage: "",
-          remarksTriage: "",
-          checkforPresense: [],
-          personnelTriage: "",
-          dateTriage: "",
-        },
-        // Consent Data (if any fields exist besides signature)
-        PatientConsentTriageForm: {},
-
-        personnelSignature: null,
-        patientSignature: null,
-      },
-    };
+  computed: {
+    ...mapWritableState(useTriageStore, [
+      "TriageAssessmentFormDialog",
+      "step",
+      "formData",
+      "submitting",
+    ]),
   },
 
   methods: {
+    ...mapActions(useTriageStore, ["submitRegistration", "openDialog"]),
+
     show() {
-      this.step = 1;
-      this.TriageAssessmentFormDialog = true;
-    },
-
-    async onSubmit() {
-      if (!this.formData.personnelSignature) {
-        this.$q.notify({
-          type: "warning",
-          message: "Step 1 incomplete: Personnel Signature is required.",
-          position: "top",
-        });
-        this.step = 1;
-        return;
-      }
-
-      if (!this.formData.patientSignature) {
-        this.$q.notify({
-          type: "warning",
-          message: "Step 2 incomplete: Patient Consent Signature is required.",
-          position: "top",
-        });
-        return;
-      }
-
-      if (this.submitting) return;
-      this.submitting = true;
-      this.$q.loading.show({ message: "Submitting Registration..." });
-
-      const finalData = {
-        ...this.formData.personalInfoTriage,
-        patientType: "Emergency",
-        personnelSignature: this.formData.personnelSignature,
-        patientSignature: this.formData.patientSignature,
-      };
-
-      try {
-        await axios.post("http://10.107.0.2:3000/api/auth/registerTriage", finalData);
-
-        this.$q.notify({
-          type: "positive",
-          message: "Registration Successful!",
-          position: "top",
-          timeout: 4000,
-        });
-
-        setTimeout(() => {
-          this.TriageAssessmentFormDialog = false;
-        }, 1500);
-      } catch (error) {
-        console.error(error);
-        const errorMsg = error.response?.data?.message || "Server Error: Could not save.";
-        this.$q.notify({
-          type: "negative",
-          message: errorMsg,
-          position: "top",
-        });
-      } finally {
-        this.submitting = false;
-        this.$q.loading.hide();
-      }
+      this.openDialog();
     },
   },
 };

@@ -1,11 +1,11 @@
 <template>
   <div class="col-12 column flex-center q-gap-md">
     <div
-      v-if="signedImage"
+      v-if="modelValue"
       class="signature-preview q-pa-sm bg-grey-2 rounded-borders cursor-pointer"
       @click="showDialog = true"
     >
-      <img :src="signedImage" alt="Signature" style="max-width: 100%; height: 100px" />
+      <img :src="modelValue" alt="Signature" style="max-width: 100%; height: 100px" />
     </div>
     <q-btn
       v-else
@@ -19,7 +19,7 @@
     <q-dialog v-model="showDialog" persistent>
       <q-card style="min-width: 350px; width: 100%; max-width: 600px">
         <q-card-section class="row items-center">
-          <div class="text-subtitle2 text-grey-9">Please provide your sign below:</div>
+          <div class="text-subtitle2 text-grey-9">Provide Patient Signature:</div>
           <q-space />
           <q-btn icon="close" flat round dense v-close-popup />
         </q-card-section>
@@ -50,53 +50,39 @@
     </q-dialog>
   </div>
 </template>
+
 <script>
 import { VueSignaturePad } from "vue-signature-pad";
 export default {
-  name: "SignaturePad",
-  components: {
-    VueSignaturePad,
-  },
+  name: "SignaturePadOutpatient",
+  components: { VueSignaturePad },
   props: {
-    modelValue: {
-      type: String,
-      default: null,
-    },
+    modelValue: String,
   },
-  emits: ["update:modelValue", "save"],
+  emits: ["update:modelValue"],
   data() {
     return {
       showDialog: false,
-      signedImage: this.modelValue || null,
     };
-  },
-  watch: {
-    modelValue(newVal) {
-      this.signedImage = newVal;
-    },
   },
   methods: {
     clearSignature() {
       this.$refs.signaturePad.clearSignature();
+      this.$emit("update:modelValue", null);
     },
     saveSignature() {
       const { isEmpty, data } = this.$refs.signaturePad.saveSignature();
       if (isEmpty) {
-        this.$q.notify({
-          type: "warning",
-          message: "Please provide a signature first.",
-          position: "top",
-        });
+        this.$q.notify({ type: "warning", message: "Please sign first." });
         return;
       }
-      this.signedImage = data;
       this.$emit("update:modelValue", data);
-      this.$emit("save", data);
       this.showDialog = false;
     },
   },
 };
 </script>
+
 <style scoped>
 .signature-preview {
   border: 1px dashed #ccc;

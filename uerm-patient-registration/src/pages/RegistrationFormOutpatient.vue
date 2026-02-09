@@ -7,13 +7,15 @@
   >
     <q-card
       class="column no-wrap"
-      style="width: 1300px; max-width: 95vw; max-height: 95vh; border-radius: 20px"
+      style="width: 1300px; max-width: 95vw; max-height: 87vh; border-radius: 20px"
     >
       <q-card-section
         class="column text-center text-white q-py-md relative-position"
         style="background-color: #004aad"
       >
-        <div class="text-h6 text-bold">OUTPATIENT FORM</div>
+        <div :class="$q.screen.lt.sm ? 'text-subtitle2 text-bold' : 'text-h6 text-bold'">
+          OUTPATIENT FORM
+        </div>
         <div class="text-caption text-white-7" style="line-height: 1.2">
           Please complete the steps below
         </div>
@@ -35,7 +37,8 @@
           done-color="positive"
           animated
           flat
-          alternative-labels
+          :alternative-labels="!$q.screen.lt.sm"
+          :contracted="$q.screen.lt.sm"
         >
           <q-step :name="1" title="Personal Info" icon="person" :done="step > 1">
             <patient-details-outpatient
@@ -67,7 +70,7 @@
               :relationshipOptions="relationshipOptions"
               @update:form="(val) => (formData.patientConsent = val)"
               @update:signature="(val) => (formData.signatureOutpatient = val)"
-              @prev="step = 3"
+              @prev="step = 2"
               @submit="onSubmit"
             />
           </q-step>
@@ -78,10 +81,11 @@
 </template>
 
 <script>
+import { mapWritableState } from "pinia";
+import { useOutpatientStore } from "src/stores/outpatientStore";
 import ContactPerson from "../components/OutpatientForm/ContactPerson.vue";
 import PatientDetailsOutpatient from "../components/OutpatientForm/PatientDetailsOutpatient.vue";
 import PatientConsent from "../components/OutpatientForm/PatientConsent.vue";
-
 import axios from "axios";
 
 export default {
@@ -94,51 +98,16 @@ export default {
   data() {
     return {
       OutpatientregistrationFormDialog: false,
-      step: 1,
-      sameAsPresent: false,
-      sameAsFather: false,
       civilStatusOptions: ["Single", "Married", "Widowed", "Separated", "Divorced"],
       religionOptions: ["Roman Catholic", "Christian", "Islam", "Others"],
       relationshipOptions: ["Spouse", "Parent", "Sibling", "Child", "Co-Maker"],
-      formData: {
-        personalInfoOutpatient: {
-          lastNameOutpatient: "",
-          firstNameOutpatient: "",
-          middleNameOutpatient: "",
-          suffixOutpatient: "",
-          birthdateOutpatient: "",
-          ageOutpatient: "",
-          birthplaceOutpatient: "",
-          genderOutpatient: null,
-          civilStatusOutpatient: null,
-          religionOutpatient: null,
-          nationalityOutpatient: "",
-          occupationOutpatient: "",
-          hmoOutpatient: "",
-          scidnoOutpatient: "",
-          landlineOutpatient: "",
-          mobileOutpatient: "",
-          outpatientPhilHealth: [],
-          // presentAddress: "",
-          selectedRegionOutpatient: "",
-          selectedProvinceOutpatient: "",
-          selectedCityOutpatient: "",
-          selectedBarangayOutpatient: "",
-          streetNameOutpatient: "",
-          permanentAddressOutpatient: "",
-        },
-        contactPersonOutpatient: {
-          contactPersonOutpatient: "",
-          contactPersonLandlineOutpatient: "",
-          contactPersonNumberOutpatient: "",
-          contactPersonRelationship: "",
-          outpatientProcedure: "",
-          outpatientPhysician: "",
-        },
-        signatureOutpatient: null,
-      },
     };
   },
+
+  computed: {
+    ...mapWritableState(useOutpatientStore, ["formData", "step", "submitting"]),
+  },
+
   methods: {
     show() {
       this.step = 1;
@@ -147,22 +116,17 @@ export default {
 
     async validateFinalStep() {
       if (this.$refs.patientConsentRef) {
-        const isContactValid = await this.$refs.patientConsentRef.validate();
+        const isConsentValid = await this.$refs.patientConsentRef.validate();
 
-        const isSignatureValid = !!this.formData.signatureOutpatient;
+        const signatureData = this.formData.contactPersonOutpatient.signature;
+        const isSignatureValid = !!signatureData && signatureData.length > 100;
 
-        if (!isContactValid) {
-          this.$q.notify({
-            type: "warning",
-            message: "Please correct errors in Contact Person details.",
-          });
+        if (!isConsentValid) {
+          this.$q.notify({ type: "warning", message: "Please correct form errors." });
           return false;
         }
         if (!isSignatureValid) {
-          this.$q.notify({
-            type: "warning",
-            message: "Patient Signature is required.",
-          });
+          this.$q.notify({ type: "warning", message: "Patient Signature is required." });
           return false;
         }
         return true;
@@ -177,12 +141,11 @@ export default {
       if (!isValid) return;
 
       this.submitting = true;
-      this.$q.loading.show({ message: "Submitting Registration..." });
+      this.$q.loading.show({ message: "Submitting Outpatient Registration..." });
 
       const finalData = {
         ...this.formData.personalInfoOutpatient,
         ...this.formData.contactPersonOutpatient,
-
         signatureOutpatient: this.formData.signatureOutpatient,
         patientType: "Outpatient",
       };
@@ -194,7 +157,6 @@ export default {
           type: "positive",
           message: "Registration Successful!",
           position: "top",
-          timeout: 4000,
         });
 
         setTimeout(() => {
@@ -203,12 +165,7 @@ export default {
       } catch (error) {
         console.error(error);
         const errorMsg = error.response?.data?.message || "Server Error: Could not save.";
-
-        this.$q.notify({
-          type: "negative",
-          message: errorMsg,
-          position: "top",
-        });
+        this.$q.notify({ type: "negative", message: errorMsg, position: "top" });
       } finally {
         this.submitting = false;
         this.$q.loading.hide();

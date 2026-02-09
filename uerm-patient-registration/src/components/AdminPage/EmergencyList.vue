@@ -97,8 +97,8 @@
           <template v-slot:body-cell-addressPresent="props">
             <q-td :props="props" style="max-width: 150px">
               <div class="ellipsis text-grey-7">
-                {{ props.row.addressPresent }}
-                <q-tooltip>{{ props.row.addressPresent }}</q-tooltip>
+                {{ formData.addressPresent }}
+                <q-tooltip>{{ formData.addressPresent }}</q-tooltip>
               </div>
             </q-td>
           </template>
@@ -111,13 +111,13 @@
                   <q-list style="min-width: 150px">
                     <q-item
                       v-if="props.row.isAdmitted == 0 || props.row.isAdmitted == null"
-                      @click="updatePatientStatus(props.row)"
+                      @click="handleAdmit(props.row)"
                       clickable
                     >
                       <q-item-section avatar>
                         <q-icon name="update" color="blue-10" />
                       </q-item-section>
-                      <q-item-section>Update Patient Status</q-item-section>
+                      <q-item-section>For Admission</q-item-section>
                     </q-item>
 
                     <q-item clickable @click="validatePatient(props.row)">
@@ -128,19 +128,32 @@
                     </q-item>
 
                     <q-separator />
+                    <q-item clickable @click="editPatient(props.row)">
+                      <q-item-section avatar>
+                        <q-icon name="add_circle" color="green-8" />
+                      </q-item-section>
+                      <q-item-section>Add Vitals</q-item-section>
+                    </q-item>
 
                     <q-item clickable @click="handlePrint(props.row)">
                       <q-item-section avatar>
                         <q-icon name="print" color="green-8" />
                       </q-item-section>
-                      <q-item-section>Print Triage</q-item-section>
+                      <q-item-section>Triage Form</q-item-section>
+                    </q-item>
+
+                    <q-item clickable @click="handlePrintTreatment(props.row)">
+                      <q-item-section avatar>
+                        <q-icon name="print" color="green-8" />
+                      </q-item-section>
+                      <q-item-section>Treatment Sheet</q-item-section>
                     </q-item>
 
                     <q-item clickable @click="handlePrintConsent(props.row)">
                       <q-item-section avatar>
                         <q-icon name="download" color="green-8" />
                       </q-item-section>
-                      <q-item-section>Download Consent</q-item-section>
+                      <q-item-section>Consent Form</q-item-section>
                     </q-item>
                   </q-list>
                 </q-menu>
@@ -157,9 +170,9 @@
                   </q-item-section>
                   <q-item-section>
                     <q-item-label class="text-weight-bold text-blue-10">
-                      {{ props.row.firstName }} {{ props.row.lastName }}
+                      {{ formData.firstName }} {{ formData.lastName }}
                     </q-item-label>
-                    <q-item-label caption>ID: {{ props.row.patient_id }}</q-item-label>
+                    <q-item-label caption>ID: {{ formData.patient_id }}</q-item-label>
                   </q-item-section>
 
                   <!-- small screen -->
@@ -167,6 +180,12 @@
                     <q-btn flat round color="grey-7" icon="more_vert" @click.stop>
                       <q-menu cover auto-close>
                         <q-list style="min-width: 150px">
+                          <q-item clickable @click="editPatient(props.row)">
+                            <q-item-section avatar>
+                              <q-icon name="edit" size="xs" />
+                            </q-item-section>
+                            <q-item-section>Update Triage Form</q-item-section>
+                          </q-item>
                           <q-item clickable @click="validatePatient(props.row)">
                             <q-item-section avatar>
                               <q-icon name="check" size="xs" />
@@ -186,6 +205,13 @@
                               <q-icon name="print" size="xs" />
                             </q-item-section>
                             <q-item-section>Print Triage</q-item-section>
+
+                            <q-item clickable @click="handlePrintTreatment(props.row)">
+                              <q-item-section avatar>
+                                <q-icon name="print" size="xs" />
+                              </q-item-section>
+                              <q-item-section>Print Treatment Sheet</q-item-section>
+                            </q-item>
                           </q-item>
                         </q-list>
                       </q-menu>
@@ -216,7 +242,8 @@
         </q-table>
       </q-card-section>
     </q-card>
-    <q-dialog v-model="viewDialog" transition-show="scale" transition-hide="scale">
+
+    <!-- <q-dialog v-model="viewDialog" transition-show="scale" transition-hide="scale">
       <q-card style="width: 700px; max-width: 80vw" class="rounded-borders">
         <q-card-section class="bg-gradient-primary text-white q-pa-md">
           <div class="row items-center text-center justify-center justify-between">
@@ -313,34 +340,6 @@
               </q-item-section>
             </q-item>
           </q-list>
-
-          <!-- <div class="text-subtitle2 text-grey-8 text-uppercase q-mt-lg q-mb-sm">
-            Admission Details
-          </div>
-          <div class="bg-grey-1 q-pa-md rounded-borders text-grey-8">
-            <div class="row q-col-gutter-md">
-              <div class="col-12 col-sm-4">
-                <span class="text-weight-bold block q-mb-xs">Status:</span>
-                <q-badge
-                  class="text-subtitle2 q-px-md q-py-sm"
-                  :color="selectedPatient.patientType === 'Outpatient' ? 'green' : 'red'"
-                >
-                  {{ selectedPatient.patientType || "N/A" }}
-                </q-badge>
-              </div>
-              <div class="col-12 col-sm-4">
-                <span class="text-weight-bold block q-mb-xs">Date Admitted:</span>
-                {{ formatDate(selectedPatient.createdAt) || "N/A" }}
-              </div>
-              <div class="col-12 col-sm-4">
-                <span class="text-weight-bold block q-mb-xs">Attending Physician:</span>
-                <div class="ellipsis">
-                  {{ selectedPatient.physician || "N/A" }}
-                  <q-tooltip>{{ selectedPatient.physician }}</q-tooltip>
-                </div>
-              </div>
-            </div>
-          </div> -->
         </q-card-section>
 
         <q-separator />
@@ -354,7 +353,7 @@
           />
         </q-card-actions>
       </q-card>
-    </q-dialog>
+    </q-dialog> -->
 
     <q-dialog
       v-model="viewPatientValidationDialog"
@@ -392,27 +391,27 @@
             </div>
             <div class="col-12 col-sm-4 col-md-4">
               <div class="text-caption text-grey">Birthplace</div>
-              <div class="text-body2">{{ selectedPatient.birthplace || "N/A" }}</div>
+              <div class="text-body2">{{ selectedPatient.birthplace || "-" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
               <div class="text-caption text-grey">Gender</div>
-              <div class="text-body2">{{ selectedPatient.gender || "N/A" }}</div>
+              <div class="text-body2">{{ selectedPatient.gender || "-" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
               <div class="text-caption text-grey">Civil Status</div>
-              <div class="text-body2">{{ selectedPatient.civilStatus || "N/A" }}</div>
+              <div class="text-body2">{{ selectedPatient.civilStatus || "-" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
               <div class="text-caption text-grey">Occupation</div>
-              <div class="text-body2">{{ selectedPatient.occupation || "N/A" }}</div>
+              <div class="text-body2">{{ selectedPatient.occupation || "-" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
               <div class="text-caption text-grey">Nationality</div>
-              <div class="text-body2">{{ selectedPatient.nationality || "N/A" }}</div>
+              <div class="text-body2">{{ selectedPatient.nationality || "-" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
               <div class="text-caption text-grey">Religion</div>
-              <div class="text-body2">{{ selectedPatient.religion || "N/A" }}</div>
+              <div class="text-body2">{{ selectedPatient.religion || "-" }}</div>
             </div>
           </div>
 
@@ -423,23 +422,23 @@
           <div class="row q-col-gutter-md q-mb-lg">
             <div class="col-12 col-sm-4 col-md-4">
               <div class="text-caption text-grey">Street / House No.</div>
-              <div class="text-body2">{{ selectedPatient.addressStreet || "N/A" }}</div>
+              <div class="text-body2">{{ selectedPatient.addressStreet || "-" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
               <div class="text-caption text-grey">Barangay</div>
-              <div class="text-body2">{{ selectedPatient.addressBarangay || "N/A" }}</div>
+              <div class="text-body2">{{ selectedPatient.addressBarangay || "-" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
               <div class="text-caption text-grey">City / Municipality</div>
-              <div class="text-body2">{{ selectedPatient.addressCity || "N/A" }}</div>
+              <div class="text-body2">{{ selectedPatient.addressCity || "-" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
               <div class="text-caption text-grey">Province</div>
-              <div class="text-body2">{{ selectedPatient.addressProvince || "N/A" }}</div>
+              <div class="text-body2">{{ selectedPatient.addressProvince || "-" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
               <div class="text-caption text-grey">Region</div>
-              <div class="text-body2">{{ selectedPatient.addressRegion || "N/A" }}</div>
+              <div class="text-body2">{{ selectedPatient.addressRegion || "-" }}</div>
             </div>
           </div>
 
@@ -454,7 +453,7 @@
               <div>
                 <div class="q-mb-lg">
                   <div class="text-subtitle2 text-weight-bold">
-                    {{ selectedPatient.cpName || "N/A" }}
+                    {{ selectedPatient.cpName || "-" }}
                   </div>
                   <div class="text-caption text-grey-6 text-uppercase q-mb-xs">
                     Emergency Contact ({{ selectedPatient.cpRelationship }})
@@ -471,7 +470,7 @@
                     <div class="row items-center">
                       <q-icon name="place" size="14px" class="q-mr-sm text-grey-6" />
                       <span style="max-width: 90%">{{
-                        selectedPatient.cpAddress || "N/A"
+                        selectedPatient.cpAddress || "-"
                       }}</span>
                     </div>
                   </div>
@@ -479,7 +478,7 @@
 
                 <div>
                   <div class="text-subtitle2 text-weight-bold">
-                    {{ selectedPatient.spouseName || "N/A" }}
+                    {{ selectedPatient.spouseName || "-" }}
                   </div>
                   <div class="text-caption text-grey-6 text-uppercase q-mb-xs">
                     Spouse
@@ -488,11 +487,11 @@
                   <div class="text-caption text-grey-9 q-gutter-y-xs">
                     <div class="row items-center">
                       <q-icon name="work" size="14px" class="q-mr-sm text-grey-6" />
-                      {{ selectedPatient.spouseOccupation || "N/A" }}
+                      {{ selectedPatient.spouseOccupation || "-" }}
                     </div>
                     <div class="row items-center">
                       <q-icon name="business" size="14px" class="q-mr-sm text-grey-6" />
-                      {{ selectedPatient.spouseEmployerContact || "N/A" }}
+                      {{ selectedPatient.spouseEmployerContact || "-" }}
                     </div>
                   </div>
                 </div>
@@ -507,7 +506,7 @@
               <div>
                 <div class="q-mb-lg">
                   <div class="text-subtitle2 text-weight-bold">
-                    {{ selectedPatient.ptFatherName || "N/A" }}
+                    {{ selectedPatient.ptFatherName || "-" }}
                   </div>
                   <div class="text-caption text-grey-6 text-uppercase q-mb-xs">
                     Father's Name
@@ -521,7 +520,7 @@
                     <div class="row items-center">
                       <q-icon name="place" size="14px" class="q-mr-sm text-grey-6" />
                       <span style="max-width: 90%">{{
-                        selectedPatient.ptFatherAddress || "N/A"
+                        selectedPatient.ptFatherAddress || "-"
                       }}</span>
                     </div>
                   </div>
@@ -529,7 +528,7 @@
 
                 <div>
                   <div class="text-subtitle2 text-weight-bold">
-                    {{ selectedPatient.ptMotherMaidenNam || "N/A" }}
+                    {{ selectedPatient.ptMotherMaidenName || "-" }}
                   </div>
                   <div class="text-caption text-grey-6 text-uppercase q-mb-xs">
                     Mother's Name
@@ -543,7 +542,7 @@
                     <div class="row items-center">
                       <q-icon name="place" size="14px" class="q-mr-sm text-grey-6" />
                       <span style="max-width: 90%">{{
-                        selectedPatient.ptMotherAddress || "N/A"
+                        selectedPatient.ptMotherAddress || "-"
                       }}</span>
                     </div>
                   </div>
@@ -604,57 +603,520 @@
             label="Send Information to live server"
             color="green-10"
             icon-right="send"
-            @click="validateInformation(selectedPatient)"
+            @click="handleValidatePatient(selectedPatient)"
           />
         </q-card-actions>
       </q-card>
     </q-dialog>
 
-    <!-- <financial-statement ref="financialRef" /> -->
+    <q-dialog
+      v-model="triageDialog"
+      backdrop-filter="blur(4px)"
+      persistent
+      transition-show="scale"
+      transition-hide="scale"
+    >
+      <q-card
+        style="width: 1500px; max-width: 95vw; display: flex; flex-direction: column"
+        :style="{ height: $q.screen.lt.md ? '90vh' : '80vh' }"
+      >
+        <q-card-section
+          class="column text-center text-white q-py-md relative-position"
+          style="background-color: #004aad"
+        >
+          <div class="text-h6 text-bold">UPDATE TRIAGE FORM</div>
+          <div class="text-caption text-white-7" style="line-height: 1.2">
+            Please input valid information.
+          </div>
+          <q-btn
+            icon="close"
+            flat
+            round
+            dense
+            v-close-popup
+            class="absolute-right q-ma-lg"
+          />
+        </q-card-section>
+
+        <q-card-section class="scroll" style="max-height: 65vh">
+          <q-form ref="personalInfoTriage" @submit="updateTriageRecord" class="q-pa-sm">
+            <div class="text-subtitle1 text-bold q-mb-md">Patient Information:</div>
+
+            <input type="hidden" v-model="formData.patientId" />
+
+            <div class="row q-col-gutter-xs">
+              <div class="col-12 col-sm-3 col-md-3">
+                <q-input
+                  outlined
+                  dense
+                  v-model="formData.lastNameTriage"
+                  label="Last Name *"
+                  :rules="[(val) => !!val || 'Required']"
+                  readonly
+                />
+              </div>
+              <div class="col-12 col-sm-3 col-md-3">
+                <q-input
+                  outlined
+                  dense
+                  v-model="formData.firstNameTriage"
+                  label="First Name *"
+                  :rules="[(val) => !!val || 'Required']"
+                  readonly
+                />
+              </div>
+              <div class="col-12 col-sm-3 col-md-3 q-mb-md">
+                <q-input
+                  outlined
+                  dense
+                  v-model="formData.middleNameTriage"
+                  label="Middle Name"
+                  readonly
+                />
+              </div>
+              <div class="col-12 col-sm-3 col-md-3 q-mb-md">
+                <q-select
+                  outlined
+                  dense
+                  v-model="formData.suffixTriage"
+                  :options="['Jr.', 'Sr.', 'II', 'III', 'IV', 'V', 'VI']"
+                  label="Suffix"
+                  lazy-rules
+                  readonly
+                />
+              </div>
+            </div>
+
+            <div class="row q-col-gutter-xs">
+              <div class="col-12 col-sm-4 col-md-4">
+                <q-input
+                  outlined
+                  dense
+                  v-model="formData.birthdateTriage"
+                  label="Birthdate *"
+                  mask="date"
+                  :rules="[
+                    'date',
+                    (val) => new Date(val) <= new Date() || 'Future date invalid',
+                  ]"
+                  readonly
+                >
+                  <template v-slot:append>
+                    <q-icon name="event" class="cursor-pointer">
+                      <q-popup-proxy
+                        cover
+                        transition-show="scale"
+                        transition-hide="scale"
+                      >
+                        <q-date v-model="formData.birthdateTriage">
+                          <div class="row items-center justify-end">
+                            <q-btn v-close-popup label="Close" color="primary" flat />
+                          </div>
+                        </q-date>
+                      </q-popup-proxy>
+                    </q-icon>
+                  </template>
+                </q-input>
+              </div>
+              <div class="col-12 col-sm-4 col-md-4 q-mb-md">
+                <q-input
+                  outlined
+                  dense
+                  type="number"
+                  v-model="formData.ageTriage"
+                  label="Age"
+                  readonly
+                  bg-color="grey-2"
+                />
+              </div>
+              <div class="col-12 col-sm-4 col-md-4 q-mb-md">
+                <q-select
+                  outlined
+                  dense
+                  v-model="formData.genderTriage"
+                  :options="['Male', 'Female']"
+                  label="Gender"
+                  readonly
+                />
+              </div>
+            </div>
+
+            <div class="row q-col-gutter-md">
+              <div class="col-12 col-sm-3 col-md-3">
+                <q-input
+                  outlined
+                  type="number"
+                  dense
+                  v-model="formData.weightTriage"
+                  label-slot
+                  suffix="kg"
+                >
+                  <template v-slot:label>
+                    Weight <span class="text-red">*</span>
+                  </template>
+                </q-input>
+              </div>
+
+              <div class="col-12 col-sm-3 col-md-3">
+                <q-select
+                  outlined
+                  dense
+                  v-model="formData.broughtBy"
+                  :options="['Self', 'Ambulance', 'Relative', 'Police', 'Others']"
+                  label-slot
+                >
+                  <template v-slot:label>
+                    Brought By <span class="text-red">*</span>
+                  </template>
+                </q-select>
+              </div>
+
+              <div class="col-12 col-sm-3 col-md-3">
+                <q-select
+                  outlined
+                  dense
+                  v-model="formData.philHealthCateg"
+                  :options="['Member', 'Non-member', 'Dependent', 'OFW']"
+                  label="PhilHealth Category"
+                />
+              </div>
+
+              <div class="col-12 col-sm-3 col-md-3">
+                <q-select
+                  outlined
+                  dense
+                  v-model="formData.ptCondition"
+                  :options="[
+                    'Ambulatory',
+                    'Stuporous',
+                    'Unconscious',
+                    'Violent',
+                    'Assisted',
+                    'Others',
+                  ]"
+                  label-slot
+                >
+                  <template v-slot:label>
+                    Patient's Condition upon admission <span class="text-red">*</span>
+                  </template>
+                </q-select>
+              </div>
+            </div>
+
+            <q-separator class="q-my-md" />
+            <div class="text-subtitle1 text-bold q-mb-md">Vital Signs:</div>
+
+            <div class="row q-col-gutter-md">
+              <div class="col-12 col-md-12">
+                <q-input
+                  outlined
+                  dense
+                  v-model="formData.chiefComplaintTriage"
+                  label-slot
+                  :rules="[(val) => !!val || 'Required']"
+                >
+                  <template v-slot:label>
+                    Chief Complaint <span class="text-red">*</span>
+                  </template>
+                </q-input>
+              </div>
+            </div>
+            <div class="row q-col-gutter-xs">
+              <div class="col-12 col-sm-3 col-md-3">
+                <q-input
+                  outlined
+                  dense
+                  v-model="formData.tempTriage"
+                  label-slot
+                  suffix="°C"
+                  :rules="[(val) => !!val || 'Required']"
+                >
+                  <template v-slot:label>
+                    Temperature <span class="text-red">*</span>
+                  </template>
+                </q-input>
+              </div>
+              <div class="col-12 col-sm-3 col-md-3">
+                <q-input
+                  outlined
+                  dense
+                  v-model="formData.heartRateTriage"
+                  label-slot
+                  suffix="bpm"
+                  :rules="[(val) => !!val || 'Required']"
+                >
+                  <template v-slot:label>
+                    Heart Rate <span class="text-red">*</span>
+                  </template>
+                </q-input>
+              </div>
+              <div class="col-12 col-sm-3 col-md-3">
+                <q-input
+                  outlined
+                  dense
+                  v-model="formData.oxygenTriage"
+                  label-slot
+                  suffix="%"
+                  :rules="[(val) => !!val || 'Required']"
+                >
+                  <template v-slot:label>
+                    Oxygen Saturation <span class="text-red">*</span>
+                  </template>
+                </q-input>
+              </div>
+              <div class="col-12 col-sm-3 col-md-3">
+                <q-input
+                  outlined
+                  dense
+                  v-model="formData.bpTriage"
+                  label-slot
+                  suffix="mmHg"
+                  :rules="[(val) => !!val || 'Required']"
+                >
+                  <template v-slot:label>
+                    Blood Pressure <span class="text-red">*</span>
+                  </template>
+                </q-input>
+              </div>
+            </div>
+
+            <div class="row q-col-gutter-xs">
+              <div class="col-12 col-sm-4 col-md-4">
+                <q-input
+                  outlined
+                  dense
+                  v-model="formData.respiRateTriage"
+                  label-slot
+                  suffix="cpm"
+                  :rules="[(val) => !!val || 'Required']"
+                >
+                  <template v-slot:label>
+                    Respiratory Rate <span class="text-red">*</span>
+                  </template>
+                </q-input>
+              </div>
+              <div class="col-12 col-sm-4 col-md-4">
+                <q-input
+                  outlined
+                  dense
+                  v-model="formData.painScoreTriage"
+                  label="Pain Score *"
+                  :rules="[(val) => !!val || 'Required']"
+                />
+              </div>
+
+              <div class="col-12 col-sm-4 col-md-4 q-mb-md">
+                <q-select
+                  outlined
+                  dense
+                  v-model="formData.contagiousTriage"
+                  :options="[
+                    'Symptom/s suggestive of COVID-19',
+                    'Symptom/s suggestive of a VIRAL EXANTHEM',
+                    'None',
+                  ]"
+                  label="Screening for Contagious Infectious Disease"
+                />
+              </div>
+            </div>
+            <div class="row q-col-gutter-md">
+              <div class="col-12 col-sm-4 col-md-4">
+                <q-select
+                  outlined
+                  dense
+                  v-model="formData.isolationPrecautionTriage"
+                  :options="['COVID Complex (Old ER)', 'COVID Complex Extension (OPD)']"
+                  label="Transfer Immediately to:"
+                />
+              </div>
+              <div class="col-12 col-sm-4 col-md-4">
+                <q-select
+                  outlined
+                  dense
+                  v-model="formData.cpdTriage"
+                  :options="['Yes', 'No']"
+                  label="Cardio-Pulmonary Distress"
+                />
+              </div>
+              <div class="col-12 col-sm-4 col-md-4">
+                <q-select
+                  outlined
+                  dense
+                  v-model="formData.levelTriage"
+                  :options="['1 - (Emergent)', '2 - (Urgent)', '3 - (Non-Urgent)']"
+                  label-slot
+                  lazy-rules
+                  :rules="[(val) => !!val || 'Please select triage level.']"
+                >
+                  <template v-slot:label>
+                    Triage Level <span class="text-red">*</span>
+                  </template>
+                </q-select>
+              </div>
+            </div>
+
+            <div class="row q-col-gutter-md q-mb-md">
+              <div class="col-12 col-sm-6 col-md-6">
+                <q-select
+                  outlined
+                  dense
+                  v-model="formData.checkforPresense"
+                  multiple
+                  :options="[
+                    'Fever',
+                    'Cough',
+                    'Sore Throat',
+                    'Headache',
+                    'Diarrhea',
+                    'Shortness of Breath',
+                    'Joint pains',
+                    'Muscle pains',
+                    'Decreased sense of taste/smell',
+                    'Rash',
+                  ]"
+                  label="Check for Presence of symptoms"
+                />
+              </div>
+              <div class="col-12 col-sm-6 col-md-6">
+                <q-input
+                  outlined
+                  dense
+                  v-model="formData.remarksTriage"
+                  label="Remarks"
+                />
+              </div>
+            </div>
+
+            <div class="row q-col-gutter-md">
+              <div class="col-12 col-sm-6 col-md-6">
+                <q-input
+                  outlined
+                  dense
+                  v-model="formData.personnelTriage"
+                  label-slot
+                  :rules="[(val) => !!val || 'Required']"
+                >
+                  <template v-slot:label>
+                    Name of Triage Personnel <span class="text-red">*</span>
+                  </template>
+                </q-input>
+              </div>
+              <div class="col-12 col-sm-6 col-md-6">
+                <q-input
+                  outlined
+                  dense
+                  v-model="formData.dateTriage"
+                  label-slot
+                  mask="date"
+                  :rules="[
+                    'date',
+                    (val) =>
+                      new Date(val) <= new Date() || 'Date cannot be in the future',
+                  ]"
+                >
+                  <template v-slot:label>
+                    Date Accomplished <span class="text-red">*</span>
+                  </template>
+
+                  <template v-slot:append>
+                    <q-icon name="event" class="cursor-pointer">
+                      <q-popup-proxy
+                        cover
+                        transition-show="scale"
+                        transition-hide="scale"
+                      >
+                        <q-date v-model="formData.dateTriage">
+                          <div class="row items-center justify-end">
+                            <q-btn v-close-popup label="Close" color="primary" flat />
+                          </div>
+                        </q-date>
+                      </q-popup-proxy>
+                    </q-icon>
+                  </template>
+                </q-input>
+              </div>
+              <div class="col-12">
+                <div class="text-caption text-center text-grey-8 q-mb-xs">
+                  Triage Personnel Signature <span class="text-red">*</span>
+                </div>
+                <div
+                  class="rounded-borders q-pa-sm"
+                  :class="hasError ? 'bg-red-1' : 'bg-grey-1'"
+                  style="border: 1px solid #dcdcdc"
+                >
+                  <SignaturePad v-model="localSignature" />
+                  <div
+                    v-if="hasError"
+                    class="text-negative text-caption q-mt-xs text-center"
+                  >
+                    <q-icon name="warning" class="q-mr-xs" /> Signature is required
+                  </div>
+                </div>
+              </div>
+            </div>
+          </q-form>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-actions align="center" class="text-primary q-py-md">
+          <q-btn flat label="Cancel" v-close-popup />
+
+          <q-btn
+            color="blue-10"
+            icon-right="upload"
+            style="width: 100%; height: 45px; max-width: 150px"
+            label="Submit"
+            :loading="loading"
+            @click="handleSubmitUpdate"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
 <script>
 import { date } from "quasar";
-import axios from "axios";
+import { mapState, mapActions, mapWritableState } from "pinia";
+import { useTriageStore } from "src/stores/triageStore";
 
-// import FinancialStatement from "./FinancialStatement.vue";
-
+import SignaturePad from "src/components/TriageAssessment/SignaturePad.vue";
+import { printEmergencyTreatment } from "src/composables/printEmergencyTreatment";
 import { printEmergencyPatientInformation } from "src/composables/printEmergencyPatientInformation";
 import { printPatientConsent } from "src/composables/printPatientConsent";
 
 export default {
   name: "EmergencyList",
-  // components: {
-  //   FinancialStatement,
-  // },
+  components: { SignaturePad },
 
   setup() {
     const { generateTriagePatientPdf } = printEmergencyPatientInformation();
+    const { generateEmergencyTreatmentPdf } = printEmergencyTreatment();
     const { generatePatientConsentPdf } = printPatientConsent();
 
-    return { generateTriagePatientPdf, generatePatientConsentPdf };
+    return {
+      generateTriagePatientPdf,
+      generatePatientConsentPdf,
+      generateEmergencyTreatmentPdf,
+    };
   },
 
   data() {
     return {
       searchQuery: "",
-      loading: false,
-      hasSearched: false,
-      patientList: [],
-      viewDialog: false,
-      viewPatientValidationDialog: false,
-
-      selectedPatient: {},
+      localSignature: null,
+      hasError: false,
 
       columns: [
         {
-          name: "patient_id",
-          label: "ID",
-          field: "patient_id",
-          align: "left",
+          name: "patient_no",
+          label: "PATIENTNO",
+          field: "patient_no",
+          align: "center",
           sortable: true,
           style: "width: 80px; font-weight: bold",
+          format: (val) => (val ? val : "N/A"),
         },
         {
           name: "fullName",
@@ -692,273 +1154,111 @@ export default {
     };
   },
 
+  computed: {
+    ...mapState(useTriageStore, [
+      "patientList",
+      "loading",
+      "hasSearched",
+      "formData",
+      "selectedPatient",
+    ]),
+
+    ...mapWritableState(useTriageStore, ["triageDialog", "viewPatientValidationDialog"]),
+  },
+
   mounted() {
-    this.loadInitialData();
+    this.fetchPatients();
+  },
+
+  watch: {
+    "formData.personnelSignature"(val) {
+      if (val) this.hasError = false;
+    },
   },
 
   methods: {
-    async loadInitialData() {
-      this.loading = true;
-      try {
-        const response = await axios.get(
-          "http://10.107.0.2:3000/api/auth/fetchErpatient"
-        );
-        this.patientList = response.data;
-      } catch (error) {
-        console.error(error);
-        this.$q.notify({
-          type: "negative",
-          message: "Failed to load Emergency List",
-          position: "top",
-        });
-      } finally {
-        this.loading = false;
-      }
-    },
+    ...mapActions(useTriageStore, [
+      "fetchPatients",
+      "searchPatients",
+      "updateTriage",
+      "updateTriageRecord",
+      "admitPatient",
+      "validatePatient",
+      "sendDataInformation",
+      "getPatientFullDetails",
+    ]),
 
     handleSearch() {
-      if (this.searchQuery === "") {
-        this.loadInitialData();
-        this.hasSearched = false;
+      if (!this.searchQuery) {
+        this.fetchPatients();
         return;
       }
-
-      if (this.searchQuery.length < 2) {
-        this.$q.notify({
-          type: "warning",
-          message: "Please enter at least 2 characters",
-          position: "top",
-        });
-        return;
-      }
-
-      this.performSearch();
+      this.searchPatients(this.searchQuery);
     },
 
-    async performSearch() {
-      this.loading = true;
-      try {
-        const response = await axios.get(
-          "http://10.107.0.2:3000/api/auth/searchErpatient",
-          {
-            params: { query: this.searchQuery },
-          }
-        );
-
-        this.patientList = response.data;
-        this.hasSearched = true;
-
-        if (this.patientList.length === 0) {
-          this.$q.notify({
-            type: "info",
-            message: "No records found.",
-            icon: "info",
-            position: "top",
-          });
-        }
-      } catch (error) {
-        console.error(error);
-        this.$q.notify({
-          type: "negative",
-          message: "Search Failed",
-          position: "top",
-        });
-      } finally {
-        this.loading = false;
+    editPatient(row) {
+      this.updateTriage(row);
+      if (!this.formData.dateTriage) {
+        const timeStamp = Date.now();
+        this.formData.dateTriage = date.formatDate(timeStamp, "YYYY/MM/DD");
       }
     },
 
-    validatePatient(row) {
-      this.selectedPatient = row;
-      this.viewPatientValidationDialog = true;
+    async handleSubmitUpdate() {
+      const valid = await this.$refs.personalInfoTriage.validate();
+
+      const rawResult = this.localSignature;
+
+      const signatureString = rawResult && rawResult.data ? rawResult.data : rawResult;
+
+      const isSignatureValid = !!signatureString && signatureString.length > 50;
+
+      if (!valid || !isSignatureValid) {
+        let msg = "Please complete the requirements.";
+        if (!valid && !isSignatureValid) msg = "Please fill missing fields and sign.";
+        else if (!valid) msg = "Please fill out the missing fields.";
+        else if (!isSignatureValid) msg = "Personnel signature is required.";
+
+        this.$q.notify({ type: "warning", message: msg, position: "top" });
+        return;
+      }
+      await this.updateTriageRecord(signatureString);
+    },
+
+    handleValidatePatient(row) {
+      this.sendDataInformation(row);
+    },
+
+    handleSendData(patient) {
+      this.sendDataInformation(patient);
+    },
+
+    handleAdmit(patient) {
+      this.$q
+        .dialog({
+          title: "Confirm Admission",
+          message: `Are you sure you want to mark ${patient.fullName} for admission?`,
+          cancel: true,
+          persistent: true,
+        })
+        .onOk(() => {
+          this.admitPatient(patient);
+        });
     },
 
     async handlePrint(row) {
-      this.loading = true;
+      const data = await this.getPatientFullDetails(row.patient_id);
+      if (data) await this.generateTriagePatientPdf(data);
+    },
 
-      try {
-        const response = await axios.get(
-          `http://10.107.0.2:3000/api/auth/getPatient/${row.patient_id}`
-        );
-
-        const fullPatientData = {
-          ...response.data,
-          patientId: row.patient_id,
-        };
-
-        await this.generateTriagePatientPdf(fullPatientData);
-      } catch (error) {
-        console.error("Print Error:", error);
-        this.$q.notify({
-          type: "negative",
-          message: "Failed to fetch full details for printing",
-          position: "top",
-        });
-      } finally {
-        this.loading = false;
-      }
+    async handlePrintTreatment(row) {
+      const data = await this.getPatientFullDetails(row.patient_id);
+      if (data) await this.generateEmergencyTreatmentPdf(data);
     },
 
     async handlePrintConsent(row) {
-      this.loading = true;
-
-      try {
-        const response = await axios.get(
-          `http://10.107.0.2:3000/api/auth/getPatient/${row.patient_id}`
-        );
-
-        const fullPatientData = {
-          ...response.data,
-          patientId: row.patient_id,
-        };
-
-        await this.generatePatientConsentPdf(fullPatientData);
-      } catch (error) {
-        console.error("Print Error:", error);
-        this.$q.notify({
-          type: "negative",
-          message: "Failed to fetch full details for printing",
-          position: "top",
-        });
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    async validateInformation(patient) {
-      if (!patient) return;
-
-      const errors = [];
-      if (!patient.patient_id) errors.push("Patient ID");
-      if (!patient.lastName) errors.push("Last Name");
-      if (!patient.firstName) errors.push("First Name");
-
-      if (errors.length > 0) {
-        this.$q.notify({
-          type: "warning",
-          message: `Cannot transfer. Missing: ${errors.join(", ")}`,
-          position: "top",
-        });
-        return;
-      }
-
-      this.loading = true;
-      try {
-        await axios.post("http://10.107.0.2:3000/api/auth/sendDataInformation", {
-          patient_id: patient.patient_id,
-        });
-
-        this.$q.notify({
-          type: "positive",
-          message: "Data successfully sent to live server.",
-        });
-
-        this.viewPatientValidationDialog = false;
-        this.loadInitialData();
-      } catch (error) {
-        if (!error.response || error.response.status !== 409) {
-          console.error(error);
-        }
-
-        if (error.response && error.response.status === 409) {
-          const {
-            existingPatientNo,
-            firstName,
-            lastName,
-            middleName,
-            suffix,
-            birthdate,
-          } = error.response.data;
-
-          const formattedBirthdate = new Date(birthdate).toLocaleDateString();
-
-          const fullName = `${firstName} ${middleName || ""} ${lastName} ${suffix || ""}`
-            .trim()
-            .replace(/\s+/g, " ");
-
-          this.$q
-            .dialog({
-              title: '<span class="text-negative">Patient Record Already Exists</span>',
-              message: `
-                      <div class="q-mb-md">
-                        This patient already exists in the Hospital System.
-                      </div>
-
-                      <div style="background: #fff3e0; padding: 10px; border-radius: 4px; border: 1px solid #ffe0b2;">
-                        <div class="row no-wrap q-mb-xs">
-                          <span class="text-grey-8" style="min-width: 100px;">Patient No:</span>
-                          <span class="text-weight-bold text-primary">${existingPatientNo}</span>
-                        </div>
-                        <div class="row no-wrap q-mb-xs">
-                          <span class="text-grey-8" style="min-width: 100px;">Name:</span>
-                          <span class="text-weight-bold">${fullName}</span>
-                        </div>
-                        <div class="row no-wrap">
-                          <span class="text-grey-8" style="min-width: 100px;">Birthday:</span>
-                          <span class="text-weight-bold">${formattedBirthdate}</span>
-                        </div>
-                      </div>
-
-                      <div class="q-mt-md text-weight-medium">
-                        Do you want to link this registration to the existing record?
-                        <br><span class="text-caption text-grey-7">(Do you want to link this registration to the existing record?)</span>
-                      </div>
-                    `,
-              html: true,
-              persistent: true,
-              ok: {
-                label: "Yes",
-                color: "primary",
-                flat: false,
-              },
-              cancel: {
-                label: "No",
-                color: "negative",
-                flat: true,
-              },
-            })
-            .onOk(async () => {
-              this.loading = true;
-              try {
-                await axios.post(
-                  "http://10.107.0.2:3000/api/auth/linkExistingPatientInfo",
-                  {
-                    patient_id: patient.patient_id,
-                    patientno: existingPatientNo,
-                  }
-                );
-
-                this.$q.notify({
-                  type: "positive",
-                  message: "Patient record linked successfully!",
-                });
-
-                this.viewPatientValidationDialog = false;
-                this.loadInitialData();
-              } catch (linkError) {
-                console.error("Linking failed:", linkError);
-                this.$q.notify({
-                  type: "negative",
-                  message:
-                    linkError.response?.data?.message ||
-                    "Failed to link records. Please try again.",
-                });
-              } finally {
-                this.loading = false;
-              }
-            })
-            .onCancel(() => {});
-        } else {
-          this.$q.notify({
-            type: "negative",
-            message:
-              error.response?.data?.message ||
-              "Failed to send data. Please check connection.",
-          });
-        }
-      } finally {
-        if (this.loading) this.loading = false;
-      }
+      const data = await this.getPatientFullDetails(row.patient_id);
+      if (data) await this.generatePatientConsentPdf(data);
     },
 
     formatDate(val) {
@@ -970,46 +1270,8 @@ export default {
       if (!p) return "";
       const parts = [p.firstName, p.middleName, p.lastName].filter(Boolean);
       let fullName = parts.join(" ");
-
-      if (p.suffix) {
-        fullName += ` ${p.suffix}`;
-      }
+      if (p.suffix) fullName += ` ${p.suffix}`;
       return fullName;
-    },
-
-    async updatePatientStatus(patient) {
-      this.$q
-        .dialog({
-          title: "Confirm Admission",
-          message: `Are you sure you want to mark ${patient.fullName} for admission?`,
-          cancel: true,
-          persistent: true,
-        })
-        .onOk(async () => {
-          this.$q.loading.show({ message: "Updating status..." });
-
-          try {
-            await axios.put("http://10.107.0.2:3000/api/auth/admitErPatient", {
-              patient_id: patient.patient_id,
-            });
-            patient.isAdmitted = 1;
-
-            this.$q.notify({
-              type: "positive",
-              message: "Patient status updated successfully!",
-              position: "top",
-            });
-          } catch (error) {
-            console.error("Update failed:", error);
-            this.$q.notify({
-              type: "negative",
-              message: "Failed to update status. Please try again.",
-              position: "top",
-            });
-          } finally {
-            this.$q.loading.hide();
-          }
-        });
     },
   },
 };
@@ -1036,8 +1298,6 @@ export default {
 .clean-table :deep(th) {
   border-bottom: 1px solid #f5f5f5;
 }
-
-
 
 .border-bottom {
   border-bottom: 1px solid #e0e0e0;

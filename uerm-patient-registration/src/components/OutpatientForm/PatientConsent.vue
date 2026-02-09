@@ -42,7 +42,8 @@
       </div>
       <div class="row col-12 q-col-gutter-md">
         <div class="col-12 items-center">
-          <SignaturePadOutpatient v-model="localSignature" />
+          <SignaturePadOutpatient v-model="contact.signature" />
+
           <div
             v-if="hasError"
             class="col-12 text-center text-negative text-caption q-mt-sm"
@@ -54,14 +55,14 @@
     </div>
     <q-stepper-navigation class="text-center q-gutter-md">
       <q-btn
-        style="width: 100%; height: 45px; max-width: 130px"
-        color="amber-14"
-        icon="arrow_back"
+        style="width: 130px"
+        color="orange-10"
+        icon-right="arrow_back"
         label="Back"
         @click="onBack"
       />
       <q-btn
-        style="width: 100%; height: 45px; max-width: 130px"
+        style="width: 130px"
         color="blue-10"
         icon-right="upload"
         label="Submit"
@@ -73,52 +74,48 @@
 
 <script>
 import SignaturePadOutpatient from "src/components/OutpatientForm/SignaturePadOutpatient.vue";
+import { mapWritableState } from "pinia";
+import { useOutpatientStore } from "src/stores/outpatientStore";
 
 export default {
   name: "PatientConsent",
   components: {
     SignaturePadOutpatient,
   },
-  props: {
-    form: Object,
-    relationshipOptions: Array,
-    initialSignature: {
-      type: String,
-      default: null,
-    },
-  },
-  emits: ["update:form", "next", "prev", "submit", "update:signature"],
+  emits: ["next", "prev", "submit"],
+
   data() {
     return {
-      localForm: {
-        ...this.form,
-      },
-      localSignature: this.initialSignature || null,
+      relationshipOptions: ["Spouse", "Parent", "Sibling", "Child", "Guardian", "Other"],
       hasError: false,
     };
   },
+
   watch: {
-    localForm: {
-      handler(val) {
-        this.$emit("update:form", val);
+    "formData.contactPersonOutpatient.signature": {
+      handler(newVal) {
+        if (newVal) {
+          this.hasError = false;
+        }
       },
       deep: true,
     },
-    localSignature(val) {
-      if (val) {
-        this.hasError = false;
-        this.$emit("update:signature", val);
-      }
+  },
+
+  computed: {
+    ...mapWritableState(useOutpatientStore, ["formData"]),
+    contact() {
+      return this.formData.contactPersonOutpatient;
     },
   },
+
   methods: {
     async validate() {
       const isFormValid = await this.$refs.PatientConsentForm.validate();
-
-      const isSignatureValid = !!this.localSignature;
+      const signatureData = this.formData.contactPersonOutpatient.signature;
+      const isSignatureValid = !!signatureData && signatureData.length > 100;
 
       this.hasError = !isSignatureValid;
-
       return isFormValid && isSignatureValid;
     },
 
@@ -131,7 +128,9 @@ export default {
         this.$q.notify({
           type: "warning",
           position: "top",
-          message: "Please fill all fields and provide a signature.",
+          message: this.hasError
+            ? "Please provide a signature and fill all required fields."
+            : "Please fill all required fields.",
         });
       }
     },
@@ -142,5 +141,3 @@ export default {
   },
 };
 </script>
-
-<style scoped></style>

@@ -7,7 +7,7 @@
             <q-card
               class="shadow-24"
               style="border-radius: 20px"
-              :style="{ width: $q.screen.lt.md ? '550px' : '400px', maxWidth: '100%' }"
+              :style="{ width: $q.screen.lt.md ? '550px' : '', maxWidth: '100%' }"
             >
               <q-card-section class="text-white" style="background-color: #004aad">
                 <div class="column items-center justify-center q-py-md">
@@ -28,7 +28,7 @@
                 <q-form @submit="onSubmit" class="q-gutter-md">
                   <q-input
                     outlined
-                    v-model="email"
+                    v-model="username"
                     label="Employee Number"
                     hint="Enter your employee number"
                   >
@@ -100,12 +100,14 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   name: "HospitalLoginPage",
 
   data() {
     return {
-      email: "",
+      username: "",
       password: "",
       isPwd: true,
       loading: false,
@@ -117,19 +119,34 @@ export default {
     },
   },
   methods: {
-    onSubmit() {
+    async onSubmit() {
       this.loading = true;
 
-      setTimeout(() => {
-        this.loading = false;
+      try {
+        const response = await axios.post("http://10.107.0.2:3000/api/auth/login", {
+          username: this.username,
+          password: this.password,
+        });
+
+        localStorage.setItem("userRole", response.data.user.role);
+
+        const targetPath = response.data.redirectPath;
 
         this.$q.notify({
-          color: "blue-10",
-          textColor: "white",
-          icon: "check_circle",
-          message: "Login Successful. Redirecting...",
+          type: "positive",
+          message: `Login Successful!`,
         });
-      }, 2000);
+
+        this.$router.push(targetPath);
+      } catch (error) {
+        console.error(error);
+        this.$q.notify({
+          type: "negative",
+          message: error.response?.data?.message || "Login failed",
+        });
+      } finally {
+        this.loading = false;
+      }
     },
   },
 };

@@ -19,7 +19,7 @@
     <q-dialog v-model="showDialog" persistent>
       <q-card style="min-width: 350px; width: 100%; max-width: 600px">
         <q-card-section class="row items-center">
-          <div class="text-subtitle2 text-grey-9">Please provide your sign below:</div>
+          <div class="text-subtitle2 text-grey-9">Triage Personnel Signature:</div>
           <q-space />
           <q-btn icon="close" flat round dense v-close-popup />
         </q-card-section>

@@ -40,8 +40,14 @@
           </q-scroll-area>
         </div>
       </div>
+
       <div class="col-12 items-center">
-        <SignaturePad v-model="localSignature" />
+        <div class="text-caption text-center text-grey-8 q-mb-xs">
+          Patient / Relative Signature <span class="text-red">*</span>
+        </div>
+
+        <SignaturePad v-model="formData.consent.signature" />
+
         <div
           v-if="hasError"
           class="col-12 text-center text-negative text-caption q-mt-sm"
@@ -52,13 +58,13 @@
       </div>
     </div>
 
-    <q-stepper-navigation class="row justify-center q-gutter-md q-mt-lg">
+    <q-stepper-navigation class="row justify-center q-gutter-md q-mt-md">
       <q-btn
-        flat
+        unelevated
         color="orange-10"
-        icon="arrow_back"
+        icon-right="arrow_back"
         label="Back"
-        class="q-px-lg"
+        style="width: 130px"
         @click="onBack"
       />
       <q-btn
@@ -66,7 +72,7 @@
         color="blue-10"
         icon-right="upload"
         label="Submit"
-        class="q-px-lg"
+        style="width: 130px"
         @click="trySubmit"
       />
     </q-stepper-navigation>
@@ -74,6 +80,8 @@
 </template>
 
 <script>
+import { mapWritableState } from "pinia";
+import { useInpatientStore } from "src/stores/inpatientStore";
 import SignaturePad from "src/components/InpatientForm/SignaturePad.vue";
 
 export default {
@@ -81,58 +89,24 @@ export default {
   components: {
     SignaturePad,
   },
-  props: {
-    form: {
-      type: Object,
-      required: true,
-      default: () => ({ items: [] }),
-    },
-    initialSignature: {
-      type: String,
-      default: null,
-    },
-  },
-  emits: ["update:form", "next", "prev", "submit", "update:signature"],
+  emits: ["prev", "submit"],
 
   data() {
     return {
-      localForm: { ...this.form },
-      localSignature: this.initialSignature || null,
       hasError: false,
-
-      itemOptions: [
-        { label: "UERM Brochure", value: "UERM Brochure" },
-        { label: "Admission Kit", value: "Admission Kit" },
-        { label: "Patient Satisfaction Survey", value: "Patient Satisfaction Survey" },
-      ],
     };
   },
 
-  watch: {
-    form: {
-      handler(newVal) {
-        this.localForm = { ...newVal };
-      },
-      deep: true,
-    },
-    localForm: {
-      handler(val) {
-        this.$emit("update:form", val);
-      },
-      deep: true,
-    },
-    localSignature(val) {
-      if (val) {
-        this.hasError = false;
-      }
-      this.$emit("update:signature", val);
-    },
+  computed: {
+    ...mapWritableState(useInpatientStore, ["formData", "appOptions"]),
   },
 
   methods: {
     async validateFinalStep() {
       const isFormValid = await this.$refs.patientConsent.validate();
-      const isSignatureValid = !!this.localSignature && this.localSignature.length > 0;
+
+      const signature = this.formData.consent.signature;
+      const isSignatureValid = !!signature && signature.length > 0;
 
       this.hasError = !isSignatureValid;
 

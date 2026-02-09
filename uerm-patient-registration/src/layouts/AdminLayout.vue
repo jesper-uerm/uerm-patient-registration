@@ -172,7 +172,7 @@ export default defineComponent({
       this.leftDrawerOpen = !this.leftDrawerOpen;
     },
     logout() {
-      this.$router.push("/");
+      this.$router.push("/login");
     },
   },
 });

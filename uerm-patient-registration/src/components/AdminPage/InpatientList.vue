@@ -629,12 +629,13 @@ export default {
 
       columns: [
         {
-          name: "patient_id",
-          label: "ID",
-          field: "patient_id",
-          align: "left",
+          name: "patient_no",
+          label: "PATIENTNO",
+          field: "patient_no",
+          align: "center",
           sortable: true,
-          style: "width: 80px",
+          style: "width: 80px; font-weight: bold",
+          format: (val) => (val ? val : "N/A"),
         },
         {
           name: "fullName",

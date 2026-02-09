@@ -4,13 +4,16 @@
       <div class="animate-text text-center">
         <div
           class="text-h4 text-white text-weight-bold q-mb-sm"
-          :style="{ fontSize: $q.screen.lt.md ? '25px' : '' }"
+          :style="{
+            fontSize: $q.screen.lt.sm ? '17px' : '25px',
+            lineHeight: $q.screen.lt.sm ? '1.5' : '',
+          }"
         >
           Welcome to UERMMC Patient Online Registration System
         </div>
         <div
           class="text-subtitle1 text-white text-weight-regular"
-          :style="{ fontSize: $q.screen.lt.md ? '15px' : '' }"
+          :style="{ fontSize: $q.screen.lt.sm ? '13px' : '' }"
         >
           Please select your patient type to continue.
         </div>
@@ -42,8 +45,8 @@
               column: !$q.screen.lt.md,
             }"
             :style="{
-              width: $q.screen.lt.md ? '250px' : '260px',
-              height: $q.screen.lt.md ? '160px' : '200px',
+              width: $q.screen.lt.sm ? '180px' : '260px',
+              height: $q.screen.lt.sm ? '120px' : '200px',
             }"
           >
             <q-card-section class="col column flex-center full-height">
@@ -54,19 +57,25 @@
                   'q-mb-md': !$q.screen.lt.md,
                   'q-mb-xs': $q.screen.lt.md,
                 }"
-                :size="$q.screen.lt.md ? '55px' : '70px'"
-                :style="{ marginBottom: $q.screen.lt.md ? '3px' : '' }"
+                :size="$q.screen.lt.sm ? '40px' : '70px'"
+                :style="{ marginBottom: $q.screen.lt.sm ? '3px' : '' }"
               />
               <div
                 class="text-h5 text-weight-bold"
                 :class="{
-                  'text-h5': !$q.screen.lt.md,
-                  'text-subtitle1': $q.screen.lt.md,
+                  'text-h5': !$q.screen.lt.sm,
+                  'text-caption': $q.screen.lt.sm,
                 }"
               >
                 INPATIENT
               </div>
-              <div class="text-caption text-uppercase q-mt-sm opacity-fade">
+              <div
+                class="text-caption text-uppercase q-mt-sm opacity-fade"
+                :style="{
+                  fontSize: $q.screen.lt.sm ? '10px' : '',
+                  lineHeight: $q.screen.lt.sm ? '0.2' : '',
+                }"
+              >
                 Admit Patient
               </div>
             </q-card-section>
@@ -81,8 +90,8 @@
               column: !$q.screen.lt.md,
             }"
             :style="{
-              width: $q.screen.lt.md ? '250px' : '260px',
-              height: $q.screen.lt.md ? '160px' : '200px',
+              width: $q.screen.lt.sm ? '180px' : '260px',
+              height: $q.screen.lt.sm ? '120px' : '200px',
             }"
           >
             <q-card-section class="col column flex-center full-height">
@@ -93,19 +102,25 @@
                   'q-mb-md': !$q.screen.lt.md,
                   'q-mb-xs': $q.screen.lt.md,
                 }"
-                :size="$q.screen.lt.md ? '55px' : '70px'"
+                :size="$q.screen.lt.sm ? '40px' : '70px'"
                 :style="{ marginBottom: $q.screen.lt.md ? '3px' : '' }"
               />
               <div
                 class="text-h5 text-weight-bold text-uppercase"
                 :class="{
                   'text-h5': !$q.screen.lt.md,
-                  'text-subtitle1': $q.screen.lt.md,
+                  'text-caption': $q.screen.lt.sm,
                 }"
               >
                 OUTPATIENT
               </div>
-              <div class="text-caption text-uppercase q-mt-sm opacity-fade">
+              <div
+                class="text-caption text-uppercase q-mt-sm opacity-fade"
+                :style="{
+                  fontSize: $q.screen.lt.sm ? '9px' : '',
+                  lineHeight: $q.screen.lt.sm ? '0.2' : '',
+                }"
+              >
                 Consultation / Check-up
               </div>
             </q-card-section>

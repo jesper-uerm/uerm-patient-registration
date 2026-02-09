@@ -45,10 +45,10 @@
 
       <div class="col-12 items-center q-mt-md">
         <div class="text-caption text-center text-grey-8 q-mb-xs">
-          Patient / Relative Signature *
+          Patient / Relative Signature <span class="text-red">*</span>
         </div>
         <div :class="hasError ? 'bg-red-1' : ''" style="border-radius: 4px; padding: 4px">
-          <SignaturePad v-model="localConsentSignature" />
+          <SignaturePad v-model="formData.patientSignature" />
         </div>
 
         <div
@@ -60,89 +60,84 @@
         </div>
       </div>
     </div>
-
-    <q-stepper-navigation class="row justify-center q-gutter-md q-mt-lg">
+    <div class="text-caption text-red"></div>
+    <q-stepper-navigation
+      class="q-mt-lg"
+      :class="
+        $q.screen.lt.sm
+          ? 'column q-gutter-y-sm items-center'
+          : 'row justify-center q-gutter-md'
+      "
+    >
       <q-btn
-        flat
+        unelevated
         color="orange-10"
-        icon="arrow_back"
+        icon-right="arrow_back"
         label="Back"
-        class="q-px-lg"
         @click="onBack"
+        style="width: 140px"
+        :class="$q.screen.lt.sm ? 'order-last' : 'q-px-lg'"
       />
+
       <q-btn
         unelevated
         type="submit"
         color="blue-10"
         icon-right="upload"
         label="Submit"
-        class="q-px-lg"
+        style="width: 140px"
+        :class="$q.screen.lt.sm ? '' : 'q-px-lg'"
       />
     </q-stepper-navigation>
   </q-form>
 </template>
 
 <script>
-import SignaturePad from "src/components/TriageAssessment/SignaturePad.vue";
+import { mapWritableState, mapActions } from "pinia";
+import { useTriageStore } from "../../stores/triageStore"; // Adjust path
+import SignaturePad from "src/components/InpatientForm/SignaturePad.vue";
 
 export default {
   name: "PatientConsentTriage",
   components: {
     SignaturePad,
   },
-  props: {
-    form: Object,
-    initialSignature: {
-      type: String,
-      default: null,
-    },
-  },
-  emits: ["update:form", "next", "prev", "submit", "update:signature"],
+
   data() {
     return {
-      localForm: { ...this.form },
-      localConsentSignature: this.initialSignature || null,
       hasError: false,
     };
   },
+
+  computed: {
+    ...mapWritableState(useTriageStore, ["formData", "step", "submitting"]),
+  },
+
   watch: {
-    localForm: {
-      handler(val) {
-        this.$emit("update:form", val);
-      },
-      deep: true,
-    },
-    localConsentSignature(val) {
-      if (val) {
-        this.hasError = false;
-        this.$emit("update:signature", val);
-      }
-    },
-    initialSignature(val) {
-      if (val !== this.localConsentSignature) {
-        this.localConsentSignature = val;
-      }
+    "formData.patientSignature"(val) {
+      if (val) this.hasError = false;
     },
   },
   methods: {
-    async trySubmit() {
-      const isSignatureValid = !!this.localConsentSignature;
+    ...mapActions(useTriageStore, ["submitRegistration"]),
 
-      if (isSignatureValid) {
-        this.hasError = false;
-        this.$emit("submit");
-      } else {
+    async trySubmit() {
+      if (!this.formData.patientSignature) {
         this.hasError = true;
         this.$q.notify({
           type: "warning",
           position: "top",
           message: "Please sign the consent form to proceed.",
         });
+        return;
       }
+
+      this.hasError = false;
+      await this.submitRegistration();
     },
 
     onBack() {
-      this.$emit("prev");
+      this.step = 1;
     },
   },
 };

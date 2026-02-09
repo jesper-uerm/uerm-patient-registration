@@ -8,13 +8,15 @@
   >
     <q-card
       class="column no-wrap"
-      style="width: 1300px; max-width: 95vw; max-height: 90vh; border-radius: 20px"
+      style="width: 1300px; max-width: 95vw; max-height: 87vh; border-radius: 20px"
     >
       <q-card-section
         class="column text-center text-white q-py-md relative-position"
         style="background-color: #004aad"
       >
-        <div class="text-h6 text-bold">INPATIENT FORM</div>
+        <div :class="$q.screen.lt.sm ? 'text-subtitle2 text-bold' : 'text-h6 text-bold'">
+          INPATIENT FORM
+        </div>
         <div class="text-caption text-white-7" style="line-height: 1.2">
           Please complete the steps below
         </div>
@@ -36,15 +38,16 @@
           done-color="positive"
           animated
           flat
-          alternative-labels
+          :alternative-labels="!$q.screen.lt.sm"
+          :contracted="$q.screen.lt.sm"
         >
           <q-step :name="1" title="Personal Info" icon="person" :done="step > 1">
             <patient-details
               :form="formData.personalInfo"
               :civilStatusOptions="civilStatusOptions"
               :religionOptions="religionOptions"
-              :sameAsPresent="sameAsPresent"
-              :sameAsFather="sameAsFather"
+              :sameAsPresent="formData.toggles.sameAsPresent"
+              :sameAsFather="formData.toggles.sameAsFather"
               @update:form="(val) => (formData.personalInfo = val)"
               @next="step = 2"
             />
@@ -83,13 +86,15 @@
 </template>
 
 <script>
+import { defineComponent } from "vue";
+import { mapWritableState, mapActions } from "pinia";
+import { useInpatientStore } from "src/stores/inpatientStore";
+
 import ContactDetails from "src/components/InpatientForm/ContactDetails.vue";
 import PatientDetails from "src/components/InpatientForm/PatientDetails.vue";
 import ModeOfPayment from "src/components/InpatientForm/PatientConsent.vue";
 
-import axios from "axios";
-
-export default {
+export default defineComponent({
   name: "RegistrationForm",
   components: {
     PatientDetails,
@@ -97,188 +102,31 @@ export default {
     ModeOfPayment,
   },
 
-  data() {
-    return {
-      regFormdialogVisible: false,
-      step: 1,
-      submitting: false,
-      sameAsPresent: false,
-      sameAsFather: false,
-      civilStatusOptions: ["Single", "Married", "Widowed", "Separated", "Divorced"],
-      religionOptions: ["Roman Catholic", "Christian", "Islam", "Others"],
-      ownershipOptions: ["Owned", "Company", "Mortgaged"],
-      relationshipOptions: ["Spouse", "Parent", "Sibling", "Child", "Co-Maker"],
-      mopOptions: [
-        { label: "Cash", value: "Cash" },
-        { label: "Credit Card", value: "Credit Card" },
-        { label: "Others", value: "Others" },
-      ],
-      yesNoOptions: [
-        { label: "Yes", value: "yes" },
-        { label: "No", value: "no" },
-      ],
-      sourceIncomeOptions: [
-        { label: "Full-Time Employment", value: "Full-Time Employment" },
-        { label: "Business", value: "Business" },
-        { label: "Remittance", value: "Remittance" },
-        { label: "Other", value: "Others" },
-      ],
-
-      formData: {
-        personalInfo: {
-          lastName: "",
-          firstName: "",
-          middleName: "",
-          suffix: "",
-          age: "",
-          gender: null,
-          civilStatus: null,
-          religion: null,
-          landline: "",
-          mobile: "",
-          email: "",
-          occupation: "",
-          birthdate: "",
-          birthplace: "",
-          nationality: "",
-          selectedRegion: "",
-          selectedProvince: "",
-          selectedCity: "",
-          selectedBarangay: "",
-          streetName: "",
-          permanentAddress: "",
-          fathersName: "",
-          fathersAddress: "",
-          fatherContactNumber: "",
-          mothersName: "",
-          mothersAddress: "",
-          motherContactNumber: "",
-        },
-        contactDetails: {
-          seniorpwd: "",
-          philhealth: "",
-          sssgsis: "",
-          tin: "",
-          others: "",
-          spouseName: "",
-          spouseOccupation: "",
-          spouseEmployerContact: "",
-          spouseEmployerName: "",
-          spouseEmployerAddress: "",
-          contactPersonInpatient: "",
-          contactPersonInpatientRelationship: null,
-          contactPersonInpatientLandline: "",
-          contactPersonInpatientMobile: "",
-          contactPersonInpatientEmail: "",
-          contactPersonInpatientAddress: "",
-          contactPersonInpatientOccupation: "",
-          contactPersonInpatientEmployerNumber: "",
-        },
-        patientConsent: {
-          mop: "",
-          specificmop: "",
-          creditCard: "",
-          bank: "",
-          items: [],
-        },
-        signature: null,
-      },
-    };
+  computed: {
+    ...mapWritableState(useInpatientStore, [
+      "regFormdialogVisible",
+      "step",
+      "formData",
+      "submitting",
+      "civilStatusOptions",
+      "religionOptions",
+      "ownershipOptions",
+      "relationshipOptions",
+      "mopOptions",
+      "yesNoOptions",
+      "sourceIncomeOptions",
+    ]),
   },
+
   methods: {
+    ...mapActions(useInpatientStore, ["openForm", "registerPatient"]),
+
     show() {
-      this.step = 1;
-      this.regFormdialogVisible = true;
+      this.openForm();
     },
 
     openFormDialog(patientData) {
-      this.step = 1;
-      this.regFormdialogVisible = true;
-      if (patientData) {
-        this.populateForm(patientData);
-      } else {
-        this.resetForm();
-      }
-    },
-
-    populateForm(data) {
-      this.formData.personalInfo = {
-        ...this.formData.personalInfo,
-
-        lastName: data.lastName || "",
-        firstName: data.firstName || "",
-        middleName: data.middleName || "",
-        suffix: data.suffix || "",
-        age: data.age || "",
-        birthdate: data.birthdateStr || data.birthdate || "",
-
-        gender: data.gender || null,
-        civilStatus: data.civilStatus || null,
-        religion: data.religion || null,
-        birthplace: data.birthplace || "",
-        nationality: data.nationality || "",
-        occupation: data.occupation || "",
-
-        landline: data.landline || "",
-        mobile: data.mobile || "",
-        email: data.email || "",
-
-        selectedRegion: data.addressRegion || "",
-        selectedProvince: data.addressProvince || "",
-        selectedCity: data.addressCity || "",
-        selectedBarangay: data.addressBarangay || "",
-        streetName: data.addressStreet || "",
-
-        fathersName: data.ptFatherName || "",
-        fathersAddress: data.ptFatherAddress || "",
-        fatherContactNumber: data.ptFatherContact || "",
-
-        mothersName: data.ptMotherMaidenName || "",
-        mothersAddress: data.ptMotherAddress || "",
-        motherContactNumber: data.ptMotherContact || "",
-      };
-
-      this.formData.contactDetails = {
-        ...this.formData.contactDetails,
-        seniorpwd: data.seniorId || data.seniorpwd || "",
-        philhealth: data.philhealthId || data.philhealth || "",
-        sssgsis: data.sssgsisId || data.sssgsis || "",
-        tin: data.tinID || data.tin || "",
-        spouseName: data.spouseName || "",
-        spouseOccupation: data.spouseOccupation || "",
-        spouseEmployerName: data.spouseEmployerName || "",
-        spouseEmployerContact: data.spouseEmployerContact || "",
-        spouseEmployerAddress: data.spouseEmployerAddress || "",
-        contactPersonInpatient: data.cpName || "",
-        contactPersonInpatientRelationship: data.cpRelationship || null,
-        contactPersonInpatientMobile: data.cpMobile || "",
-        contactPersonInpatientLandline: data.cpLandline || "",
-        contactPersonInpatientEmail: data.cpEmail || "",
-        contactPersonInpatientAddress: data.cpAddress || "",
-        // contactPersonInpatientOccupation: "",
-        // contactPersonInpatientEmployerNumber: "",
-      };
-
-      if (data.mop) {
-        this.formData.patientConsent.mop = data.mop;
-      }
-    },
-
-    resetForm() {
-      this.formData = {
-        personalInfo: {
-          lastName: "",
-          firstName: "",
-          middleName: "",
-          suffix: "",
-          age: "",
-          gender: null,
-          civilStatus: null,
-        },
-        contactDetails: {},
-        patientConsent: { mop: "", items: [] },
-        signature: null,
-      };
+      this.openForm(patientData);
     },
 
     async validateFinalStep() {
@@ -293,60 +141,21 @@ export default {
           });
           return false;
         }
-
         return true;
       }
       return false;
     },
 
     async onSubmit() {
-      if (this.submitting) return;
-
       const isValid = await this.validateFinalStep();
       if (!isValid) return;
 
-      this.submitting = true;
-      this.$q.loading.show({ message: "Submitting Registration..." });
-
-      const finalData = {
-        ...this.formData.personalInfo,
-        ...this.formData.contactDetails,
-        ...this.formData.patientConsent,
-
-        signature: this.formData.signature,
-        patientType: "Inpatient",
-      };
-
-      try {
-        await axios.post("http://10.107.0.2:3000/api/auth/register", finalData);
-
-        this.$q.notify({
-          type: "positive",
-          message: "Registration Successful!",
-          position: "top",
-          timeout: 4000,
-        });
-
-        setTimeout(() => {
-          this.regFormdialogVisible = false;
-        }, 1500);
-      } catch (error) {
-        console.error(error);
-        const errorMsg = error.response?.data?.message || "Server Error: Could not save.";
-
-        this.$q.notify({
-          type: "negative",
-          message: errorMsg,
-          position: "top",
-        });
-      } finally {
-        this.submitting = false;
-        this.$q.loading.hide();
-      }
+      await this.registerPatient();
     },
   },
-};
+});
 </script>
+
 <style scoped>
 :deep(.q-stepper__title) {
   font-size: 12px;

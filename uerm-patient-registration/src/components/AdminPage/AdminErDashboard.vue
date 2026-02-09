@@ -120,8 +120,8 @@
                   width="100%"
                   height="350"
                   type="line"
-                  :options="chartOptions"
-                  :series="series"
+                  :options="computedLineOptions"
+                  :series="lineSeries"
                 ></apexchart>
               </div>
             </div>
@@ -143,8 +143,8 @@
                   width="100%"
                   height="320"
                   type="pie"
-                  :options="chartOptionsPie"
-                  :series="seriesPie"
+                  :options="computedPieOptions"
+                  :series="pieSeries"
                 ></apexchart>
               </div>
             </div>
@@ -221,19 +221,16 @@
 </template>
 
 <script>
+import { defineComponent } from "vue";
 import { date } from "quasar";
-import axios from "axios";
+import { mapState, mapActions } from "pinia";
+import { useTriageStore } from "src/stores/triageStore";
 
-export default {
+export default defineComponent({
   name: "DashboardPage",
+
   data() {
     return {
-      patientList: [],
-      loading: false,
-      inpatientCount: 0,
-      outpatientCount: 0,
-      erpatientCount: 0,
-
       columns: [
         {
           name: "patient_id",
@@ -250,12 +247,7 @@ export default {
           align: "center",
           sortable: true,
         },
-        {
-          name: "type",
-          label: "Type",
-          field: "patientType",
-          align: "center",
-        },
+        { name: "type", label: "Type", field: "patientType", align: "center" },
         {
           name: "createdAt",
           label: "Date",
@@ -264,112 +256,63 @@ export default {
           format: (val) => (val ? date.formatDate(val, "MMM D, YYYY") : "-"),
         },
       ],
-
-      series: [],
-      chartOptions: {
+      baseChartOptions: {
         chart: { id: "weekly-trend" },
+        colors: ["#1976D2", "#26A69A", "#9C27B0"],
         xaxis: {
-          categories: [],
           labels: {
-            formatter: function (value) {
-              const date = new Date(value + "-01");
-              return date.toLocaleDateString("en-US", {
-                month: "short",
-                year: "numeric",
-              });
+            formatter: (val) => {
+              const d = new Date(val + "-01");
+              return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
             },
           },
         },
-        colors: ["#1976D2", "#26A69A", "#9C27B0"],
       },
-
-      seriesPie: [],
-      chartOptionsPie: {
-        chart: {
-          id: "patient-type-pie",
-        },
-        labels: [],
+      basePieOptions: {
+        chart: { id: "patient-type-pie" },
         colors: ["#1976D2", "#26A69A", "#9C27B0"],
-        legend: {
-          position: "bottom",
-        },
-        noData: {
-          text: "Loading...",
-        },
+        legend: { position: "bottom" },
       },
     };
   },
+
+  computed: {
+    ...mapState(useTriageStore, [
+      "patientList",
+      "loading",
+      "inpatientCount",
+      "outpatientCount",
+      "erpatientCount",
+      "pieSeries",
+      "pieLabels",
+      "lineSeries",
+      "lineCategories",
+    ]),
+
+    computedLineOptions() {
+      return {
+        ...this.baseChartOptions,
+        xaxis: { ...this.baseChartOptions.xaxis, categories: this.lineCategories },
+      };
+    },
+    computedPieOptions() {
+      return {
+        ...this.basePieOptions,
+        labels: this.pieLabels,
+      };
+    },
+  },
+
   mounted() {
-    this.loadPieData();
-    this.loadTrendData();
-    this.loadInitialData();
+    this.fetchDashboardData().catch(() => {
+      this.$q.notify({ type: "negative", message: "Failed to load Dashboard data" });
+    });
   },
+
   methods: {
-    async loadPieData() {
-      try {
-        const response = await this.$axios.get(
-          "http://10.107.0.2:3000/api/auth/fetchPieChartData"
-        );
-
-        this.seriesPie = response.data.series;
-
-        this.chartOptionsPie = {
-          ...this.chartOptionsPie,
-          labels: response.data.labels,
-        };
-      } catch (error) {
-        console.error("Chart Load Error:", error);
-      }
-    },
-
-    async loadTrendData() {
-      try {
-        const response = await this.$axios.get(
-          "http://10.107.0.2:3000/api/auth/fetchLineChartData"
-        );
-
-        this.chartOptions = {
-          ...this.chartOptions,
-          xaxis: {
-            ...this.chartOptions.xaxis,
-            categories: response.data.categories,
-          },
-        };
-
-        this.series = response.data.series;
-      } catch (error) {
-        console.error("Error loading trends:", error);
-      }
-    },
-    async loadInitialData() {
-      this.loading = true;
-      try {
-        const response = await axios.get(
-          "http://10.107.0.2:3000/api/auth/fetchAllPatient"
-        );
-        this.patientList = response.data;
-        const inpatients = this.patientList.filter((p) => p.patientType === "Inpatient");
-        const outpatients = this.patientList.filter(
-          (p) => p.patientType === "Outpatient"
-        );
-        const erpatients = this.patientList.filter((p) => p.patientType === "Emergency");
-
-        this.inpatientCount = inpatients.length;
-        this.outpatientCount = outpatients.length;
-        this.erpatientCount = erpatients.length;
-      } catch (error) {
-        console.error(error);
-        this.$q.notify({
-          type: "negative",
-          message: "Failed to load Patients",
-          position: "top",
-        });
-      } finally {
-        this.loading = false;
-      }
-    },
+    ...mapActions(useTriageStore, ["fetchDashboardData"]),
   },
-};
+});
 </script>
 
 <style scoped>

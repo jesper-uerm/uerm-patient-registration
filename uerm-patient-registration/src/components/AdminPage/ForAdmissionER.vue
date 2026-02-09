@@ -120,11 +120,15 @@
 
                     <q-separator />
 
-                    <q-item clickable @click="handlePrint(props.row)">
+                    <q-item
+                      clickable
+                      @click="handlePrint(props.row)"
+                      v-if="props.row.isAdmitted == '2'"
+                    >
                       <q-item-section avatar>
                         <q-icon name="print" color="green-8" />
                       </q-item-section>
-                      <q-item-section>Print Patient Information</q-item-section>
+                      <q-item-section>Print Information</q-item-section>
                     </q-item>
 
                     <q-item clickable @click="handlePrintTriage(props.row)">
@@ -134,12 +138,12 @@
                       <q-item-section>Print Triage</q-item-section>
                     </q-item>
 
-                    <q-item clickable @click="handlePrintConsent(props.row)">
+                    <!-- <q-item clickable @click="handlePrintConsent(props.row)">
                       <q-item-section avatar>
                         <q-icon name="download" color="green-8" />
                       </q-item-section>
                       <q-item-section>Download Consent</q-item-section>
-                    </q-item>
+                    </q-item> -->
                   </q-list>
                 </q-menu>
               </q-btn>
@@ -218,20 +222,19 @@
 </template>
 
 <script>
+import { defineComponent } from "vue";
 import { date } from "quasar";
-import axios from "axios";
+import { mapState, mapWritableState, mapActions } from "pinia";
+import { useTriageStore } from "src/stores/triageStore";
 
 import RegistrationForm from "pages/RegistrationForm.vue";
-
 import { printInpatientInformation } from "src/composables/printInpatientInformation";
 import { printEmergencyPatientInformation } from "src/composables/printEmergencyPatientInformation";
 import { printPatientConsent } from "src/composables/printPatientConsent";
 
-export default {
-  components: {
-    RegistrationForm,
-  },
-  name: "EmergencyList",
+export default defineComponent({
+  name: "ForAdmissionER",
+  components: { RegistrationForm },
 
   setup() {
     const { generatePatientPdf } = printInpatientInformation();
@@ -243,21 +246,15 @@ export default {
 
   data() {
     return {
-      searchQuery: "",
-      loading: false,
-      hasSearched: false,
-      patientList: [],
-      showAdmissionDialog: false,
-      selectedPatient: {},
-
       columns: [
         {
-          name: "patient_id",
-          label: "ID",
-          field: "patient_id",
-          align: "left",
+          name: "patient_no",
+          label: "PATIENTNO",
+          field: "patient_no",
+          align: "center",
           sortable: true,
           style: "width: 80px; font-weight: bold",
+          format: (val) => (val ? val : "N/A"),
         },
         {
           name: "fullName",
@@ -295,85 +292,42 @@ export default {
     };
   },
 
+  computed: {
+    ...mapState(useTriageStore, ["patientList", "loading", "hasSearched"]),
+
+    ...mapWritableState(useTriageStore, [
+      "searchQuery",
+      "selectedPatient",
+      "viewPatientValidationDialog",
+      "showAdmissionDialog",
+    ]),
+  },
+
   mounted() {
-    this.loadInitialData();
+    this.fetchAdmitPatients();
   },
 
   methods: {
-    async loadInitialData() {
-      this.loading = true;
-      try {
-        const response = await axios.get(
-          "http://10.107.0.2:3000/api/auth/fetchAdmitErpatient"
-        );
-        this.patientList = response.data;
-      } catch (error) {
-        console.error(error);
-        this.$q.notify({
-          type: "negative",
-          message: "Failed to load Emergency List",
-          position: "top",
-        });
-      } finally {
-        this.loading = false;
-      }
-    },
+    ...mapActions(useTriageStore, [
+      "fetchAdmitPatients",
+      "searchPatients",
+      "getPatientFullDetails",
+      "setSelectedPatient",
+    ]),
 
     handleSearch() {
-      if (this.searchQuery === "") {
-        this.loadInitialData();
-        this.hasSearched = false;
+      if (!this.searchQuery) {
+        this.fetchAdmitPatients();
         return;
       }
+      if (this.searchQuery.length < 2) return;
 
-      if (this.searchQuery.length < 2) {
-        this.$q.notify({
-          type: "warning",
-          message: "Please enter at least 2 characters",
-          position: "top",
-        });
-        return;
-      }
-
-      this.performSearch();
-    },
-
-    async performSearch() {
-      this.loading = true;
-      try {
-        const response = await axios.get(
-          "http://10.107.0.2:3000/api/auth/searchErpatient",
-          {
-            params: { query: this.searchQuery },
-          }
-        );
-
-        this.patientList = response.data;
-        this.hasSearched = true;
-
-        if (this.patientList.length === 0) {
-          this.$q.notify({
-            type: "info",
-            message: "No records found.",
-            icon: "info",
-            position: "top",
-          });
-        }
-      } catch (error) {
-        console.error(error);
-        this.$q.notify({
-          type: "negative",
-          message: "Search Failed",
-          position: "top",
-        });
-      } finally {
-        this.loading = false;
-      }
+      this.searchPatients(this.searchQuery);
     },
 
     viewPatient(row) {
       this.selectedPatient = row;
-      this.viewDialog = true;
+      this.viewPatientValidationDialog = true;
     },
 
     showAdmissionForm(row) {
@@ -382,100 +336,39 @@ export default {
     },
 
     async handlePrint(row) {
-      this.loading = true;
-
       try {
-        const response = await axios.get(
-          `http://10.107.0.2:3000/api/auth/getPatient/${row.patient_id}`
-        );
-
-        const fullPatientData = {
-          ...response.data,
-          patientId: row.patient_id,
-        };
-
-        await this.generatePatientPdf(fullPatientData);
+        const fullData = await this.getPatientFullDetails(row.patient_id);
+        await this.generatePatientPdf(fullData);
       } catch (error) {
-        console.error("Print Error:", error);
-        this.$q.notify({
-          type: "negative",
-          message: "Failed to fetch full details for printing",
-          position: "top",
-        });
-      } finally {
-        this.loading = false;
+        console.error("Print component error", error);
       }
     },
 
     async handlePrintTriage(row) {
-      this.loading = true;
-
       try {
-        const response = await axios.get(
-          `http://10.107.0.2:3000/api/auth/getPatient/${row.patient_id}`
-        );
-
-        const fullPatientData = {
-          ...response.data,
-          patientId: row.patient_id,
-        };
-
-        await this.generateTriagePatientPdf(fullPatientData);
+        const fullData = await this.getPatientFullDetails(row.patient_id);
+        await this.generateTriagePatientPdf(fullData);
       } catch (error) {
-        console.error("Print Error:", error);
-        this.$q.notify({
-          type: "negative",
-          message: "Failed to fetch full details for printing",
-          position: "top",
-        });
-      } finally {
-        this.loading = false;
+        console.error(error);
       }
     },
 
     async handlePrintConsent(row) {
-      this.loading = true;
-
       try {
-        const response = await axios.get(
-          `http://10.107.0.2:3000/api/auth/getPatient/${row.patient_id}`
-        );
-
-        const fullPatientData = {
-          ...response.data,
-          patientId: row.patient_id,
-        };
-
-        await this.generatePatientConsentPdf(fullPatientData);
+        const fullData = await this.getPatientFullDetails(row.patient_id);
+        await this.generatePatientConsentPdf(fullData);
       } catch (error) {
-        console.error("Print Error:", error);
-        this.$q.notify({
-          type: "negative",
-          message: "Failed to fetch full details for printing",
-          position: "top",
-        });
-      } finally {
-        this.loading = false;
+        console.error(error);
       }
-    },
-
-    formatDate(val) {
-      if (!val) return "-";
-      return date.formatDate(val, "MMM D, YYYY");
     },
 
     formatFullName(p) {
       if (!p) return "";
       const parts = [p.firstName, p.middleName, p.lastName].filter(Boolean);
-      let fullName = parts.join(" ");
-
-      if (p.suffix) {
-        fullName += ` ${p.suffix}`;
-      }
-      return fullName;
+      return parts.join(" ") + (p.suffix ? ` ${p.suffix}` : "");
     },
   },
-};
+});
 </script>
 
 <style scoped>
