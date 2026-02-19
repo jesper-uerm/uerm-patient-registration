@@ -602,7 +602,7 @@ import axios from "axios";
 import { printInpatientInformation } from "src/composables/printInpatientInformation";
 import { printPatientConsent } from "src/composables/printPatientConsent";
 
-import FinancialStatement from "./FinancialStatement.vue";
+import FinancialStatement from "../FinancePage/FinancialStatement.vue";
 
 export default {
   name: "InpatientList",

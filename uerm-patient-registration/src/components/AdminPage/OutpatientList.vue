@@ -583,7 +583,7 @@
 import { date } from "quasar";
 import axios from "axios";
 
-import FinancialStatement from "./FinancialStatement.vue";
+import FinancialStatement from "../FinancePage/FinancialStatement.vue";
 
 import { printInpatientInformation } from "src/composables/printInpatientInformation";
 import { printPatientConsent } from "src/composables/printPatientConsent";

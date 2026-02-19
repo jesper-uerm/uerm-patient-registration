@@ -404,7 +404,7 @@ export function printPatientConsent() {
                 {
                   text: 'By signing below, I acknowledge that I have read and understood this Data Privacy Consent form and fully agree to its terms.',
                   italics: true,
-                  fontSize: 11,
+                  fontSize: 9,
                   alignment: 'center',
                   margin: [0, 0, 0, 40]
                 }
@@ -433,7 +433,7 @@ export function printPatientConsent() {
 
                   {
                     text: fullName.toUpperCase(),
-                    fontSize: 11,
+                    fontSize: 9,
                     bold: true,
                     alignment: 'center',
                     margin: [0, 0, 0, 2]

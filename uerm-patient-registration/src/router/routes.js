@@ -67,6 +67,28 @@ const routes = [
   },
 
   {
+    path: '/finance',
+    component: () => import('layouts/FinanceLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'finance-dashboard',
+        component: () => import('src/components/FinancePage/FinanceDashboard.vue')
+      },
+      {
+        path: 'PatientList',
+        name: 'finance-patient-list',
+        component: () => import('src/components/FinancePage/PatientList.vue')
+      },
+      // {
+      //   path: 'ForAdmissionER',
+      //   name: 'for-admission-list',
+      //   component: () => import('src/components/AdminPage/ForAdmissionER.vue')
+      // }
+    ]
+  },
+
+  {
     path: '/:catchAll(.*)*',
     component: () => import('layouts/MainLayout.vue'),
     children: [

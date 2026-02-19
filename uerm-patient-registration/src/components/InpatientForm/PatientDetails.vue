@@ -395,13 +395,7 @@ export default {
   data() {
     return {
       civilStatusOptions: ["Single", "Married", "Widowed", "Separated", "Divorced"],
-      religionOptions: [
-        "Roman Catholic",
-        "Christian",
-        "Islam",
-        "Iglesia ni Cristo",
-        "Others",
-      ],
+      religionOptions: ["Catholic", "Christian", "Islam", "Iglesia ni Cristo", "Others"],
     };
   },
 

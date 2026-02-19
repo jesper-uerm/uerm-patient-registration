@@ -11,7 +11,7 @@
               class="text-h6 text-white text-weight-bold"
               style="letter-spacing: -0.5px"
             >
-              Emergency List Search
+              Patient List Search
             </div>
             <div class="text-caption text-grey-5">
               Search database for emergency patient records
@@ -59,7 +59,7 @@
           :rows-per-page-options="[10]"
           class="clean-table fit"
           header-class="bg-grey-1 text-grey-8 text-weight-bold text-uppercase"
-          @row-click="(evt, row) => editPatient(row)"
+          @row-click="(evt, row) => viewPatient(row)"
         >
           <template v-slot:body-cell-patient_id="props">
             <q-td :props="props">
@@ -75,23 +75,18 @@
             </q-td>
           </template>
 
-          <template v-slot:body-cell-isAdmitted="props">
+          <template v-slot:body-cell-forReview="props">
             <q-td :props="props">
-              <q-badge
-                v-if="props.value == 1"
-                color="blue-6"
-                label="For Admission"
-                outline
-              />
+              <q-badge v-if="props.value == 0" color="red-6" label="For Review" outline />
 
               <q-badge
-                v-else-if="props.value == 2"
+                v-else-if="props.value == 1"
                 color="green-6"
-                label="Admitted"
+                label="Reviewed"
                 outline
               />
 
-              <q-badge v-else color="red-6" label="Emergency Patient" outline />
+              <q-badge v-else color="grey-6" label="Emergency Patient" outline />
             </q-td>
           </template>
 
@@ -110,58 +105,11 @@
               <q-btn flat round color="grey-7" icon="more_vert">
                 <q-menu cover auto-close>
                   <q-list style="min-width: 150px">
-                    <q-item
-                      v-if="
-                        (props.row.isAdmitted == 0 || props.row.isAdmitted == null) &&
-                        props.row.isValidated
-                      "
-                      @click="handleAdmit(props.row)"
-                      clickable
-                    >
-                      <q-item-section avatar>
-                        <q-icon name="update" color="blue-10" />
-                      </q-item-section>
-                      <q-item-section>For Admission</q-item-section>
-                    </q-item>
-
-                    <q-item
-                      clickable
-                      v-if="!props.row.isValidated"
-                      @click="validatePatient(props.row)"
-                    >
-                      <q-item-section avatar>
-                        <q-icon name="check" color="blue-10" />
-                      </q-item-section>
-                      <q-item-section>Validate</q-item-section>
-                    </q-item>
-
-                    <q-separator />
-                    <q-item clickable @click="editPatient(props.row)">
-                      <q-item-section avatar>
-                        <q-icon name="add_circle" color="green-8" />
-                      </q-item-section>
-                      <q-item-section>Add Vitals</q-item-section>
-                    </q-item>
-
                     <q-item clickable @click="handlePrint(props.row)">
                       <q-item-section avatar>
                         <q-icon name="print" color="green-8" />
                       </q-item-section>
-                      <q-item-section>Triage Form</q-item-section>
-                    </q-item>
-
-                    <q-item clickable @click="handlePrintTreatment(props.row)">
-                      <q-item-section avatar>
-                        <q-icon name="print" color="green-8" />
-                      </q-item-section>
-                      <q-item-section>Treatment Sheet</q-item-section>
-                    </q-item>
-
-                    <q-item clickable @click="handlePrintConsent(props.row)">
-                      <q-item-section avatar>
-                        <q-icon name="download" color="green-8" />
-                      </q-item-section>
-                      <q-item-section>Consent Form</q-item-section>
+                      <q-item-section>Print Record</q-item-section>
                     </q-item>
                   </q-list>
                 </q-menu>
@@ -172,7 +120,7 @@
           <template v-slot:item="props">
             <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
               <q-card flat bordered class="q-pa-sm">
-                <q-item clickable v-ripple @click="editPatient(props.row)">
+                <q-item>
                   <q-item-section avatar>
                     <q-icon name="account_circle" color="blue-10" size="md" />
                   </q-item-section>
@@ -181,6 +129,18 @@
                       {{ props.row.firstName }} {{ props.row.lastName }}
                     </q-item-label>
                     <q-item-label caption>ID: {{ props.row.patient_id }}</q-item-label>
+                    <q-item-label caption="">
+                      Status:
+                      <span v-if="props.row.forReview == 0" class="text-red">
+                        For Review
+                      </span>
+                      <span v-else-if="props.row.forReview == 1" class="text-green">
+                        Reviewed
+                      </span>
+                      <span v-else>
+                        {{ props.row.patient_id }}
+                      </span>
+                    </q-item-label>
                   </q-item-section>
 
                   <!-- small screen -->
@@ -188,38 +148,11 @@
                     <q-btn flat round color="grey-7" icon="more_vert" @click.stop>
                       <q-menu cover auto-close>
                         <q-list style="min-width: 150px">
-                          <q-item clickable @click="editPatient(props.row)">
-                            <q-item-section avatar>
-                              <q-icon name="edit" size="xs" />
-                            </q-item-section>
-                            <q-item-section>Update Triage Form</q-item-section>
-                          </q-item>
-                          <q-item clickable @click="validatePatient(props.row)">
-                            <q-item-section avatar>
-                              <q-icon name="check" size="xs" />
-                            </q-item-section>
-                            <q-item-section>Validate Information</q-item-section>
-                          </q-item>
-
-                          <q-item clickable @click="handlePrintConsent(props.row)">
-                            <q-item-section avatar>
-                              <q-icon name="download" size="xs" />
-                            </q-item-section>
-                            <q-item-section>Download Consent</q-item-section>
-                          </q-item>
-
                           <q-item clickable @click="handlePrint(props.row)">
                             <q-item-section avatar>
-                              <q-icon name="print" size="xs" />
+                              <q-icon name="print" color="green-8" />
                             </q-item-section>
-                            <q-item-section>Print Triage</q-item-section>
-
-                            <q-item clickable @click="handlePrintTreatment(props.row)">
-                              <q-item-section avatar>
-                                <q-icon name="print" size="xs" />
-                              </q-item-section>
-                              <q-item-section>Print Treatment Sheet</q-item-section>
-                            </q-item>
+                            <q-item-section>Print Record</q-item-section>
                           </q-item>
                         </q-list>
                       </q-menu>
@@ -251,7 +184,7 @@
       </q-card-section>
     </q-card>
 
-    <!-- <q-dialog v-model="viewDialog" transition-show="scale" transition-hide="scale">
+    <q-dialog v-model="viewDialog" transition-show="scale" transition-hide="scale">
       <q-card style="width: 700px; max-width: 80vw" class="rounded-borders">
         <q-card-section class="bg-gradient-primary text-white q-pa-md">
           <div class="row items-center text-center justify-center justify-between">
@@ -355,13 +288,13 @@
         <q-card-actions align="center" class="q-pa-md bg-grey-1">
           <q-btn
             unelevated
-            label="Update Patient Status"
+            label="Update Patient Finance"
             color="blue-10"
-            @click="updatePatientStatus(selectedPatient)"
+            @click="updateFinanceStatement(selectedPatient)"
           />
         </q-card-actions>
       </q-card>
-    </q-dialog> -->
+    </q-dialog>
 
     <q-dialog
       v-model="viewPatientValidationDialog"
@@ -458,8 +391,8 @@
                 Emergency & Spouse
               </div>
 
-              <div class="row q-col-gutter-md">
-                <div class="col-12 col-sm-6">
+              <div>
+                <div class="q-mb-lg">
                   <div class="text-subtitle2 text-weight-bold">
                     {{ selectedPatient.cpName || "-" }}
                   </div>
@@ -472,19 +405,19 @@
                       <q-icon name="phone" size="14px" class="q-mr-sm text-grey-6" />
                       {{ selectedPatient.cpMobile || "N/A" }}
                       <span v-if="selectedPatient.cpLandline">
-                        / {{ selectedPatient.cpLandline }}
-                      </span>
+                        / {{ selectedPatient.cpLandline }}</span
+                      >
                     </div>
                     <div class="row items-center">
                       <q-icon name="place" size="14px" class="q-mr-sm text-grey-6" />
-                      <span style="max-width: 90%">
-                        {{ selectedPatient.cpAddress || "-" }}
-                      </span>
+                      <span style="max-width: 90%">{{
+                        selectedPatient.cpAddress || "-"
+                      }}</span>
                     </div>
                   </div>
                 </div>
 
-                <div class="col-12 col-sm-6">
+                <div>
                   <div class="text-subtitle2 text-weight-bold">
                     {{ selectedPatient.spouseName || "-" }}
                   </div>
@@ -511,8 +444,8 @@
                 Parent Information
               </div>
 
-              <div class="row q-col-gutter-md">
-                <div class="col-12 col-sm-6">
+              <div>
+                <div class="q-mb-lg">
                   <div class="text-subtitle2 text-weight-bold">
                     {{ selectedPatient.ptFatherName || "-" }}
                   </div>
@@ -527,14 +460,14 @@
                     </div>
                     <div class="row items-center">
                       <q-icon name="place" size="14px" class="q-mr-sm text-grey-6" />
-                      <span style="max-width: 90%">
-                        {{ selectedPatient.ptFatherAddress || "-" }}
-                      </span>
+                      <span style="max-width: 90%">{{
+                        selectedPatient.ptFatherAddress || "-"
+                      }}</span>
                     </div>
                   </div>
                 </div>
 
-                <div class="col-12 col-sm-6">
+                <div>
                   <div class="text-subtitle2 text-weight-bold">
                     {{ selectedPatient.ptMotherMaidenName || "-" }}
                   </div>
@@ -549,21 +482,20 @@
                     </div>
                     <div class="row items-center">
                       <q-icon name="place" size="14px" class="q-mr-sm text-grey-6" />
-                      <span style="max-width: 90%">
-                        {{ selectedPatient.ptMotherAddress || "-" }}
-                      </span>
+                      <span style="max-width: 90%">{{
+                        selectedPatient.ptMotherAddress || "-"
+                      }}</span>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <q-separator dashed class="q-my-sm" />
 
+          <q-separator dashed class="q-my-sm" />
           <div class="text-caption text-weight-medium text-primary q-mb-sm">
             Government Identification
           </div>
-
           <div class="row q-col-gutter-sm">
             <div class="col-6 col-sm-3">
               <q-input
@@ -652,6 +584,7 @@
             <div class="text-subtitle1 text-bold q-mb-md">Patient Information:</div>
 
             <input type="hidden" v-model="formData.patientId" />
+            <input type="hidden" v-model="formData.patientNo" />
 
             <div class="row q-col-gutter-xs">
               <div class="col-12 col-sm-3 col-md-3">
@@ -1083,147 +1016,32 @@
       </q-card>
     </q-dialog>
 
-    <q-dialog
-      v-model="showDuplicateDialog"
-      persistent
-      transition-show="scale"
-      transition-hide="scale"
-    >
-      <q-card style="width: 600px; max-width: 90vw">
-        <q-card-section class="text-negative">
-          <div class="text-h6 text-center">
-            <q-icon name="warning" class="q-mr-sm" />Possible Duplicate Found
-            <div class="text-caption text-grey-8">
-              We found existing records that match the details of the patient you are
-              trying to register.
-            </div>
-          </div>
-        </q-card-section>
-
-        <q-card-section>
-          <div
-            class="row q-col-gutter-xs q-ma-xs q-py-sm text-center bg-green-1 rounded-borders"
-          >
-            <div class="col">
-              <div class="text-caption text-grey-7">Name</div>
-              <div class="text-body2 text-weight-bold text-dark">
-                {{ formatFullName(selectedPatient) }}
-              </div>
-            </div>
-
-            <div class="col">
-              <div class="text-caption text-grey-7">Birthdate</div>
-              <div class="text-body2 text-weight-bold text-dark">
-                {{ formatDate(selectedPatient.birthdate) }}
-                <span class="text-grey-7"></span>
-              </div>
-            </div>
-
-            <div class="col">
-              <div class="text-caption text-grey-7">Age</div>
-              <div class="text-body2 text-weight-bold text-dark">
-                {{ selectedPatient.age }}
-                <span class="text-grey-7"></span>
-              </div>
-            </div>
-          </div>
-          <div class="text-caption text-grey-8 q-mt-md q-mb-sm">
-            Select patient you want to link.
-          </div>
-
-          <q-markup-table flat bordered>
-            <thead class="bg-grey-2">
-              <tr>
-                <th class="text-left"></th>
-                <th class="text-left">Patient No</th>
-                <th class="text-left">Full Name</th>
-                <th class="text-left">Birthdate</th>
-                <th class="text-left">Age</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="patient in duplicateList"
-                :key="patient.existingPatientNo"
-                @click="selectedDuplicate = patient"
-                class="cursor-pointer transition-generic"
-                :class="
-                  selectedDuplicate?.existingPatientNo === patient.existingPatientNo
-                    ? 'bg-blue-1'
-                    : 'hover:bg-grey-1'
-                "
-              >
-                <td class="text-left">
-                  <q-radio
-                    v-model="selectedDuplicate"
-                    :val="patient"
-                    dense
-                    color="primary"
-                  />
-                </td>
-                <td class="text-weight-bold text-negative">
-                  {{ patient.existingPatientNo }}
-                </td>
-                <td>
-                  {{ patient.firstName }} {{ patient.middleName }} {{ patient.lastName }}
-                  {{ patient.suffix }}
-                </td>
-                <td>
-                  {{ formatDate(patient.birthdate) }}
-                </td>
-                <td>
-                  {{ patient.age }}
-                </td>
-              </tr>
-            </tbody>
-          </q-markup-table>
-        </q-card-section>
-
-        <q-card-actions align="right" class="bg-grey-1 q-pa-md">
-          <q-btn unelevated label="Cancel" color="grey-7" v-close-popup />
-          <q-btn
-            unelevated
-            label="Ignore & Create New"
-            color="primary"
-            @click="ignoreDuplicate"
-          />
-
-          <q-btn
-            v-if="selectedDuplicate"
-            unelevated
-            label="Link Record"
-            color="negative"
-            @click="confirmLinkPatient"
-          />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
+    <financial-statement ref="financialStatementRef" />
   </q-page>
 </template>
 
 <script>
+import FinancialStatement from "src/components/FinancePage/FinancialStatement.vue";
+
 import { date } from "quasar";
 import { mapState, mapActions, mapWritableState } from "pinia";
 import { useTriageStore } from "src/stores/triageStore";
 
 import SignaturePad from "src/components/TriageAssessment/SignaturePad.vue";
 import { printEmergencyTreatment } from "src/composables/printEmergencyTreatment";
-import { printEmergencyPatientInformation } from "src/composables/printEmergencyPatientInformation";
-import { printPatientConsent } from "src/composables/printPatientConsent";
+import { printInpatientInformation } from "src/composables/printInpatientInformation";
 
 export default {
-  name: "EmergencyList",
-  components: { SignaturePad },
+  name: "PatientList",
+  components: { SignaturePad, FinancialStatement },
 
   setup() {
-    const { generateTriagePatientPdf } = printEmergencyPatientInformation();
     const { generateEmergencyTreatmentPdf } = printEmergencyTreatment();
-    const { generatePatientConsentPdf } = printPatientConsent();
+    const { generatePatientPdf } = printInpatientInformation();
 
     return {
-      generateTriagePatientPdf,
-      generatePatientConsentPdf,
       generateEmergencyTreatmentPdf,
+      generatePatientPdf,
     };
   },
 
@@ -1232,32 +1050,7 @@ export default {
       searchQuery: "",
       localSignature: null,
       hasError: false,
-
-      showDuplicateDialog: false,
-      duplicateList: [],
-      selectedDuplicate: null,
-      pendingPatientId: null,
-      pendingLinkData: null,
-      duplicateRows: [],
-      duplicateColumns: [
-        {
-          name: "existingPatientNo",
-          label: "Patient No.",
-          field: "existingPatientNo",
-          align: "left",
-          style: "font-weight: bold",
-        },
-        { name: "lastName", label: "Last Name", field: "lastName", align: "left" },
-        { name: "firstName", label: "First Name", field: "firstName", align: "left" },
-        { name: "middleName", label: "Middle Name", field: "middleName", align: "left" },
-        {
-          name: "birthdate",
-          label: "Birthdate",
-          field: "birthdate",
-          align: "left",
-          format: (val) => (val ? date.formatDate(val, "MMM D, YYYY") : "-"),
-        },
-      ],
+      viewDialog: false,
 
       columns: [
         {
@@ -1287,9 +1080,9 @@ export default {
           style: "width: 180px",
         },
         {
-          name: "isAdmitted",
+          name: "forReview",
           label: "Status",
-          field: "isAdmitted",
+          field: "forReview",
           align: "center",
           sortable: true,
           style: "width: 120px",
@@ -1309,14 +1102,14 @@ export default {
     ...mapState(useTriageStore, ["patientList", "loading", "hasSearched", "formData"]),
 
     ...mapWritableState(useTriageStore, [
+      "selectedPatient",
       "triageDialog",
       "viewPatientValidationDialog",
-      "selectedPatient",
     ]),
   },
 
   mounted() {
-    this.fetchPatients();
+    this.fetchPatientsFinance();
   },
 
   watch: {
@@ -1327,38 +1120,23 @@ export default {
 
   methods: {
     ...mapActions(useTriageStore, [
-      "fetchPatients",
+      "fetchPatientsFinance",
       "searchPatients",
       "updateTriage",
       "updateTriageRecord",
       "admitPatient",
-      "validatePatient",
       "sendDataInformation",
       "getPatientFullDetails",
-      "linkExistingPatient",
     ]),
 
-    handleLinkingConflict(data, originalPatientId) {
-      this.pendingLinkData = {
-        originalId: originalPatientId,
-      };
-
-      this.duplicateList = Array.isArray(data) ? data : [data];
-      this.selectedDuplicate = null;
-      this.showDuplicateDialog = true;
+    viewPatient(row) {
+      this.selectedPatient = row;
+      this.viewDialog = true;
     },
 
-    async confirmLinkPatient() {
-      if (!this.selectedDuplicate || !this.pendingLinkData) return;
-
-      this.showDuplicateDialog = false;
-
-      await this.linkExistingPatient(
-        this.pendingLinkData.originalId,
-        this.selectedDuplicate.existingPatientNo
-      );
-
-      this.viewPatientValidationDialog = false;
+    updateFinanceStatement(row) {
+      this.$refs.financialStatementRef.openFinancialDialog(row);
+      this.viewDialog = false;
     },
 
     handleSearch() {
@@ -1367,14 +1145,6 @@ export default {
         return;
       }
       this.searchPatients(this.searchQuery);
-    },
-
-    editPatient(row) {
-      this.updateTriage(row);
-      if (!this.formData.dateTriage) {
-        const timeStamp = Date.now();
-        this.formData.dateTriage = date.formatDate(timeStamp, "YYYY/MM/DD");
-      }
     },
 
     async handleSubmitUpdate() {
@@ -1398,53 +1168,21 @@ export default {
       await this.updateTriageRecord(signatureString);
     },
 
-    async handleValidatePatient(row) {
-      try {
-        await this.sendDataInformation(row);
-
-        this.viewPatientValidationDialog = false;
-      } catch (error) {
-        if (error.response && error.response.status === 409) {
-          this.handleLinkingConflict(error.response.data, row.patient_id);
-        } else {
-          console.error(error);
-        }
-      }
+    handleValidatePatient(row) {
+      this.sendDataInformation(row);
     },
 
     handleSendData(patient) {
       this.sendDataInformation(patient);
     },
 
-    async ignoreDuplicate() {
-      this.showDuplicateDialog = false;
-
-      const payload = {
-        patient_id: this.pendingLinkData.originalId,
-      };
-
-      await this.sendDataInformation(payload, true);
-
-      this.viewPatientValidationDialog = false;
-    },
-
     handleAdmit(patient) {
       this.$q
         .dialog({
           title: "Confirm Admission",
-          message: `Please confirm that you wish to proceed with the admission for <span class="text-weight-bold text-primary">${patient.fullName}</span>.`,
+          message: `Are you sure you want to mark <b>${patient.fullName}</b> for admission?`,
           html: true,
           persistent: true,
-          ok: {
-            label: "Admit Patient",
-            color: "primary",
-            unelevated: true,
-          },
-          cancel: {
-            label: "Cancel",
-            color: "grey-8",
-            flat: true,
-          },
         })
         .onOk(() => {
           this.admitPatient(patient);
@@ -1453,7 +1191,7 @@ export default {
 
     async handlePrint(row) {
       const data = await this.getPatientFullDetails(row.patient_id);
-      if (data) await this.generateTriagePatientPdf(data);
+      if (data) await this.generatePatientPdf(data);
     },
 
     async handlePrintTreatment(row) {

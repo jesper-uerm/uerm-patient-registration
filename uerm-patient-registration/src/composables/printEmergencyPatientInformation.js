@@ -101,6 +101,7 @@ export function printEmergencyPatientInformation() {
 
         const lastname = patient.lastName || 'Unknown';
         const firstname = patient.firstName || 'Unknown';
+        const middlename = patient.middleName || '';
         const birthdate = patient.birthdate ? new Date(patient.birthdate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '-';
         const age = patient.age ? patient.age.toString() : '-';
         const sex = patient.gender || patient.sex || '-';
@@ -157,7 +158,7 @@ export function printEmergencyPatientInformation() {
                         body: [
                             [{ text: 'PATIENT INFORMATION', fillColor: '#eeeeee', style: 'sectionHeader', alignment: 'center', colSpan: 4 }, {}, {}, {}],
                             [
-                                createCell('Name', `${firstname} ${lastname}`),
+                                createCell('Name', `${firstname} ${middlename} ${lastname}`),
                                 createCell('Birthdate', birthdate),
                                 createCell('Age', age),
                                 createCell('Sex', sex),

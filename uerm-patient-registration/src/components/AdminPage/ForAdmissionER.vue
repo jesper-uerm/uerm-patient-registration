@@ -120,17 +120,6 @@
 
                     <q-separator />
 
-                    <q-item
-                      clickable
-                      @click="handlePrint(props.row)"
-                      v-if="props.row.isAdmitted == '2'"
-                    >
-                      <q-item-section avatar>
-                        <q-icon name="print" color="green-8" />
-                      </q-item-section>
-                      <q-item-section>Print Information</q-item-section>
-                    </q-item>
-
                     <q-item clickable @click="handlePrintTriage(props.row)">
                       <q-item-section avatar>
                         <q-icon name="print" color="green-8" />
@@ -138,12 +127,19 @@
                       <q-item-section>Print Triage</q-item-section>
                     </q-item>
 
-                    <!-- <q-item clickable @click="handlePrintConsent(props.row)">
+                    <q-item clickable @click="handlePrintTreatment(props.row)">
+                      <q-item-section avatar>
+                        <q-icon name="print" color="green-8" />
+                      </q-item-section>
+                      <q-item-section>Treatment Sheet</q-item-section>
+                    </q-item>
+
+                    <q-item clickable @click="handlePrintConsent(props.row)">
                       <q-item-section avatar>
                         <q-icon name="download" color="green-8" />
                       </q-item-section>
                       <q-item-section>Download Consent</q-item-section>
-                    </q-item> -->
+                    </q-item>
                   </q-list>
                 </q-menu>
               </q-btn>
@@ -175,18 +171,25 @@
                             <q-item-section>Admission Form</q-item-section>
                           </q-item>
 
-                          <q-item clickable @click="handlePrintConsent(props.row)">
+                          <q-item clickable @click="handlePrintTriage(props.row)">
                             <q-item-section avatar>
-                              <q-icon name="download" size="xs" />
-                            </q-item-section>
-                            <q-item-section>Download Consent</q-item-section>
-                          </q-item>
-
-                          <q-item clickable @click="handlePrint(props.row)">
-                            <q-item-section avatar>
-                              <q-icon name="print" size="xs" />
+                              <q-icon name="print" color="green-8" />
                             </q-item-section>
                             <q-item-section>Print Triage</q-item-section>
+                          </q-item>
+
+                          <q-item clickable @click="handlePrintTreatment(props.row)">
+                            <q-item-section avatar>
+                              <q-icon name="print" color="green-8" />
+                            </q-item-section>
+                            <q-item-section>Treatment Sheet</q-item-section>
+                          </q-item>
+
+                          <q-item clickable @click="handlePrintConsent(props.row)">
+                            <q-item-section avatar>
+                              <q-icon name="download" color="green-8" />
+                            </q-item-section>
+                            <q-item-section>Download Consent</q-item-section>
                           </q-item>
                         </q-list>
                       </q-menu>
@@ -231,6 +234,7 @@ import RegistrationForm from "pages/RegistrationForm.vue";
 import { printInpatientInformation } from "src/composables/printInpatientInformation";
 import { printEmergencyPatientInformation } from "src/composables/printEmergencyPatientInformation";
 import { printPatientConsent } from "src/composables/printPatientConsent";
+import { printEmergencyTreatment } from "src/composables/printEmergencyTreatment";
 
 export default defineComponent({
   name: "ForAdmissionER",
@@ -240,8 +244,14 @@ export default defineComponent({
     const { generatePatientPdf } = printInpatientInformation();
     const { generateTriagePatientPdf } = printEmergencyPatientInformation();
     const { generatePatientConsentPdf } = printPatientConsent();
+    const { generateEmergencyTreatmentPdf } = printEmergencyTreatment();
 
-    return { generateTriagePatientPdf, generatePatientConsentPdf, generatePatientPdf };
+    return {
+      generateTriagePatientPdf,
+      generatePatientConsentPdf,
+      generatePatientPdf,
+      generateEmergencyTreatmentPdf,
+    };
   },
 
   data() {
@@ -360,6 +370,11 @@ export default defineComponent({
       } catch (error) {
         console.error(error);
       }
+    },
+
+    async handlePrintTreatment(row) {
+      const data = await this.getPatientFullDetails(row.patient_id);
+      if (data) await this.generateEmergencyTreatmentPdf(data);
     },
 
     formatFullName(p) {

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
-import { Notify, Loading, date, Dialog } from 'quasar'
+import { Notify, Loading, date } from 'quasar'
 
 export const useTriageStore = defineStore('triage', {
   state: () => ({
@@ -133,6 +133,19 @@ export const useTriageStore = defineStore('triage', {
       this.loading = true;
       try {
         const response = await axios.get("http://10.107.0.2:3000/api/auth/fetchErpatient");
+        this.patientList = response.data;
+      } catch (error) {
+        console.error(error);
+        Notify.create({ type: "negative", message: "Failed to load Emergency List", position: "top" });
+      } finally {
+        this.loading = false;
+      }
+    },
+
+      async fetchPatientsFinance() {
+      this.loading = true;
+      try {
+        const response = await axios.get("http://10.107.0.2:3000/api/auth/fetchErpatientForReview");
         this.patientList = response.data;
       } catch (error) {
         console.error(error);
@@ -275,82 +288,53 @@ export const useTriageStore = defineStore('triage', {
       this.viewPatientValidationDialog = true;
     },
 
-    async sendDataInformation(patient) {
-      if (!patient) return;
+    viewPatient(row) {
+      this.selectedPatient = row;
+      this.viewDialog = true;
+    },
 
-      const errors = [];
-      if (!patient.patient_id) errors.push("Patient ID");
-      if (!patient.lastName) errors.push("Last Name");
-      if (!patient.firstName) errors.push("First Name");
+   async sendDataInformation(patient, isForce = false) {
+    this.loading = true;
+    try {
+      await axios.post("http://10.107.0.2:3000/api/auth/sendDataInformation", {
+        patient_id: patient.patient_id,
+        force: isForce
+      });
 
-      if (errors.length > 0) {
-        Notify.create({ type: "warning", message: `Cannot transfer. Missing: ${errors.join(", ")}`, position: "top" });
-        return;
+      Notify.create({ type: "positive", message: "Data sent successfully." });
+      this.fetchPatients();
+      return true;
+
+    } catch (error) {
+      if (error.response && error.response.status === 409 && !isForce) {
+        throw error;
+      } else {
+        console.error(error);
+        Notify.create({ type: "negative", message: "Failed to send data." });
+        return false;
       }
+    } finally {
+      this.loading = false;
+    }
+  },
 
+  async linkExistingPatient(patientId, existingPatientNo) {
       this.loading = true;
       try {
-        await axios.post("http://10.107.0.2:3000/api/auth/sendDataInformation", {
-          patient_id: patient.patient_id,
-        });
-
-        Notify.create({ type: "positive", message: "Data successfully sent to live server." });
-        this.viewPatientValidationDialog = false;
-        this.fetchPatients();
+          await axios.post("http://10.107.0.2:3000/api/auth/linkExistingPatientInfo", {
+              patient_id: patientId,
+              patientno: existingPatientNo,
+          });
+          Notify.create({ type: "positive", message: "Linked successfully!" });
+          this.fetchPatients();
+          return true;
       } catch (error) {
-        if (error.response && error.response.status === 409) {
-            this.handleLinkingConflict(error.response.data, patient.patient_id);
-        } else {
-            console.error(error);
-            Notify.create({ type: "negative", message: error.response?.data?.message || "Failed to send data." });
-        }
+          Notify.create({ type: "negative", message: "Failed to link records." });
+          throw error;
       } finally {
-        this.loading = false;
+          this.loading = false;
       }
-    },
-
-    handleLinkingConflict(data, originalPatientId) {
-        const { existingPatientNo, firstName, lastName, middleName, suffix, birthdate } = data;
-        const formattedBirthdate = new Date(birthdate).toLocaleDateString();
-        const fullName = `${firstName} ${middleName || ""} ${lastName} ${suffix || ""}`.trim().replace(/\s+/g, " ");
-
-        Dialog.create({
-          title: '<span class="text-negative">Patient Record Already Exists</span>',
-          message: `
-            <div class="q-mb-md">This patient already exists in the Hospital System.</div>
-            <div style="background: #fff3e0; padding: 10px; border-radius: 4px; border: 1px solid #ffe0b2;">
-              <div><strong>Patient No:</strong> <span class="text-primary">${existingPatientNo}</span></div>
-              <div><strong>Name:</strong> ${fullName}</div>
-              <div><strong>Birthday:</strong> ${formattedBirthdate}</div>
-            </div>
-            <div class="q-mt-md text-weight-medium">Link this registration to the existing record?</div>
-          `,
-          html: true,
-          persistent: true,
-          ok: { label: "Yes", color: "primary" },
-          cancel: { label: "No", color: "negative", flat: true },
-        }).onOk(async () => {
-            await this.linkExistingPatient(originalPatientId, existingPatientNo);
-        });
-    },
-
-    async linkExistingPatient(patientId, existingPatientNo) {
-        this.loading = true;
-        try {
-            await axios.post("http://10.107.0.2:3000/api/auth/linkExistingPatientInfo", {
-                patient_id: patientId,
-                patientno: existingPatientNo,
-            });
-            Notify.create({ type: "positive", message: "Patient record linked successfully!" });
-            this.viewPatientValidationDialog = false;
-            this.fetchPatients();
-        } catch (error) {
-            console.error("Linking failed:", error);
-            Notify.create({ type: "negative", message: "Failed to link records." });
-        } finally {
-            this.loading = false;
-        }
-    },
+  },
 
     async getPatientFullDetails(id) {
         try {

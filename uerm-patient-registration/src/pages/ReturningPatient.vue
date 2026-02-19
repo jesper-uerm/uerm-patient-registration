@@ -1,6 +1,6 @@
 <template>
   <q-dialog
-    v-model="ReturningPatientFormDialog"
+    v-model="store.showSearchDialog"
     persistent
     transition-show="scale"
     transition-hide="scale"
@@ -34,11 +34,11 @@
               outlined
               dense
               bg-color="white"
-              v-model="searchQuery"
+              v-model="store.searchQuery"
               label="Search Patient"
               placeholder="Enter Patient Name or ID"
-              @keyup.enter="searchPatients"
-              :disable="loading"
+              @keyup.enter="store.searchPatients()"
+              :disable="store.loading"
               clearable
               autofocus
             >
@@ -51,8 +51,8 @@
                   label="Search"
                   class="q-px-lg"
                   unelevated
-                  :loading="loading"
-                  @click="searchPatients"
+                  :loading="store.loading"
+                  @click="store.searchPatients()"
                 />
               </template>
             </q-input>
@@ -67,10 +67,10 @@
           :dense="$q.screen.gt.xs"
           flat
           bordered
-          :rows="patientList"
+          :rows="store.patientList"
           :columns="columns"
           row-key="PATIENTNO"
-          :loading="loading"
+          :loading="store.loading"
           separator="horizontal"
           virtual-scroll
           class="clean-table q-ma-md"
@@ -103,7 +103,7 @@
                 <q-btn flat round color="grey-7" icon="more_vert" @click.stop>
                   <q-menu cover auto-close>
                     <q-list style="min-width: 150px">
-                      <q-item clickable @click="updateTriage(props.row)">
+                      <q-item clickable @click="store.prepareTriageForm(props.row)">
                         <q-item-section avatar>
                           <q-icon name="edit" size="xs" />
                         </q-item-section>
@@ -161,11 +161,11 @@
           <template v-slot:no-data>
             <div class="full-width column flex-center text-grey-5 q-pa-xl">
               <q-icon size="4em" name="person_search" class="q-mb-md" />
-              <div class="text-subtitle1" v-if="!hasSearched">
+              <div class="text-subtitle1" v-if="!store.hasSearched">
                 Ready to Search Inpatients
               </div>
               <div class="text-subtitle1" v-else>
-                No patients found matching "{{ searchQuery }}"
+                No patients found matching "{{ store.searchQuery }}"
               </div>
             </div>
           </template>
@@ -173,8 +173,8 @@
       </q-card-section>
     </q-card>
 
-    <q-dialog
-      v-model="triageDialog"
+    <!-- <q-dialog
+      v-model="store.showTriageDialog"
       backdrop-filter="blur(4px)"
       persistent
       transition-show="scale"
@@ -203,19 +203,18 @@
         </q-card-section>
 
         <q-card-section class="scroll" style="max-height: 65vh">
-          <q-form ref="personalInfoTriage" @submit="updateTriageRecord" class="q-pa-sm">
+          <q-form ref="personalInfoTriage" @submit="validateAndSubmit" class="q-pa-sm">
             <div class="text-subtitle1 text-bold q-mb-md">Patient Information:</div>
 
-            <input type="hidden" v-model="localForm.patientId" />
+            <input type="hidden" v-model="store.triageForm.patientId" />
 
             <div class="row q-col-gutter-md">
               <div class="col-3 col-md-3">
                 <q-input
                   outlined
                   dense
-                  v-model="localForm.lastNameTriage"
+                  v-model="store.triageForm.lastNameTriage"
                   label="Last Name *"
-                  :rules="[(val) => !!val || 'Required']"
                   readonly
                 />
               </div>
@@ -223,9 +222,8 @@
                 <q-input
                   outlined
                   dense
-                  v-model="localForm.firstNameTriage"
+                  v-model="store.triageForm.firstNameTriage"
                   label="First Name *"
-                  :rules="[(val) => !!val || 'Required']"
                   readonly
                 />
               </div>
@@ -233,7 +231,7 @@
                 <q-input
                   outlined
                   dense
-                  v-model="localForm.middleNameTriage"
+                  v-model="store.triageForm.middleNameTriage"
                   label="Middle Name"
                   readonly
                 />
@@ -242,10 +240,9 @@
                 <q-select
                   outlined
                   dense
-                  v-model="localForm.suffixTriage"
+                  v-model="store.triageForm.suffixTriage"
                   :options="['Jr.', 'Sr.', 'II', 'III', 'IV', 'V', 'VI']"
                   label="Suffix"
-                  lazy-rules
                   readonly
                 />
               </div>
@@ -256,29 +253,12 @@
                 <q-input
                   outlined
                   dense
-                  v-model="localForm.birthdateTriage"
+                  v-model="store.triageForm.birthdateTriage"
                   label="Birthdate *"
-                  mask="date"
-                  :rules="[
-                    'date',
-                    (val) => new Date(val) <= new Date() || 'Future date invalid',
-                  ]"
                   readonly
                 >
                   <template v-slot:append>
-                    <q-icon name="event" class="cursor-pointer">
-                      <q-popup-proxy
-                        cover
-                        transition-show="scale"
-                        transition-hide="scale"
-                      >
-                        <q-date v-model="localForm.birthdateTriage">
-                          <div class="row items-center justify-end">
-                            <q-btn v-close-popup label="Close" color="primary" flat />
-                          </div>
-                        </q-date>
-                      </q-popup-proxy>
-                    </q-icon>
+                    <q-icon name="event" />
                   </template>
                 </q-input>
               </div>
@@ -287,7 +267,7 @@
                   outlined
                   dense
                   type="number"
-                  v-model="localForm.ageTriage"
+                  v-model="store.triageForm.ageTriage"
                   label="Age"
                   readonly
                   bg-color="grey-2"
@@ -297,11 +277,9 @@
                 <q-select
                   outlined
                   dense
-                  v-model="localForm.genderTriage"
+                  v-model="store.triageForm.genderTriage"
                   :options="['Male', 'Female', 'Prefer not to say']"
                   label="Gender"
-                  lazy-rules
-                  :rules="[(val) => !!val || 'Please select gender']"
                   readonly
                 />
               </div>
@@ -312,7 +290,7 @@
                 <q-input
                   outlined
                   dense
-                  v-model="localForm.chiefComplaintTriage"
+                  v-model="store.triageForm.chiefComplaintTriage"
                   label="Chief Complaint"
                   :rules="[(val) => !!val || 'Required']"
                 />
@@ -321,12 +299,13 @@
 
             <q-separator class="q-my-md" />
             <div class="text-subtitle1 text-bold q-mb-md">Vital Signs:</div>
+
             <div class="row q-col-gutter-md">
               <div class="col-4 col-md-4">
                 <q-input
                   outlined
                   dense
-                  v-model="localForm.tempTriage"
+                  v-model="store.triageForm.tempTriage"
                   label="Temperature *"
                   :rules="[(val) => !!val || 'Required']"
                   hint="(c)"
@@ -336,7 +315,7 @@
                 <q-input
                   outlined
                   dense
-                  v-model="localForm.heartRateTriage"
+                  v-model="store.triageForm.heartRateTriage"
                   label="Heart Rate *"
                   :rules="[(val) => !!val || 'Required']"
                   hint="(bpm)"
@@ -346,7 +325,7 @@
                 <q-input
                   outlined
                   dense
-                  v-model="localForm.oxygenTriage"
+                  v-model="store.triageForm.oxygenTriage"
                   label="Oxygen Saturation *"
                   :rules="[(val) => !!val || 'Required']"
                   hint="(%)"
@@ -359,7 +338,7 @@
                 <q-input
                   outlined
                   dense
-                  v-model="localForm.bpTriage"
+                  v-model="store.triageForm.bpTriage"
                   label="Blood Pressure *"
                   :rules="[(val) => !!val || 'Required']"
                   hint="(mmHg)"
@@ -369,7 +348,7 @@
                 <q-input
                   outlined
                   dense
-                  v-model="localForm.respiRateTriage"
+                  v-model="store.triageForm.respiRateTriage"
                   label="Respiratory Rate *"
                   :rules="[(val) => !!val || 'Required']"
                   hint="(cpm)"
@@ -379,7 +358,7 @@
                 <q-input
                   outlined
                   dense
-                  v-model="localForm.painScoreTriage"
+                  v-model="store.triageForm.painScoreTriage"
                   label="Pain Score *"
                   :rules="[(val) => !!val || 'Required']"
                 />
@@ -393,7 +372,7 @@
                 <q-select
                   outlined
                   dense
-                  v-model="localForm.avpuTriage"
+                  v-model="store.triageForm.avpuTriage"
                   :options="[
                     'Alert',
                     'Verbally Responsive',
@@ -401,7 +380,6 @@
                     'Unresponsive',
                   ]"
                   label="AVPU Scale"
-                  lazy-rules
                   :rules="[(val) => !!val || 'Please select AVPU Scale']"
                 />
               </div>
@@ -409,14 +387,13 @@
                 <q-select
                   outlined
                   dense
-                  v-model="localForm.contagiousTriage"
+                  v-model="store.triageForm.contagiousTriage"
                   :options="[
                     'Symptom/s suggestive of COVID-19',
                     'Symptom/s suggestive of a VIRAL EXANTHEM',
                     'None',
                   ]"
                   label="Screening for Contagious Infectious Disease"
-                  lazy-rules
                   :rules="[
                     (val) => !!val || 'Please select screening for contagious disease.',
                   ]"
@@ -429,10 +406,9 @@
                 <q-select
                   outlined
                   dense
-                  v-model="localForm.isolationPrecautionTriage"
+                  v-model="store.triageForm.isolationPrecautionTriage"
                   :options="['COVID Complex (Old ER)', 'COVID Complex Extension (OPD)']"
                   label="Transfer Immediately to:"
-                  lazy-rules
                   :rules="[(val) => !!val || 'Please select precaution.']"
                 />
               </div>
@@ -440,10 +416,9 @@
                 <q-select
                   outlined
                   dense
-                  v-model="localForm.cpdTriage"
+                  v-model="store.triageForm.cpdTriage"
                   :options="['Yes', 'No']"
                   label="Cardio-Pulmonary Distress"
-                  lazy-rules
                   :rules="[(val) => !!val || 'Required.']"
                 />
               </div>
@@ -451,10 +426,9 @@
                 <q-select
                   outlined
                   dense
-                  v-model="localForm.levelTriage"
+                  v-model="store.triageForm.levelTriage"
                   :options="['1 - (Emergent)', '2 - (Urgent)', '3 - (Non-Urgent)']"
                   label="Triage Level"
-                  lazy-rules
                   :rules="[(val) => !!val || 'Please select triage level.']"
                 />
               </div>
@@ -465,7 +439,7 @@
                 <q-select
                   outlined
                   dense
-                  v-model="localForm.checkforPresense"
+                  v-model="store.triageForm.checkforPresense"
                   multiple
                   :options="[
                     'Fever',
@@ -486,7 +460,7 @@
                 <q-input
                   outlined
                   dense
-                  v-model="localForm.remarksTriage"
+                  v-model="store.triageForm.remarksTriage"
                   label="Remarks"
                   :rules="[(val) => !!val || 'Required']"
                 />
@@ -498,7 +472,7 @@
                 <q-input
                   outlined
                   dense
-                  v-model="localForm.personnelTriage"
+                  v-model="store.triageForm.personnelTriage"
                   label="Name of Triage Personnel *"
                   :rules="[(val) => !!val || 'Required']"
                 />
@@ -507,7 +481,7 @@
                 <q-input
                   outlined
                   dense
-                  v-model="localForm.dateTriage"
+                  v-model="store.triageForm.dateTriage"
                   label="Date Accomplished *"
                   mask="date"
                   :rules="[
@@ -523,7 +497,475 @@
                         transition-show="scale"
                         transition-hide="scale"
                       >
-                        <q-date v-model="localForm.dateTriage">
+                        <q-date v-model="store.triageForm.dateTriage">
+                          <div class="row items-center justify-end">
+                            <q-btn v-close-popup label="Close" color="primary" flat />
+                          </div>
+                        </q-date>
+                      </q-popup-proxy>
+                    </q-icon>
+                  </template>
+                </q-input>
+              </div>
+
+              <div class="col-12">
+                <div class="text-caption text-center text-grey-8 q-mb-xs">
+                  Triage Personnel Signature *
+                </div>
+                <div
+                  class="rounded-borders q-pa-sm"
+                  :class="store.signatureError ? 'bg-red-1' : 'bg-grey-1'"
+                  style="border: 1px solid #dcdcdc"
+                >
+                  <SignaturePad v-model="localSignature" />
+
+                  <div
+                    v-if="store.signatureError"
+                    class="text-negative text-caption q-mt-xs text-center"
+                  >
+                    <q-icon name="warning" class="q-mr-xs" /> Signature is required
+                  </div>
+                </div>
+              </div>
+            </div>
+          </q-form>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-actions align="center" class="text-primary q-py-md">
+          <q-btn flat label="Cancel" v-close-popup />
+
+          <q-btn
+            color="blue-10"
+            icon-right="update"
+            style="width: 100%; height: 45px; max-width: 200px"
+            label="Update Record"
+            :loading="store.loading"
+            @click="validateAndSubmit"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog> -->
+
+    <q-dialog
+      v-model="store.showTriageDialog"
+      backdrop-filter="blur(4px)"
+      persistent
+      transition-show="scale"
+      transition-hide="scale"
+    >
+      <q-card
+        style="width: 1500px; max-width: 95vw; display: flex; flex-direction: column"
+        :style="{ height: $q.screen.lt.md ? '90vh' : '80vh' }"
+      >
+        <q-card-section
+          class="column text-center text-white q-py-md relative-position"
+          style="background-color: #004aad"
+        >
+          <div class="text-h6 text-bold">UPDATE TRIAGE FORM</div>
+          <div class="text-caption text-white-7" style="line-height: 1.2">
+            Please input valid information.
+          </div>
+          <q-btn
+            icon="close"
+            flat
+            round
+            dense
+            v-close-popup
+            class="absolute-right q-ma-lg"
+          />
+        </q-card-section>
+
+        <q-card-section class="scroll" style="max-height: 65vh">
+          <q-form ref="personalInfoTriage" @submit="validateAndSubmit" class="q-pa-sm">
+            <div class="text-subtitle1 text-bold q-mb-md">Patient Information:</div>
+
+            <input type="hidden" v-model="store.triageForm.patientId" />
+
+            <div class="row q-col-gutter-xs">
+              <div class="col-12 col-sm-3 col-md-3">
+                <q-input
+                  outlined
+                  dense
+                  v-model="store.triageForm.lastNameTriage"
+                  label="Last Name *"
+                  :rules="[(val) => !!val || 'Required']"
+                  readonly
+                />
+              </div>
+              <div class="col-12 col-sm-3 col-md-3">
+                <q-input
+                  outlined
+                  dense
+                  v-model="store.triageForm.firstNameTriage"
+                  label="First Name *"
+                  :rules="[(val) => !!val || 'Required']"
+                  readonly
+                />
+              </div>
+              <div class="col-12 col-sm-3 col-md-3 q-mb-md">
+                <q-input
+                  outlined
+                  dense
+                  v-model="store.triageForm.middleNameTriage"
+                  label="Middle Name"
+                  readonly
+                />
+              </div>
+              <div class="col-12 col-sm-3 col-md-3 q-mb-md">
+                <q-select
+                  outlined
+                  dense
+                  v-model="store.triageForm.suffixTriage"
+                  :options="['Jr.', 'Sr.', 'II', 'III', 'IV', 'V', 'VI']"
+                  label="Suffix"
+                  lazy-rules
+                  readonly
+                />
+              </div>
+            </div>
+
+            <div class="row q-col-gutter-xs">
+              <div class="col-12 col-sm-4 col-md-4">
+                <q-input
+                  outlined
+                  dense
+                  v-model="store.triageForm.birthdateTriage"
+                  label="Birthdate *"
+                  mask="date"
+                  :rules="[
+                    'date',
+                    (val) => new Date(val) <= new Date() || 'Future date invalid',
+                  ]"
+                  readonly
+                >
+                  <template v-slot:append>
+                    <q-icon name="event" class="cursor-pointer">
+                      <q-popup-proxy
+                        cover
+                        transition-show="scale"
+                        transition-hide="scale"
+                      >
+                        <q-date v-model="store.triageForm.birthdateTriage">
+                          <div class="row items-center justify-end">
+                            <q-btn v-close-popup label="Close" color="primary" flat />
+                          </div>
+                        </q-date>
+                      </q-popup-proxy>
+                    </q-icon>
+                  </template>
+                </q-input>
+              </div>
+              <div class="col-12 col-sm-4 col-md-4 q-mb-md">
+                <q-input
+                  outlined
+                  dense
+                  type="number"
+                  v-model="store.triageForm.ageTriage"
+                  label="Age"
+                  readonly
+                  bg-color="grey-2"
+                />
+              </div>
+              <div class="col-12 col-sm-4 col-md-4 q-mb-md">
+                <q-select
+                  outlined
+                  dense
+                  v-model="store.triageForm.genderTriage"
+                  :options="['Male', 'Female']"
+                  label="Gender"
+                  readonly
+                />
+              </div>
+            </div>
+
+            <div class="row q-col-gutter-md">
+              <div class="col-12 col-sm-3 col-md-3">
+                <q-input
+                  outlined
+                  type="number"
+                  dense
+                  v-model="store.triageForm.weightTriage"
+                  label-slot
+                  :rules="[(val) => !!val || 'Required']"
+                  suffix="kg"
+                >
+                  <template v-slot:label>
+                    Weight <span class="text-red">*</span>
+                  </template>
+                </q-input>
+              </div>
+
+              <div class="col-12 col-sm-3 col-md-3">
+                <q-select
+                  outlined
+                  dense
+                  v-model="store.triageForm.broughtBy"
+                  :options="['Self', 'Ambulance', 'Relative', 'Police', 'Others']"
+                  label-slot
+                >
+                  <template v-slot:label>
+                    Brought By <span class="text-red">*</span>
+                  </template>
+                </q-select>
+              </div>
+
+              <div class="col-12 col-sm-3 col-md-3">
+                <q-select
+                  outlined
+                  dense
+                  v-model="store.triageForm.philHealthCateg"
+                  :options="['Member', 'Non-member', 'Dependent', 'OFW']"
+                  label="PhilHealth Category"
+                />
+              </div>
+
+              <div class="col-12 col-sm-3 col-md-3">
+                <q-select
+                  outlined
+                  dense
+                  v-model="store.triageForm.ptCondition"
+                  :options="[
+                    'Ambulatory',
+                    'Stuporous',
+                    'Unconscious',
+                    'Violent',
+                    'Assisted',
+                    'Others',
+                  ]"
+                  label-slot
+                >
+                  <template v-slot:label>
+                    Patient's Condition upon admission <span class="text-red">*</span>
+                  </template>
+                </q-select>
+              </div>
+            </div>
+
+            <q-separator class="q-my-md" />
+            <div class="text-subtitle1 text-bold q-mb-md">Vital Signs:</div>
+
+            <div class="row q-col-gutter-md">
+              <div class="col-12 col-md-12">
+                <q-input
+                  outlined
+                  dense
+                  v-model="store.triageForm.chiefComplaintTriage"
+                  label-slot
+                  :rules="[(val) => !!val || 'Required']"
+                >
+                  <template v-slot:label>
+                    Chief Complaint <span class="text-red">*</span>
+                  </template>
+                </q-input>
+              </div>
+            </div>
+            <div class="row q-col-gutter-xs">
+              <div class="col-12 col-sm-3 col-md-3">
+                <q-input
+                  outlined
+                  dense
+                  v-model="store.triageForm.tempTriage"
+                  label-slot
+                  suffix="°C"
+                  :rules="[(val) => !!val || 'Required']"
+                >
+                  <template v-slot:label>
+                    Temperature <span class="text-red">*</span>
+                  </template>
+                </q-input>
+              </div>
+              <div class="col-12 col-sm-3 col-md-3">
+                <q-input
+                  outlined
+                  dense
+                  v-model="store.triageForm.heartRateTriage"
+                  label-slot
+                  suffix="bpm"
+                  :rules="[(val) => !!val || 'Required']"
+                >
+                  <template v-slot:label>
+                    Heart Rate <span class="text-red">*</span>
+                  </template>
+                </q-input>
+              </div>
+              <div class="col-12 col-sm-3 col-md-3">
+                <q-input
+                  outlined
+                  dense
+                  v-model="store.triageForm.oxygenTriage"
+                  label-slot
+                  suffix="%"
+                  :rules="[(val) => !!val || 'Required']"
+                >
+                  <template v-slot:label>
+                    Oxygen Saturation <span class="text-red">*</span>
+                  </template>
+                </q-input>
+              </div>
+              <div class="col-12 col-sm-3 col-md-3">
+                <q-input
+                  outlined
+                  dense
+                  v-model="store.triageForm.bpTriage"
+                  label-slot
+                  suffix="mmHg"
+                  :rules="[(val) => !!val || 'Required']"
+                >
+                  <template v-slot:label>
+                    Blood Pressure <span class="text-red">*</span>
+                  </template>
+                </q-input>
+              </div>
+            </div>
+
+            <div class="row q-col-gutter-xs">
+              <div class="col-12 col-sm-4 col-md-4">
+                <q-input
+                  outlined
+                  dense
+                  v-model="store.triageForm.respiRateTriage"
+                  label-slot
+                  suffix="cpm"
+                  :rules="[(val) => !!val || 'Required']"
+                >
+                  <template v-slot:label>
+                    Respiratory Rate <span class="text-red">*</span>
+                  </template>
+                </q-input>
+              </div>
+              <div class="col-12 col-sm-4 col-md-4">
+                <q-input
+                  outlined
+                  dense
+                  v-model="store.triageForm.painScoreTriage"
+                  label="Pain Score *"
+                  :rules="[(val) => !!val || 'Required']"
+                />
+              </div>
+
+              <div class="col-12 col-sm-4 col-md-4 q-mb-md">
+                <q-select
+                  outlined
+                  dense
+                  v-model="store.triageForm.contagiousTriage"
+                  :options="[
+                    'Symptom/s suggestive of COVID-19',
+                    'Symptom/s suggestive of a VIRAL EXANTHEM',
+                    'None',
+                  ]"
+                  label="Screening for Contagious Infectious Disease"
+                />
+              </div>
+            </div>
+            <div class="row q-col-gutter-md">
+              <div class="col-12 col-sm-4 col-md-4">
+                <q-select
+                  outlined
+                  dense
+                  v-model="store.triageForm.isolationPrecautionTriage"
+                  :options="['COVID Complex (Old ER)', 'COVID Complex Extension (OPD)']"
+                  label="Transfer Immediately to:"
+                />
+              </div>
+              <div class="col-12 col-sm-4 col-md-4">
+                <q-select
+                  outlined
+                  dense
+                  v-model="store.triageForm.cpdTriage"
+                  :options="['Yes', 'No']"
+                  label="Cardio-Pulmonary Distress"
+                />
+              </div>
+              <div class="col-12 col-sm-4 col-md-4">
+                <q-select
+                  outlined
+                  dense
+                  v-model="store.triageForm.levelTriage"
+                  :options="['1 - (Emergent)', '2 - (Urgent)', '3 - (Non-Urgent)']"
+                  label-slot
+                  lazy-rules
+                  :rules="[(val) => !!val || 'Please select triage level.']"
+                >
+                  <template v-slot:label>
+                    Triage Level <span class="text-red">*</span>
+                  </template>
+                </q-select>
+              </div>
+            </div>
+
+            <div class="row q-col-gutter-md q-mb-md">
+              <div class="col-12 col-sm-6 col-md-6">
+                <q-select
+                  outlined
+                  dense
+                  v-model="store.triageForm.checkforPresense"
+                  multiple
+                  :options="[
+                    'Fever',
+                    'Cough',
+                    'Sore Throat',
+                    'Headache',
+                    'Diarrhea',
+                    'Shortness of Breath',
+                    'Joint pains',
+                    'Muscle pains',
+                    'Decreased sense of taste/smell',
+                    'Rash',
+                  ]"
+                  label="Check for Presence of symptoms"
+                />
+              </div>
+              <div class="col-12 col-sm-6 col-md-6">
+                <q-input
+                  outlined
+                  dense
+                  v-model="store.triageForm.remarksTriage"
+                  label="Remarks"
+                />
+              </div>
+            </div>
+
+            <div class="row q-col-gutter-md">
+              <div class="col-12 col-sm-6 col-md-6">
+                <q-input
+                  outlined
+                  dense
+                  v-model="store.triageForm.personnelTriage"
+                  label-slot
+                  :rules="[(val) => !!val || 'Required']"
+                >
+                  <template v-slot:label>
+                    Name of Triage Personnel <span class="text-red">*</span>
+                  </template>
+                </q-input>
+              </div>
+              <div class="col-12 col-sm-6 col-md-6">
+                <q-input
+                  outlined
+                  dense
+                  v-model="store.triageForm.dateTriage"
+                  label-slot
+                  mask="date"
+                  :rules="[
+                    'date',
+                    (val) =>
+                      new Date(val) <= new Date() || 'Date cannot be in the future',
+                  ]"
+                >
+                  <template v-slot:label>
+                    Date Accomplished <span class="text-red">*</span>
+                  </template>
+
+                  <template v-slot:append>
+                    <q-icon name="event" class="cursor-pointer">
+                      <q-popup-proxy
+                        cover
+                        transition-show="scale"
+                        transition-hide="scale"
+                      >
+                        <q-date v-model="store.triageForm.dateTriage">
                           <div class="row items-center justify-end">
                             <q-btn v-close-popup label="Close" color="primary" flat />
                           </div>
@@ -535,7 +977,7 @@
               </div>
               <div class="col-12">
                 <div class="text-caption text-center text-grey-8 q-mb-xs">
-                  Triage Personnel Signature *
+                  Triage Personnel Signature <span class="text-red">*</span>
                 </div>
                 <div
                   class="rounded-borders q-pa-sm"
@@ -543,7 +985,6 @@
                   style="border: 1px solid #dcdcdc"
                 >
                   <SignaturePad v-model="localSignature" />
-
                   <div
                     v-if="hasError"
                     class="text-negative text-caption q-mt-xs text-center"
@@ -566,8 +1007,8 @@
             icon-right="update"
             style="width: 100%; height: 45px; max-width: 200px"
             label="Update Record"
-            :loading="loading"
-            @click="updateTriageRecord"
+            :loading="store.loading"
+            @click="validateAndSubmit"
           />
         </q-card-actions>
       </q-card>
@@ -576,10 +1017,10 @@
 </template>
 
 <script>
+import { ref, watch } from "vue";
 import { date } from "quasar";
-import axios from "axios";
-
 import SignaturePad from "src/components/TriageAssessment/SignaturePad.vue";
+import { useReturningPatientStore } from "src/stores/returningpatientStore";
 
 import { printInpatientInformation } from "src/composables/printInpatientInformation";
 import { printPatientInfo } from "src/composables/printPatientInfo";
@@ -591,27 +1032,27 @@ export default {
   components: { SignaturePad },
 
   setup() {
+    const store = useReturningPatientStore();
+    const personalInfoTriage = ref(null);
+    const localSignature = ref(null);
+
     const { generatePatientPdf } = printInpatientInformation();
     const { generatePatientInfoPdf } = printPatientInfo();
     const { generatePatientConsentPdf } = printPatientConsent();
     const { generateTriagePatientPdf } = printEmergencyPatientInformation();
 
+    watch(localSignature, (val) => {
+      if (val) store.signatureError = false;
+    });
+
     return {
+      store,
+      personalInfoTriage,
+      localSignature,
       generatePatientPdf,
       generatePatientInfoPdf,
       generatePatientConsentPdf,
       generateTriagePatientPdf,
-    };
-  },
-
-  data() {
-    return {
-      ReturningPatientFormDialog: false,
-      triageDialog: false,
-      searchQuery: "",
-      loading: false,
-      hasSearched: false,
-      patientList: [],
 
       columns: [
         {
@@ -654,297 +1095,61 @@ export default {
           style: "width: 150px",
         },
       ],
-
-      localForm: {
-        patientId: null,
-        patientNo: null,
-        lastNameTriage: "",
-        firstNameTriage: "",
-        middleNameTriage: "",
-        suffixTriage: "",
-        birthdateTriage: "",
-        ageTriage: "",
-        genderTriage: "",
-        chiefComplaintTriage: "",
-        tempTriage: "",
-        heartRateTriage: "",
-        oxygenTriage: "",
-        bpTriage: "",
-        respiRateTriage: "",
-        painScoreTriage: "",
-        avpuTriage: "",
-        contagiousTriage: "",
-        isolationPrecautionTriage: "",
-        cpdTriage: "",
-        levelTriage: "",
-        checkforPresense: [],
-        remarksTriage: "",
-        personnelTriage: "",
-        dateTriage: "",
-        localSignature: this.initialSignature || null,
-      },
     };
-  },
-  watch: {
-    localSignature(val) {
-      if (val) this.hasError = false;
-      this.$emit("update:signature", val);
-    },
-    initialSignature(val) {
-      if (val !== this.localSignature) {
-        this.localSignature = val;
-      }
-    },
   },
 
   methods: {
     show() {
-      this.ReturningPatientFormDialog = true;
-      this.searchQuery = "";
-      this.patientList = [];
-      this.hasSearched = false;
-    },
-
-    updateTriage(row) {
-      this.triageDialog = true;
-
-      this.localForm.patientId = row.PATIENTNO;
-      this.localForm.lastNameTriage = row.LASTNAME;
-      this.localForm.firstNameTriage = row.FIRSTNAME;
-      this.localForm.middleNameTriage = row.MIDDLENAME || "";
-      this.localForm.suffixTriage = row.SUFFIX || "";
-
-      this.localForm.ageTriage = row.AGE;
-      this.localForm.genderTriage = row.gender;
-
-      if (row.birthdate) {
-        this.localForm.birthdateTriage = date.formatDate(row.birthdate, "YYYY/MM/DD");
-      }
-
-      this.localForm.tempTriage = "";
-      this.localForm.bpTriage = "";
-      this.localForm.heartRateTriage = "";
-      this.localForm.oxygenTriage = "";
-      this.localForm.respiRateTriage = "";
-      this.localForm.painScoreTriage = "";
-      this.localForm.remarksTriage = "";
-      this.localForm.checkforPresense = [];
-      this.localForm.dateTriage = date.formatDate(new Date(), "YYYY/MM/DD");
-    },
-
-    async updateTriageRecord() {
-      const valid = await this.$refs.personalInfoTriage.validate();
-      const isSignatureValid = !!this.localSignature;
-
-      if (!isSignatureValid) this.hasError = true;
-
-      if (!valid || !isSignatureValid) {
-        let msg = "Please complete the requirements.";
-
-        if (!valid && !isSignatureValid) {
-          msg = "Please fill out missing fields and provide a signature.";
-        } else if (!valid) {
-          msg = "Please fill out the missing fields.";
-        } else if (!isSignatureValid) {
-          msg = "Personnel signature is required.";
-        }
-
-        this.$q.notify({
-          type: "warning",
-          message: msg,
-          position: "top",
-        });
-        return;
-      }
-
-      if (!this.localForm.patientId) {
-        this.$q.notify({
-          type: "negative",
-          message: "Error: No Patient ID found. Cannot update.",
-        });
-        return;
-      }
-
-      this.localForm.personnelSignature = this.localSignature;
-      this.loading = true;
-
-      try {
-        const response = await axios.put(
-          "http://10.107.0.2:3000/api/auth/updateTriage",
-          this.localForm
-        );
-
-        if (response.status === 200) {
-          this.$q.notify({
-            type: "positive",
-            message: "Patient record updated successfully!",
-            position: "top",
-          });
-
-          this.$emit("submit");
-          this.triageDialog = false;
-        }
-      } catch (error) {
-        console.error("Update Error:", error);
-
-        const errMsg =
-          error.response && error.response.data
-            ? error.response.data.message
-            : "Failed to update record.";
-
-        this.$q.notify({
-          type: "negative",
-          message: errMsg,
-        });
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    async searchPatients() {
-      if (!this.searchQuery || this.searchQuery.length < 2) {
-        this.$q.notify({
-          type: "warning",
-          position: "top",
-          message: "Please enter at least 2 characters",
-        });
-        return;
-      }
-
-      this.loading = true;
-
-      try {
-        const response = await axios.get(
-          "http://10.107.0.2:3000/api/auth/searchInpatient",
-          {
-            params: { query: this.searchQuery },
-          }
-        );
-
-        this.patientList = response.data;
-        this.hasSearched = true;
-
-        if (this.patientList.length === 0) {
-          this.$q.notify({
-            type: "info",
-            position: "top",
-            message: "No records found.",
-            icon: "search_off",
-          });
-        }
-      } catch (error) {
-        console.error(error);
-        this.$q.notify({
-          type: "negative",
-          position: "top",
-          message: "Database Connection Failed",
-        });
-      } finally {
-        this.loading = false;
-      }
+      this.store.openSearchDialog();
     },
 
     viewPatient(row) {
-      console.log("Viewing Patient:", row);
       this.$q.notify({ type: "primary", message: `Viewing details for ${row.lastName}` });
     },
 
-    async handlePrint(row) {
-      if (!row || !row.PATIENTNO) {
-        this.$q.notify({ type: "warning", message: "Invalid Patient ID" });
+    async validateAndSubmit() {
+      const valid = await this.$refs.personalInfoTriage.validate();
+      const isSignatureValid = !!this.localSignature;
+
+      if (!isSignatureValid) this.store.signatureError = true;
+
+      if (!valid || !isSignatureValid) {
+        let msg = "Please complete the requirements.";
+        if (!valid && !isSignatureValid)
+          msg = "Please fill out missing fields and provide a signature.";
+        else if (!valid) msg = "Please fill out the missing fields.";
+        else if (!isSignatureValid) msg = "Personnel signature is required.";
+
+        this.$q.notify({ type: "warning", message: msg, position: "top" });
         return;
       }
 
-      this.loading = true;
+      const success = await this.store.submitTriageRecord(this.localSignature);
+      if (success) {
+        this.$emit("submit");
+        this.localSignature = null;
+      }
+    },
 
-      try {
-        const checkResponse = await axios.get(
-          `http://10.107.0.2:3000/api/auth/checkPatientExists/${row.PATIENTNO}`
-        );
-
-        const { exists, source } = checkResponse.data;
-
-        if (!exists) {
-          this.$q.notify({
-            type: "warning",
-            message: "Patient not found in Registration or Info tables.",
-            position: "top",
-          });
-          return;
+    async handlePrint(row) {
+      const result = await this.store.fetchPatientForPrint(row.PATIENTNO);
+      if (result) {
+        if (result.source === "REGISTRATION") {
+          await this.generatePatientPdf(result.data);
+        } else if (result.source === "INFO") {
+          await this.generatePatientInfoPdf(result.data);
         }
-
-        const dataResponse = await axios.get(
-          `http://10.107.0.2:3000/api/auth/getPatient/${row.PATIENTNO}`
-        );
-        const patientData = dataResponse.data;
-
-        if (source === "REGISTRATION") {
-          await this.generatePatientPdf(patientData);
-        } else if (source === "INFO") {
-          await this.generatePatientInfoPdf(patientData);
-        }
-      } catch (error) {
-        console.error("Print Error:", error);
-        this.$q.notify({
-          type: "negative",
-          message: "An error occurred while processing.",
-          position: "top",
-        });
-      } finally {
-        this.loading = false;
       }
     },
 
     async handlePrintConsent(row) {
-      this.loading = true;
-
-      try {
-        const response = await axios.get(
-          `http://10.107.0.2:3000/api/auth/getPatient/${row.PATIENTNO}`
-        );
-
-        const fullPatientData = {
-          ...response.data,
-          patientId: row.PATIENTNO,
-        };
-
-        await this.generatePatientConsentPdf(fullPatientData);
-      } catch (error) {
-        console.error("Print Error:", error);
-        this.$q.notify({
-          type: "negative",
-          message: "Failed to fetch full details for printing",
-          position: "top",
-        });
-      } finally {
-        this.loading = false;
-      }
+      const data = await this.store.fetchFullPatientData(row.PATIENTNO);
+      if (data) await this.generatePatientConsentPdf(data);
     },
 
     async handlePrintTriage(row) {
-      this.loading = true;
-
-      try {
-        const response = await axios.get(
-          `http://10.107.0.2:3000/api/auth/getPatient/${row.PATIENTNO}`
-        );
-
-        const fullPatientData = {
-          ...response.data,
-          patientId: row.PATIENTNO,
-        };
-
-        await this.generateTriagePatientPdf(fullPatientData);
-      } catch (error) {
-        console.error("Print Error:", error);
-        this.$q.notify({
-          type: "negative",
-          message: "Failed to fetch full details for printing",
-          position: "top",
-        });
-      } finally {
-        this.loading = false;
-      }
+      const data = await this.store.fetchFullPatientData(row.PATIENTNO);
+      if (data) await this.generateTriagePatientPdf(data);
     },
   },
 };
@@ -970,10 +1175,5 @@ export default {
 .clean-table :deep(td),
 .clean-table :deep(th) {
   border-bottom: 1px solid #f5f5f5;
-}
-
-.hover-green:hover {
-  color: #388e3c !important;
-  background-color: #e8f5e9;
 }
 </style>

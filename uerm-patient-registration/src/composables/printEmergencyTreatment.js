@@ -50,42 +50,6 @@ export function printEmergencyTreatment() {
         const rightLogo = await getBase64ImageFromURL('src/assets/uerm-logo.png');
         const leftLogo = await getBase64ImageFromURL('src/assets/uerm-logo-white.png');
 
-        // const processSignature = (rawSig) => {
-        //     if (!rawSig) return null;
-
-        //     let finalSigString = '';
-
-        //     if (typeof rawSig === 'object' && rawSig.type === 'Buffer' && Array.isArray(rawSig.data)) {
-        //         const binaryString = new Uint8Array(rawSig.data).reduce(
-        //             (data, byte) => data + String.fromCharCode(byte),
-        //             ''
-        //         );
-        //         finalSigString = window.btoa(binaryString);
-        //     }
-        //     else if (typeof rawSig === 'string') {
-        //         finalSigString = rawSig;
-        //     }
-
-        //     if (finalSigString) {
-        //         return finalSigString.startsWith('data:image')
-        //             ? finalSigString
-        //             : `data:image/png;base64,${finalSigString}`;
-        //     }
-        //     return null;
-        // };
-
-        // const patientSigData = processSignature(patient.eSignature);
-        // const personnelSigData = processSignature(patient.personnelSignature);
-
-        // const getSignatureImage = (sigData) => {
-        //     return sigData
-        //         ? { image: sigData, width: 150, alignment: 'center', margin: [0, 0, 0, -5] }
-        //         : { text: '(No Signature)', fontSize: 8, color: '#999', alignment: 'center', margin: [0, 15, 0, 5] };
-        // };
-
-        // const patientSigElement = getSignatureImage(patientSigData);
-        // const personnelSigElement = getSignatureImage(personnelSigData);
-
         const getLogoColumn = (imgData, align) => {
             if (imgData) return { image: imgData, width: 60, alignment: align };
             return { text: '', width: 60 };
@@ -99,6 +63,7 @@ export function printEmergencyTreatment() {
             margin: [0, 0, 0, 0]
         });
 
+        const patient_id = patient.patient_id || '-';
         const lastname = patient.lastName || 'Unknown';
         const firstname = patient.firstName || 'Unknown';
         const middlename = patient.middleName || '-';
@@ -124,20 +89,6 @@ export function printEmergencyTreatment() {
         const ptCondition = patient.ptCondition || '-';
         const chiefComplaint = patient.chiefComplaint || '-';
 
-        // const oxygen = patient.oxygen || '-';
-        // const painScore = patient.painScore || '-';
-        // const avpu = patient.avpu || '-';
-
-        // const contagious = patient.contagious || '-';
-        // const isolation = patient.isolation || '-';
-        // const symptoms = patient.symptoms || '-';
-        // const cpd = patient.cpd || '-';
-        // const level = patient.level || '-';
-        // const remarks = patient.remarks || '-';
-
-        // const personnelName = patient.personnel_name || patient.personnel || 'Triage Officer';
-        // const createdAt = patient.createdAt ? new Date(patient.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '-';
-
         const docDefinition = {
             pageMargins: [30, 30, 30, 30],
             info: { title: `Record_${firstname + '_' + lastname}` },
@@ -146,10 +97,17 @@ export function printEmergencyTreatment() {
                 {
                     columns:[
                       {
-                          text: 'CTRL. NO.: ______________',
-                          alignment: 'right',
-                          fontSize: 9,
-                          margin: [0, 8, 10, 15]
+                        text: [
+                          'CTRL. NO.: ',
+                          {
+                            text: patient_id ? patient_id.toString() : '______________',
+                            color: 'red',
+                            bold: true
+                          }
+                        ],
+                        alignment: 'right',
+                        fontSize: 9,
+                        margin: [0, 8, 10, 15]
                       },
                     ]
                 },
@@ -318,39 +276,6 @@ export function printEmergencyTreatment() {
                     },
                     ]
                 },
-
-                // {
-                //     margin: [0, 40, 0, 0],
-                //     columns: [
-                //         {
-                //             width: '50%',
-                //             stack: [
-                //                 patientSigElement,
-                //                 {
-                //                     text: `${firstname} ${lastname}`.toUpperCase(), fontSize: 9,
-                //                     margin: [0, 0, 0, 5],
-                //                     style: 'subheader', alignment: 'center', bold: true, decoration: 'underline',
-                //                 },
-                //                 { text: 'PATIENT / GUARDIAN', fontSize: 9, alignment: 'center' },
-                //                 { text: `DATE: ${createdAt}`, fontSize: 9, alignment: 'center' }
-                //             ]
-                //         },
-
-                //         {
-                //             width: '50%',
-                //             stack: [
-                //                 personnelSigElement,
-                //                 {
-                //                     text: personnelName.toUpperCase(), fontSize: 9,
-                //                     margin: [0, 0, 0, 5],
-                //                     style: 'subheader', alignment: 'center', bold: true, decoration: 'underline',
-                //                 },
-                //                 { text: 'TRIAGE OFFICER', fontSize: 9, alignment: 'center' },
-                //                 { text: `DATE: ${createdAt}`, fontSize: 9, alignment: 'center' }
-                //             ]
-                //         }
-                //     ]
-                // }
             ],
 
             styles: {

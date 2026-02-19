@@ -98,8 +98,8 @@
 
 <script>
 import PatientSourceOfIncome from "src/components/AdminPage/PatientSourceOfIncome.vue";
-import AccreditedHMO from "src/components/AdminPage/AccreditedHMO.vue";
-import ContactPersonSourceOfIncome from "src/components/AdminPage/ContactPersonSourceOfIncome.vue";
+import AccreditedHMO from "src/components/FinancePage/AccreditedHMO.vue";
+import ContactPersonSourceOfIncome from "src/components/FinancePage/ContactPersonSourceOfIncome.vue";
 
 import axios from "axios";
 
