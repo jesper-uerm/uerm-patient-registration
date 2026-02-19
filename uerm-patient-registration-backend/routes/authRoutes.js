@@ -22,6 +22,8 @@ router.get('/fetchOutpatient', authController.fetchOutpatient);
 
 router.get('/fetchErpatient', authController.fetchErpatient);
 
+router.get('/fetchErpatientForReview', authController.fetchErpatientForReview);
+
 router.get('/fetchAdmitErpatient', authController.fetchAdmitErpatient);
 
 router.get('/fetchPieChartData', authController.fetchPieChartData);

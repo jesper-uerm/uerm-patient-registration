@@ -126,10 +126,89 @@ exports.register = async (req, res) => {
             .input('medicalProcedure', sql.NVarChar, body.outpatientProcedure)
             .input('physician', sql.NVarChar, body.outpatientPhysician);
 
+        // const patientResult = await request.query(`
+        //     DECLARE @ExistingID INT;
+
+        //     SELECT TOP 1 @ExistingID = patient_id 
+        //     FROM PatientRegistration 
+        //     WHERE lastName = @lastName 
+        //     AND firstName = @firstName 
+        //     AND CAST(birthdate AS DATE) = CAST(@birthdate AS DATE)
+        //     AND ISNULL(middleName, '') = ISNULL(@middleName, '')
+        //     AND ISNULL(suffix, '') = ISNULL(@suffix, '');
+
+        //     IF @ExistingID IS NOT NULL
+        //     BEGIN
+        //         UPDATE PatientRegistration
+        //         SET 
+        //             age = @age, birthplace = @birthplace, sex = @gender,
+        //             civilStatus = @civilStatus, religion = @religion, nationality = @nationality, landline = @landline, 
+        //             mobile = @mobile, email = @email, occupation = @occupation,
+        //             addressStreet = @street, addressBarangay = @barangay, addressCity = @city, addressProvince = @province, addressRegion = @region,
+        //             addressPermanent = @permanentAddress, ptFatherName = @fathersName, ptFatherAddress = @fathersAddress,
+        //             ptFatherContact = @fatherContactNumber, ptMotherMaidenName = @mothersName, ptMotherAddress = @mothersAddress, ptMotherContact = @motherContactNumber,
+        //             ptSourceIncome = @ptSourceIncome, specificSourceOfIncome = @specificSourceOfIncome, seniorId = @seniorpwd, philhealthId = @philhealthId,
+        //             sssgsisId = @sssgsis, tinID = @tin, others = @others, ptGrossIncome = @ptGrossIncome, ptHomeOwnership = @ptHomeOwnership,
+        //             ptYearsStay = @ptYearsStay, spouseName = @spouseName, spouseOccupation = @spouseOccupation, spouseEmployerContact = @spouseEmployerContact, ptCars = @ptCars,
+        //             ptCarOwnership = @ptCarOwnership, cpName = @cpName, cpRelationship = @cpRelationship, cpLandline = @cpLandline, cpMobile = @cpMobile, cpEmail = @cpEmail,
+        //             cpAddress = @cpAddress, cpOccupation = @cpOccupation, cpEmployerNumber = @cpEmployerNumber, spouseEmployerName = @spouseEmployerName, spouseEmployerAddress = @spouseEmployerAddress,
+        //             cpIncomeSource = @cpIncomeSource, cpGrossIncome = @cpGrossIncome, cpHomeOwnership = @cpHomeOwnership, cpHomeStay = @cpHomeStay,
+        //             cpHasCar = @cpHasCar, cpCarOwnership = @cpCarOwnership, cpNumberOfCars = @cpNumberOfCars, modeOfPayment = @mop, specificModeOfPayment = @specificmop, creditCards = @creditCard,
+        //             bankAffiliations = @bank, itemsReceived = @items, patientType = 'Emergency', hmo = @hmo, scidnoOutpatient = @scidnoOutpatient, philHealth = @philHealth, medicalProcedure = @medicalProcedure, physician = @physician, isAdmitted = 2, forReview = 0
+        //         WHERE patient_id = @ExistingID;
+
+        //         SELECT @ExistingID AS patient_id, 'UPDATED' AS status;
+        //     END
+        //     ELSE
+        //     BEGIN
+        //         INSERT INTO PatientRegistration (
+        //             lastName, firstName, middleName, suffix, birthdate, age, birthplace, sex, 
+        //             civilStatus, religion, nationality, landline, mobile, email, occupation, 
+        //             addressStreet, addressBarangay, addressCity, addressProvince, addressRegion,
+        //             addressPermanent, ptFatherName, ptFatherAddress, 
+        //             ptFatherContact, ptMotherMaidenName, ptMotherAddress, ptMotherContact, 
+        //             ptSourceIncome, specificSourceOfIncome, seniorId, philhealthId,
+        //             sssgsisId, tinID, others, ptGrossIncome, ptHomeOwnership,
+        //             ptYearsStay, spouseName, spouseOccupation,spouseEmployerContact, ptCars, 
+        //             ptCarOwnership, cpName, cpRelationship, cpLandline, cpMobile, cpEmail,
+        //             cpAddress, cpOccupation, cpEmployerNumber, spouseEmployerName, spouseEmployerAddress,
+        //             cpIncomeSource, cpGrossIncome, cpHomeOwnership, cpHomeStay,
+        //             cpHasCar, cpCarOwnership, cpNumberOfCars, modeOfPayment, specificModeOfPayment, creditCards, 
+        //             bankAffiliations, itemsReceived, patientType, hmo, scidnoOutpatient, philHealth, medicalProcedure, physician
+        //         )
+        //         VALUES (
+        //             @lastName, @firstName, @middleName, @suffix, @birthdate, @age, @birthplace, @gender,
+        //             @civilStatus, @religion, @nationality, @landline, @mobile, @email, @occupation,
+        //             @street, @barangay, @city, @province, @region,
+        //             @permanentAddress, @fathersName, @fathersAddress,
+        //             @fatherContactNumber, @mothersName, @mothersAddress, @motherContactNumber,
+        //             @ptSourceIncome, @specificSourceOfIncome, @seniorpwd, @philhealthId,
+        //             @sssgsis, @tin, @others, @ptGrossIncome, @ptHomeOwnership,
+        //             @ptYearsStay, @spouseName, @spouseOccupation,@spouseEmployerContact, @ptCars,
+        //             @ptCarOwnership, @cpName, @cpRelationship, @cpLandline, @cpMobile, @cpEmail,
+        //             @cpAddress, @cpOccupation, @cpEmployerNumber, @spouseEmployerName, @spouseEmployerAddress,
+        //             @cpIncomeSource, @cpGrossIncome, @cpHomeOwnership, @cpHomeStay, @cpHasCar, 
+        //             @cpCarOwnership, @cpNumberOfCars, @mop, @specificmop, @creditCard, @bank, @items, @patientType, @hmo, @scidnoOutpatient, @philHealth, @medicalProcedure, @physician
+        //         );
+
+        //         SELECT SCOPE_IDENTITY() AS patient_id, 'INSERTED' AS status;
+        //     END
+        // `);
+
         const patientResult = await request.query(`
             DECLARE @ExistingID INT;
+            DECLARE @LinkedPatientNo BIGINT;
 
-            SELECT TOP 1 @ExistingID = patient_id 
+            DECLARE @CodeReligion VARCHAR(50) = (SELECT TOP 1 CODE FROM UERMMMC.dbo.RELIGION WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(@religion))));
+            DECLARE @CodeOccupation VARCHAR(50) = (SELECT TOP 1 CODE FROM UERMMMC.dbo.OCCUPATION WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(@occupation))));
+            DECLARE @CodeNationality VARCHAR(50) = (SELECT TOP 1 CODE FROM UERMMMC.dbo.NATIONALITY WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(@nationality))));
+            DECLARE @CodeMunicipality VARCHAR(50) = (SELECT TOP 1 CODE FROM UERMMMC.dbo.MUNICIPALITY WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(@city))));
+            DECLARE @CodeBarangay VARCHAR(50) = (SELECT TOP 1 CODE FROM UERMMMC.dbo.BARANGAYS WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(@barangay))));
+
+            SELECT TOP 1 
+            @ExistingID = patient_id,
+            @LinkedPatientNo = patient_no 
+
             FROM PatientRegistration 
             WHERE lastName = @lastName 
             AND firstName = @firstName 
@@ -154,8 +233,50 @@ exports.register = async (req, res) => {
                     cpAddress = @cpAddress, cpOccupation = @cpOccupation, cpEmployerNumber = @cpEmployerNumber, spouseEmployerName = @spouseEmployerName, spouseEmployerAddress = @spouseEmployerAddress,
                     cpIncomeSource = @cpIncomeSource, cpGrossIncome = @cpGrossIncome, cpHomeOwnership = @cpHomeOwnership, cpHomeStay = @cpHomeStay,
                     cpHasCar = @cpHasCar, cpCarOwnership = @cpCarOwnership, cpNumberOfCars = @cpNumberOfCars, modeOfPayment = @mop, specificModeOfPayment = @specificmop, creditCards = @creditCard,
-                    bankAffiliations = @bank, itemsReceived = @items, patientType = 'Emergency', hmo = @hmo, scidnoOutpatient = @scidnoOutpatient, philHealth = @philHealth, medicalProcedure = @medicalProcedure, physician = @physician, isAdmitted = 2
+                    bankAffiliations = @bank, itemsReceived = @items, patientType = 'Emergency', hmo = @hmo, scidnoOutpatient = @scidnoOutpatient, philHealth = @philHealth, medicalProcedure = @medicalProcedure, physician = @physician, isAdmitted = 2, forReview = 0
                 WHERE patient_id = @ExistingID;
+
+                IF @LinkedPatientNo IS NOT NULL
+                BEGIN
+                    UPDATE UERMMMC.dbo.PATIENTINFO
+                    SET 
+                        LASTNAME = @lastName,
+                        FIRSTNAME = @firstName,
+                        MIDDLENAME = @middleName,
+                        SUFFIX = @suffix,
+                        DBIRTH = @birthdate,
+                        AGE = @age,
+                        SEX = @gender,
+                        STATUS = @civilStatus,
+                        RELIGION = @CodeReligion,           
+                        NATIONALITY = @CodeNationality,      
+                        BPLACE = @birthplace,
+                        OCCUPATION = @CodeOccupation,        
+                        BARANGAY = @CodeBarangay,           
+                        MUNICIPALITY = @CodeMunicipality,    
+                        INCASE = @cpName,
+                        RELATIONSHIP = @cpRelationship,
+                        INCASEPHONENO = ISNULL(@cpLandline, @cpMobile),
+                        INCASEADD = @cpAddress,
+                        PHONENOS = @cpLandline,
+                        MOBILENO = @cpMobile,
+                        NAMEOFSPOUSE = @spouseName,
+                        SPOUSEOCCUPATION = @spouseOccupation,
+                        EMPLOYER = @spouseEmployerName,
+                        EMPLOYERADD = @spouseEmployerAddress,
+                        EMPLOYERTELNO = @spouseEmployerContact,
+                        FATHER = @fathersName,
+                        FADDRESS = @fathersAddress,
+                        FTEL = @fatherContactNumber,
+                        MOTHER = @mothersName,
+                        MADDRESS = @mothersAddress,
+                        MTEL = @motherContactNumber,
+                        SSSNO = @sssgsis,
+                        TINNO = @tin,
+                        SCIDNO = @seniorpwd,
+                        UDF_PHILHEALTHNO = @philhealthId
+                    WHERE PATIENTNO = @LinkedPatientNo;
+                END
 
                 SELECT @ExistingID AS patient_id, 'UPDATED' AS status;
             END
@@ -246,6 +367,7 @@ exports.register = async (req, res) => {
         res.status(500).json({ message: "Server error: " + err.message });
     }
 };
+
 
 exports.registerTriage = async (req, res) => {
     if (!req.body) {
@@ -432,7 +554,7 @@ exports.updateTriage = async (req, res) => {
     const body = req.body;
 
     if (!body.patientId) {
-        return res.status(400).json({ message: "Update failed: Patient ID is missing." });
+        return res.status(400).json({ message: "Update failed: Patient Number (patientId) is missing." });
     }
 
     const toDecimal = (val) => (val === "" || val === undefined || val === null) ? null : parseFloat(val);
@@ -447,7 +569,8 @@ exports.updateTriage = async (req, res) => {
 
     const t = {
         idInput: toInt(body.patientId), 
-        
+        idnoInput: toInt(body.patientNo), 
+
         lastName: toStr(body.lastNameTriage),
         firstName: toStr(body.firstNameTriage),
         middleName: toStr(body.middleNameTriage),
@@ -496,82 +619,84 @@ exports.updateTriage = async (req, res) => {
 
         const request = new sql.Request(transaction); 
 
-        request
-            .input('idInput', sql.BigInt, t.idInput) 
-            
-            .input('lastName', sql.NVarChar, t.lastName)
-            .input('firstName', sql.NVarChar, t.firstName)
-            .input('middleName', sql.NVarChar, t.middleName)
-            .input('suffix', sql.NVarChar, t.suffix)
-            .input('birthdate', sql.VarChar, t.birthdate)
-            .input('age', sql.Int, t.age)
-            .input('gender', sql.NVarChar, t.gender)
-            
-            .input('weightTriage', sql.NVarChar, t.weightTriage)
-            .input('broughtBy', sql.NVarChar, t.broughtBy)
-            .input('philHealthCateg', sql.NVarChar, t.philHealthCateg)
-            .input('ptCondition', sql.NVarChar, t.ptCondition)
+        request.input('idnoInput', sql.BigInt, t.idnoInput);
+        request.input('patientId', sql.BigInt, t.idInput);
 
-            .input('chiefComplaint', sql.NVarChar, t.chiefComplaint)
-            
-            .input('temp', sql.Decimal(5, 2), t.temp)     
-            .input('heartRate', sql.Int, t.heartRate)
-            .input('oxygen', sql.Decimal(5, 2), t.oxygen)  
-            .input('bp', sql.NVarChar, t.bp)
-            .input('respiRate', sql.Int, t.respiRate)     
-            .input('painScore', sql.Int, t.painScore)
-            
-            .input('avpu', sql.NVarChar, t.avpu)
-            .input('contagious', sql.NVarChar, t.contagious)
-            .input('isolation', sql.NVarChar, t.isolation)
-            .input('cpd', sql.NVarChar, t.cpd)
-            .input('level', sql.NVarChar, t.level)
-            .input('remarks', sql.NVarChar, t.remarks)
-            .input('checkforPresense', sql.NVarChar, t.checkforPresense)
-            .input('personnel', sql.NVarChar, t.personnel)
-            .input('dateAccomplished', sql.Date, t.dateAccomplished);
+        request.input('lastName', sql.NVarChar, t.lastName);
+        request.input('firstName', sql.NVarChar, t.firstName);
+        request.input('middleName', sql.NVarChar, t.middleName);
+        request.input('suffix', sql.NVarChar, t.suffix);
+        request.input('birthdate', sql.VarChar, t.birthdate);
+        request.input('age', sql.Int, t.age);
+        request.input('gender', sql.NVarChar, t.gender);
+        
+        request.input('weightTriage', sql.NVarChar, t.weightTriage);
+        request.input('broughtBy', sql.NVarChar, t.broughtBy);
+        request.input('philHealthCateg', sql.NVarChar, t.philHealthCateg);
+        request.input('ptCondition', sql.NVarChar, t.ptCondition);
+
+        request.input('chiefComplaint', sql.NVarChar, t.chiefComplaint);
+        
+        request.input('temp', sql.Decimal(5, 2), t.temp);
+        request.input('heartRate', sql.Int, t.heartRate);
+        request.input('oxygen', sql.Decimal(5, 2), t.oxygen);
+        request.input('bp', sql.NVarChar, t.bp);
+        request.input('respiRate', sql.Int, t.respiRate);
+        request.input('painScore', sql.Int, t.painScore);
+        
+        request.input('avpu', sql.NVarChar, t.avpu);
+        request.input('contagious', sql.NVarChar, t.contagious);
+        request.input('isolation', sql.NVarChar, t.isolation);
+        request.input('cpd', sql.NVarChar, t.cpd);
+        request.input('level', sql.NVarChar, t.level);
+        request.input('remarks', sql.NVarChar, t.remarks);
+        request.input('checkforPresense', sql.NVarChar, t.checkforPresense);
+        request.input('personnel', sql.NVarChar, t.personnel);
+        request.input('dateAccomplished', sql.Date, t.dateAccomplished);
 
         const result = await request.query(`
-            UPDATE PatientRegistration
-            SET 
-                lastName = @lastName,
-                firstName = @firstName,
-                middleName = @middleName,
-                suffix = @suffix,
-                birthdate = @birthdate,
-                age = @age,
-                sex = @gender,
+            IF EXISTS (SELECT 1 FROM PatientRegistration WHERE patient_id = @patientId)
+            BEGIN
+                UPDATE PatientRegistration
+                SET 
+                    lastName = @lastName, firstName = @firstName, middleName = @middleName, suffix = @suffix,
+                    birthdate = @birthdate, age = @age, sex = @gender,
+                    weight = @weightTriage, broughtBy = @broughtBy, philHealthCateg = @philHealthCateg, ptCondition = @ptCondition,
+                    chiefComplaint = @chiefComplaint, temp = @temp, heartrate = @heartRate, oxygen = @oxygen,
+                    bp = @bp, respirate = @respiRate, painScore = @painScore,
+                    avpu = @avpu, contagious = @contagious, isolation = @isolation, cpd = @cpd,
+                    level = @level, remarks = @remarks, symptoms = @checkforPresense,
+                    personnel = @personnel, dateAccomplished = @dateAccomplished,
+                    patientType = 'Emergency'
                 
-                weight = @weightTriage,
-                broughtBy = @broughtBy,
-                philHealthCateg = @philHealthCateg,
-                ptCondition = @ptCondition,
-
-                chiefComplaint = @chiefComplaint,
-                temp = @temp,
-                heartrate = @heartRate,
-                oxygen = @oxygen,
-                bp = @bp,
-                respirate = @respiRate,
-                painScore = @painScore,
-                avpu = @avpu,
-                contagious = @contagious,
-                isolation = @isolation,
-                cpd = @cpd,
-                level = @level,
-                remarks = @remarks,
-                symptoms = @checkforPresense,
-                personnel = @personnel,
-                dateAccomplished = @dateAccomplished,
-                patientType = 'Emergency'
-            
-            OUTPUT inserted.patient_id, inserted.patient_no
-            
-            WHERE patient_no = @idInput OR patient_id = @idInput
+                OUTPUT inserted.patient_id, inserted.patient_no
+                
+                WHERE patient_id = @patientId
+            END
+            ELSE
+            BEGIN
+                INSERT INTO PatientRegistration (
+                    patient_no, 
+                    lastName, firstName, middleName, suffix, birthdate, age, sex,
+                    weight, broughtBy, philHealthCateg, ptCondition,
+                    chiefComplaint, temp, heartrate, oxygen, bp, respirate, painScore,
+                    avpu, contagious, isolation, cpd, level, remarks, symptoms,
+                    personnel, dateAccomplished, patientType
+                )
+                OUTPUT inserted.patient_id, inserted.patient_no
+                VALUES (
+                    @idnoInput, 
+                    @lastName, @firstName, @middleName, @suffix, @birthdate, @age, @gender,
+                    @weightTriage, @broughtBy, @philHealthCateg, @ptCondition,
+                    @chiefComplaint, @temp, @heartRate, @oxygen, @bp, @respiRate, @painScore,
+                    @avpu, @contagious, @isolation, @cpd, @level, @remarks, @checkforPresense,
+                    @personnel, @dateAccomplished, 'Emergency'
+                )
+            END
         `);
 
         if (!result.recordset || result.recordset.length === 0) {
-            throw new Error("Patient ID not found or no changes made.");
+            throw new Error("Database Error: Operation completed but no ID returned.");
         }
 
         const dbPatientPk = result.recordset[0].patient_id; 
@@ -584,23 +709,22 @@ exports.updateTriage = async (req, res) => {
             
             psRequest.input('pId', sql.Int, dbPatientPk); 
             psRequest.input('pNo', sql.BigInt, dbPatientNo); 
-            
             psRequest.input('signData', sql.VarBinary(sql.MAX), personnelBuffer);
-            psRequest.input('personnel', sql.NVarChar, t.personnel); 
+            psRequest.input('personnelName', sql.NVarChar, t.personnel); 
 
             await psRequest.query(`
                 IF EXISTS (SELECT 1 FROM tpSignature WHERE patient_no = @pNo)
                 BEGIN
                     UPDATE tpSignature 
                     SET eSignature = @signData, 
-                        personnel_name = @personnel,
-                        patient_id = @pId 
+                        personnel_name = @personnelName, 
+                        patient_id = @pId  -- Update link to PK just in case
                     WHERE patient_no = @pNo
                 END
                 ELSE
                 BEGIN
                     INSERT INTO tpSignature (patient_id, patient_no, eSignature, personnel_name) 
-                    VALUES (@pId, @pNo, @signData, @personnel)
+                    VALUES (@pId, @pNo, @signData, @personnelName)
                 END
             `);
         }
@@ -608,18 +732,16 @@ exports.updateTriage = async (req, res) => {
         await transaction.commit();
 
         res.status(200).json({ 
-            message: "Triage assessment and signature updated successfully",
-            id: t.idInput
+            message: "Triage data saved successfully",
+            patient_no: dbPatientNo,
+            patient_id: dbPatientPk
         });
 
     } catch (err) {
         if (transaction) {
             try { await transaction.rollback(); } catch (e) { console.error("Rollback failed", e); }
         }
-        console.error("Triage Update Error:", err);
-        if (err.message === "Patient ID not found or no changes made.") {
-            return res.status(404).json({ message: err.message });
-        }
+        console.error("Triage Error:", err);
         res.status(500).json({ message: "Server error: " + err.message });
     }
 };
@@ -864,17 +986,60 @@ exports.fetchErpatient = async (req, res) => {
         const result = await pool.request()
             .query(`
                 SELECT 
-                    *,  
+                    PR.*,  
+                    
+                    (PR.firstName + ' ' + ISNULL(PR.middleName + ' ', '') + PR.lastName) AS fullName,
+                    FORMAT(PR.birthdate, 'yyyy-MM-dd') as birthdateStr,
+                    PR.sex as gender, 
+                    CONCAT_WS(', ', PR.addressStreet, PR.addressBarangay, PR.addressCity, PR.addressProvince, PR.addressRegion) AS addressPresent,
 
+                    C.DATEDIS,
+                    C.DISCHARGE,
+                    C.DISCHARGEBY
+
+                FROM PatientRegistration PR
+                
+                LEFT JOIN UERMMMC.dbo.CASES C ON PR.patient_no = C.PATIENTNO
+
+                WHERE 
+                    PR.patientType = 'Emergency' 
+                    AND (PR.isAdmitted = '0' OR PR.isAdmitted = '1') 
+                    
+                    AND (
+                        C.DISCHARGE IN ('N', 'No')       
+                        OR C.DISCHARGE IS NULL     
+                    )
+                    AND (
+                        C.DISCHARGEBY IS NULL            
+                        OR LTRIM(RTRIM(C.DISCHARGEBY)) = ''  
+                    )
+                ORDER BY PR.createdAt DESC
+            `);
+
+        res.status(200).json(result.recordset);
+
+    } catch (err) {
+        console.error("Fetch Error:", err);
+        res.status(500).json({ message: "Database error" });
+    }
+};
+
+exports.fetchErpatientForReview = async (req, res) => {
+    try {
+        const pool = await sql.connect();
+        
+        const result = await pool.request()
+            .query(`
+                SELECT 
+                    *,  
                     (firstName + ' ' + ISNULL(middleName + ' ', '') + lastName) AS fullName,
                     FORMAT(birthdate, 'yyyy-MM-dd') as birthdateStr,
                     sex as gender, 
                     CONCAT_WS(', ', addressStreet, addressBarangay, addressCity, addressProvince, addressRegion) AS addressPresent
-
                 FROM PatientRegistration
                 WHERE 
                     patientType = 'Emergency' 
-                    AND (isAdmitted = '0' OR isAdmitted = '1') 
+                    AND forReview = 1 OR forReview = 0
                 ORDER BY createdAt DESC
             `);
 
@@ -1096,7 +1261,8 @@ exports.updatePatientDetails = async (req, res) => {
                 hmoStaffName = @hmoStaffName,
                 hmoApprovalDate = @hmoApprovalDate,
                 desiredRoomAvailable = @desiredRoom,
-                informedIncrement = @informedIncrement
+                informedIncrement = @informedIncrement,
+                forReview = 1
                 
             WHERE patient_id = @patientId
         `;
@@ -1196,7 +1362,7 @@ exports.getTpersonnelSignature = async (req, res) => {
 };
 
 exports.sendDataInformation = async (req, res) => {
-    const { patient_id } = req.body;
+    const { patient_id, force } = req.body; 
 
     if (!patient_id) {
         return res.status(400).json({ message: "Patient ID is required" });
@@ -1223,37 +1389,36 @@ exports.sendDataInformation = async (req, res) => {
 
         const { lastName, firstName, middleName, suffix, birthdate } = sourceData.recordset[0];
 
-        const requestCheck = new sql.Request(transaction);
-        requestCheck.input('checkLastName', sql.VarChar, lastName.trim()); 
-        requestCheck.input('checkFirstName', sql.VarChar, firstName.trim());
-        requestCheck.input('checkMiddleName', sql.VarChar, (middleName || '').trim());
-        requestCheck.input('checkSuffix', sql.VarChar, (suffix || '').trim());
-        requestCheck.input('checkBirthdate', sql.Date, birthdate); 
+        if (!force) {
+            const requestCheck = new sql.Request(transaction);
+            requestCheck.input('checkLastName', sql.VarChar, lastName.trim());
+            requestCheck.input('checkFirstName', sql.VarChar, firstName.trim());
+            requestCheck.input('checkBirthdate', sql.Date, birthdate);
 
-        const duplicateCheck = await requestCheck.query(`
-            SELECT PATIENTNO, LASTNAME, FIRSTNAME, MIDDLENAME, SUFFIX, DBIRTH
-            FROM UERMMMC.dbo.PATIENTINFO 
-            WHERE 
-                UPPER(LTRIM(RTRIM(LASTNAME))) = UPPER(@checkLastName) 
-            AND UPPER(LTRIM(RTRIM(FIRSTNAME))) = UPPER(@checkFirstName) 
-            AND CAST(DBIRTH as DATE) = @checkBirthdate
-            AND ISNULL(UPPER(LTRIM(RTRIM(MIDDLENAME))), '') = ISNULL(UPPER(@checkMiddleName), '')
-            AND ISNULL(UPPER(LTRIM(RTRIM(SUFFIX))), '') = ISNULL(UPPER(@checkSuffix), '');
-        `);
+            const duplicateCheck = await requestCheck.query(`
+                SELECT PATIENTNO, LASTNAME, FIRSTNAME, MIDDLENAME, SUFFIX, DBIRTH, AGE
+                FROM UERMMMC.dbo.PATIENTINFO 
+                WHERE 
+                    UPPER(LTRIM(RTRIM(LASTNAME))) = UPPER(@checkLastName) 
+                AND UPPER(LTRIM(RTRIM(FIRSTNAME))) = UPPER(@checkFirstName) 
+                AND CAST(DBIRTH as DATE) = @checkBirthdate
+            `);
 
-        if (duplicateCheck.recordset.length > 0) {
-            const match = duplicateCheck.recordset[0];
-            await transaction.rollback();
+            if (duplicateCheck.recordset.length > 0) {
+                await transaction.rollback();
 
-            return res.status(409).json({ 
-                message: "Transfer Aborted: Patient with this Name (including Middle/Suffix) and Birthday already exists.",
-                existingPatientNo: match.PATIENTNO,
-                firstName: match.FIRSTNAME, 
-                lastName: match.LASTNAME,
-                middleName: match.MIDDLENAME, 
-                suffix: match.SUFFIX,
-                birthdate: match.DBIRTH
-            });
+                const allDuplicates = duplicateCheck.recordset.map(match => ({
+                    existingPatientNo: match.PATIENTNO,
+                    firstName: match.FIRSTNAME,
+                    lastName: match.LASTNAME,
+                    middleName: match.MIDDLENAME,
+                    suffix: match.SUFFIX,
+                    birthdate: match.DBIRTH,
+                    age: match.AGE
+                }));
+
+                return res.status(409).json(allDuplicates);
+            }
         }
 
         const requestTransfer = new sql.Request(transaction);
@@ -1301,7 +1466,7 @@ exports.sendDataInformation = async (req, res) => {
             WHERE patient_id = @id;
 
             UPDATE PatientRegistrationDB.dbo.PatientRegistration
-            SET patient_no = @generatedPATIENTNO
+            SET patient_no = @generatedPATIENTNO, isValidated = 1
             WHERE patient_id = @id;
 
             UPDATE PatientRegistrationDB.dbo.ptSignature
@@ -1317,11 +1482,11 @@ exports.sendDataInformation = async (req, res) => {
         res.status(200).json({ message: "Patient data successfully transferred and linked!" });
 
     } catch (err) {
-        if (transaction._aborted === false) { 
+        if (transaction._aborted === false) {
             await transaction.rollback();
         }
         console.error("Transfer Error:", err);
-        
+
         if (err.number === 2627) {
             return res.status(409).json({ message: "Transfer Failed: Patient ID already exists in destination." });
         }
@@ -1462,6 +1627,104 @@ exports.getpatientById = async (req, res) => {
     }
 };
 
+// exports.linkExistingPatientInfo = async (req, res) => {
+//     const { patient_id, patientno } = req.body;
+
+//     if (!patient_id || !patientno) {
+//         return res.status(400).json({ message: "Missing Patient ID or Matched Hospital No." });
+//     }
+
+//     const transaction = new sql.Transaction();
+
+//     try {
+//         await transaction.begin();
+//         const request = new sql.Request(transaction);
+
+//         request.input('regID', sql.BigInt, patient_id);
+//         request.input('patientno', sql.BigInt, patientno); 
+
+//         await request.query(`
+//             UPDATE PatientRegistrationDB.dbo.ptSignature
+//             SET patient_no = @patientno
+//             WHERE patient_id = @regID;
+
+//             UPDATE PatientRegistrationDB.dbo.tpSignature
+//             SET patient_no = @patientno
+//             WHERE patient_id = @regID;
+
+//             UPDATE Target
+//             SET 
+//                 Target.patient_no = @patientno,
+//                 Target.isValidated = 1,
+
+//                 Target.lastName = Source.LASTNAME,
+//                 Target.firstName = Source.FIRSTNAME,
+//                 Target.middleName = Source.MIDDLENAME,
+//                 Target.suffix = Source.SUFFIX,
+
+//                 Target.addressBarangay = Source.BARANGAY,
+//                 Target.addressCity = Source.MUNICIPALITY,
+
+//                 Target.sex = Source.SEX,
+//                 Target.civilStatus = Source.STATUS,
+//                 Target.religion = Source.RELIGION,
+//                 Target.nationality = Source.NATIONALITY,
+//                 Target.birthdate = Source.DBIRTH,
+//                 Target.birthplace = Source.BPLACE,
+//                 Target.occupation = Source.OCCUPATION,
+
+//                 Target.cpName = Source.INCASE,
+//                 Target.cpRelationship = Source.RELATIONSHIP,
+//                 Target.cpAddress = Source.INCASEADD,
+//                 Target.cpLandline = COALESCE(Source.PHONENOS, Source.INCASEPHONENO),
+//                 Target.cpMobile = Source.MOBILENO,
+
+//                 Target.spouseName = Source.NAMEOFSPOUSE,
+//                 Target.spouseOccupation = Source.SPOUSEOCCUPATION,
+//                 Target.spouseEmployerName = Source.EMPLOYER,     
+//                 Target.spouseEmployerAddress = Source.EMPLOYERADD, 
+//                 Target.spouseEmployerContact = Source.EMPLOYERTELNO,
+
+//                 Target.ptFatherName = Source.FATHER,
+//                 Target.ptFatherAddress = Source.FADDRESS,
+//                 Target.ptFatherContact = Source.FTEL,
+//                 Target.ptMotherMaidenName = Source.MOTHER,
+//                 Target.ptMotherAddress = Source.MADDRESS,
+//                 Target.ptMotherContact = Source.MTEL,
+
+//                 Target.sssgsisId = Source.SSSNO,
+//                 Target.tinID = Source.TINNO,
+//                 Target.seniorId = Source.SCIDNO,
+//                 Target.philhealthId = Source.UDF_PHILHEALTHNO
+
+//             FROM PatientRegistrationDB.dbo.PatientRegistration AS Target
+//             INNER JOIN UERMMMC.dbo.PATIENTINFO AS Source 
+//                 ON Source.PATIENTNO = @patientno
+//             WHERE Target.patient_id = @regID;
+
+//             UPDATE HospitalTarget
+//             SET HospitalTarget.AGE = RegSource.age
+//             FROM UERMMMC.dbo.PATIENTINFO AS HospitalTarget
+//             INNER JOIN PatientRegistrationDB.dbo.PatientRegistration AS RegSource
+//                 ON RegSource.patient_id = @regID
+//             WHERE HospitalTarget.PATIENTNO = @patientno;
+//         `);
+
+//         await transaction.commit();
+
+//         res.status(200).json({ 
+//             message: "Patient successfully linked. Data synchronized (Age updated in Hospital Records)." 
+//         });
+
+//     } catch (err) {
+//         if (transaction._aborted === false) { 
+//             await transaction.rollback();
+//         }
+//         console.error("Link Error:", err);
+//         res.status(500).json({ message: "Linking failed", error: err.message });
+//     }
+// };
+
 exports.linkExistingPatientInfo = async (req, res) => {
     const { patient_id, patientno } = req.body;
 
@@ -1490,22 +1753,23 @@ exports.linkExistingPatientInfo = async (req, res) => {
             UPDATE Target
             SET 
                 Target.patient_no = @patientno,
+                Target.isValidated = 1,
 
                 Target.lastName = Source.LASTNAME,
                 Target.firstName = Source.FIRSTNAME,
                 Target.middleName = Source.MIDDLENAME,
                 Target.suffix = Source.SUFFIX,
 
-                Target.addressBarangay = Source.BARANGAY,
-                Target.addressCity = Source.MUNICIPALITY,
+                Target.addressBarangay = B.DESCRIPTION,
+                Target.addressCity = M.DESCRIPTION,
+                Target.religion = R.DESCRIPTION,
+                Target.nationality = N.DESCRIPTION,
+                Target.occupation = O.DESCRIPTION,
 
                 Target.sex = Source.SEX,
                 Target.civilStatus = Source.STATUS,
-                Target.religion = Source.RELIGION,
-                Target.nationality = Source.NATIONALITY,
                 Target.birthdate = Source.DBIRTH,
                 Target.birthplace = Source.BPLACE,
-                Target.occupation = Source.OCCUPATION,
 
                 Target.cpName = Source.INCASE,
                 Target.cpRelationship = Source.RELATIONSHIP,
@@ -1532,8 +1796,16 @@ exports.linkExistingPatientInfo = async (req, res) => {
                 Target.philhealthId = Source.UDF_PHILHEALTHNO
 
             FROM PatientRegistrationDB.dbo.PatientRegistration AS Target
+            
             INNER JOIN UERMMMC.dbo.PATIENTINFO AS Source 
                 ON Source.PATIENTNO = @patientno
+            
+            LEFT JOIN UERMMMC.dbo.RELIGION R ON Source.RELIGION = R.CODE 
+            LEFT JOIN UERMMMC.dbo.OCCUPATION O ON Source.OCCUPATION = O.CODE
+            LEFT JOIN UERMMMC.dbo.NATIONALITY N ON Source.NATIONALITY = N.CODE
+            LEFT JOIN UERMMMC.dbo.MUNICIPALITY M ON Source.MUNICIPALITY = M.CODE
+            LEFT JOIN UERMMMC.dbo.BARANGAYS B ON Source.BARANGAY = B.CODE
+
             WHERE Target.patient_id = @regID;
 
             UPDATE HospitalTarget
@@ -1547,7 +1819,7 @@ exports.linkExistingPatientInfo = async (req, res) => {
         await transaction.commit();
 
         res.status(200).json({ 
-            message: "Patient successfully linked. Data synchronized (Age updated in Hospital Records)." 
+            message: "Patient successfully linked. Data synchronized with descriptive values." 
         });
 
     } catch (err) {
@@ -1612,12 +1884,6 @@ exports.login = async (req, res) => {
         if (!user) {
             return res.status(401).json({ message: "Invalid credentials." });
         }
-
-        // const isMatch = await bcrypt.compare(password, user.PASSWORD);
-
-        // if (!isMatch) {
-        //     return res.status(401).json({ message: "Invalid credentials." });
-        // }
 
         if (password !== user.PASSWORD) {
             return res.status(401).json({ message: "Invalid credentials." });
