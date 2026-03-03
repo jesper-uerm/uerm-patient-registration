@@ -47,7 +47,7 @@
     >
       <div
         class="column flex-center q-pa-md q-mt-md relative-position"
-        style="height: 200px"
+        style="min-height: 200px"
       >
         <q-avatar size="160px" class="q-mb-sm shadow-3">
           <img
@@ -60,6 +60,21 @@
             "
           />
         </q-avatar>
+
+        <div class="column items-center q-mt-md q-gutter-y-xs">
+          <div
+            class="bg-grey-2 q-px-md q-py-xs rounded-borders text-subtitle1 text-weight-bold text-blue-10"
+          >
+            HI, {{ userName.toUpperCase() }}!
+          </div>
+
+          <div
+            class="text-grey-7 text-weight-medium q-mt-md"
+            style="font-size: 0.65rem; line-height: 1.6"
+          >
+            {{ userDepartment }}
+          </div>
+        </div>
       </div>
 
       <q-list padding class="text-grey-8">
@@ -94,7 +109,7 @@
           <q-item-section>For Approval</q-item-section>
         </q-item>
 
-        <q-item
+        <!-- <q-item
           clickable
           v-ripple
           to=""
@@ -105,7 +120,7 @@
             <q-icon name="bed" />
           </q-item-section>
           <q-item-section>Admission Logs</q-item-section>
-        </q-item>
+        </q-item> -->
 
         <q-separator spaced class="q-mx-md" />
 
@@ -133,8 +148,15 @@
 <script>
 import { defineComponent } from "vue";
 import { date } from "quasar";
+import { useAuthStore } from "src/stores/authStore";
+
 export default defineComponent({
-  name: "EmergencyLayout",
+  name: "FinanceLayout",
+
+  setup() {
+    const authStore = useAuthStore();
+    return { authStore };
+  },
 
   data() {
     return {
@@ -143,10 +165,27 @@ export default defineComponent({
       timer: null,
     };
   },
+
   computed: {
+    userName() {
+      const name = this.authStore.firstName || "User";
+
+      return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+    },
+
+    userDepartment() {
+      const dept = this.authStore.role || "General Staff";
+      return dept
+        .toUpperCase()
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+    },
+
     formattedTime() {
       return date.formatDate(this.now, "h:mm:ss A");
     },
+
     formattedDate() {
       return date.formatDate(this.now, "ddd, MMM D, YYYY");
     },

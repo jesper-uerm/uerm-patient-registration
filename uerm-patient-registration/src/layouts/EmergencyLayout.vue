@@ -47,7 +47,7 @@
     >
       <div
         class="column flex-center q-pa-md q-mt-md relative-position"
-        style="height: 200px"
+        style="min-height: 200px"
       >
         <q-avatar size="160px" class="q-mb-sm shadow-3">
           <img
@@ -60,6 +60,21 @@
             "
           />
         </q-avatar>
+
+        <div class="column items-center q-mt-md q-gutter-y-xs">
+          <div
+            class="bg-grey-2 q-px-md q-py-xs rounded-borders text-subtitle1 text-weight-bold text-blue-10"
+          >
+            HI, {{ userName.toUpperCase() }}!
+          </div>
+
+          <div
+            class="text-grey-7 text-weight-medium q-mt-md"
+            style="font-size: 0.65rem; line-height: 1.6"
+          >
+            {{ userDepartment }}
+          </div>
+        </div>
       </div>
 
       <q-list padding class="text-grey-8">
@@ -133,8 +148,15 @@
 <script>
 import { defineComponent } from "vue";
 import { date } from "quasar";
+import { useAuthStore } from "src/stores/authStore";
+
 export default defineComponent({
   name: "EmergencyLayout",
+
+  setup() {
+    const authStore = useAuthStore();
+    return { authStore };
+  },
 
   data() {
     return {
@@ -143,7 +165,33 @@ export default defineComponent({
       timer: null,
     };
   },
+
   computed: {
+    // userName() {
+    //   const first = this.authStore.firstName || "";
+    //   const last = this.authStore.lastName || "";
+
+    //   // Combine them
+    //   const fullName = `${first} ${last}`.trim() || "User";
+
+    //   // This logic handles multiple names (e.g., "MARIA THERESA" -> "Maria Theresa")
+    //   return fullName
+    //     .toLowerCase()
+    //     .split(' ')
+    //     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    //     .join(' ');
+    // },
+    userName() {
+      return this.authStore.firstName || "User";
+    },
+    userDepartment() {
+      const dept = this.authStore.role || "General Staff";
+      return dept
+        .toUpperCase()
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+    },
     formattedTime() {
       return date.formatDate(this.now, "h:mm:ss A");
     },
@@ -152,10 +200,14 @@ export default defineComponent({
     },
   },
 
-  beforeUnmount() {
-    if (this.timer) {
-      clearInterval(this.timer);
-    }
+  methods: {
+    toggleLeftDrawer() {
+      this.leftDrawerOpen = !this.leftDrawerOpen;
+    },
+    logout() {
+      this.authStore.logout();
+      this.$router.push("/login");
+    },
   },
 
   mounted() {
@@ -166,14 +218,10 @@ export default defineComponent({
       this.now = Date.now();
     }, 1000);
   },
-
-  methods: {
-    toggleLeftDrawer() {
-      this.leftDrawerOpen = !this.leftDrawerOpen;
-    },
-    logout() {
-      this.$router.push("/login");
-    },
+  beforeUnmount() {
+    if (this.timer) {
+      clearInterval(this.timer);
+    }
   },
 });
 </script>

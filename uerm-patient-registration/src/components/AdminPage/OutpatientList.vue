@@ -5,7 +5,7 @@
       style="border: 1px solid #e0e0e0; border-radius: 8px"
     >
       <q-card-section class="col-auto q-py-md q-px-lg" style="background-color: #004aad">
-        <div class="row items-center text-left justify-left text-uppercase">
+        <div class="row items-left text-left justify-left text-uppercase">
           <div>
             <div
               class="text-h6 text-white text-weight-bold"
@@ -14,7 +14,7 @@
               Outpatient Search
             </div>
             <div class="text-caption text-grey-5">
-              Search database for outpatient records
+              Search database for admitted patient records
             </div>
           </div>
         </div>
@@ -24,7 +24,7 @@
         <q-input
           outlined
           dense
-          v-model="searchQuery"
+          v-model="localSearchQuery"
           placeholder="Enter Name or ID"
           @keyup.enter="handleSearch"
           :disable="loading"
@@ -91,14 +91,26 @@
                       <q-item-section avatar>
                         <q-icon name="visibility" color="blue-10" />
                       </q-item-section>
-                      <q-item-section>View Profile</q-item-section>
+                      <q-item-section>View Patient</q-item-section>
                     </q-item>
 
-                    <q-item clickable @click="validatePatient(props.row)">
+                    <q-item
+                      clickable
+                      @click="validatePatient(props.row)"
+                      :disable="props.row.isValidated == 1"
+                    >
                       <q-item-section avatar>
-                        <q-icon name="check" color="blue-10" />
+                        <q-icon
+                          name="check"
+                          :color="props.row.isValidated == 1 ? 'grey' : 'blue-10'"
+                        />
                       </q-item-section>
-                      <q-item-section>Validate</q-item-section>
+                      <q-item-section>
+                        <q-item-label>Validate</q-item-label>
+                        <q-item-label caption v-if="props.row.isValidated == 1"
+                          >Already Validated</q-item-label
+                        >
+                      </q-item-section>
                     </q-item>
 
                     <q-separator />
@@ -179,7 +191,7 @@
             <div class="full-width column flex-center text-grey-5 q-pa-xl">
               <q-icon size="4em" name="person_search" class="q-mb-md" />
               <div class="text-subtitle1" v-if="!hasSearched">
-                Enter ID or Name to search
+                Ready to Search Inpatients
               </div>
               <div class="text-subtitle1" v-else>
                 No patients found matching "{{ searchQuery }}"
@@ -189,8 +201,14 @@
         </q-table>
       </q-card-section>
     </q-card>
-    <q-dialog v-model="viewDialog" transition-show="scale" transition-hide="scale">
-      <q-card style="width: 700px; max-width: 80vw" class="rounded-borders">
+
+    <q-dialog
+      v-model="viewDialog"
+      backdrop-filter="blur(4px)"
+      transition-show="scale"
+      transition-hide="scale"
+    >
+      <q-card style="width: 900px; max-width: 80vw" class="rounded-borders">
         <q-card-section class="bg-gradient-primary text-white q-pa-md">
           <div class="row items-center text-center justify-center justify-between">
             <div class="row items-center text-uppercase">
@@ -224,7 +242,7 @@
               </q-item-section>
               <q-item-section>
                 <q-item-label caption>Full Name</q-item-label>
-                <q-item-label class="text-body2 text-weight-medium">
+                <q-item-label class="text-body1 text-weight-medium">
                   {{ selectedPatient.lastName }}, {{ selectedPatient.firstName }}
                 </q-item-label>
               </q-item-section>
@@ -239,7 +257,7 @@
               </q-item-section>
               <q-item-section>
                 <q-item-label caption>Gender</q-item-label>
-                <q-item-label class="text-body2">
+                <q-item-label class="text-body1">
                   {{ selectedPatient.gender }}
                 </q-item-label>
               </q-item-section>
@@ -251,7 +269,7 @@
               </q-item-section>
               <q-item-section>
                 <q-item-label caption>Birthdate</q-item-label>
-                <q-item-label class="text-body2">
+                <q-item-label class="text-body1">
                   {{ formatDate(selectedPatient.birthdate) }}
                 </q-item-label>
               </q-item-section>
@@ -268,7 +286,7 @@
               </q-item-section>
               <q-item-section>
                 <q-item-label caption>Present Address</q-item-label>
-                <q-item-label class="text-body2">
+                <q-item-label class="text-body1">
                   {{ selectedPatient.addressPresent || "N/A" }}
                 </q-item-label>
               </q-item-section>
@@ -280,53 +298,32 @@
               </q-item-section>
               <q-item-section>
                 <q-item-label caption>Mobile Number</q-item-label>
-                <q-item-label class="text-body2">
+                <q-item-label class="text-body1">
                   {{ selectedPatient.mobile || "N/A" }}
                 </q-item-label>
               </q-item-section>
             </q-item>
           </q-list>
-
-          <div class="text-subtitle2 text-grey-8 text-uppercase q-mt-lg q-mb-sm">
-            Admission Details
-          </div>
-          <div class="bg-grey-1 q-pa-md rounded-borders text-grey-8">
-            <div class="row q-col-gutter-md">
-              <div class="col-12 col-sm-4">
-                <span class="text-weight-bold block q-mb-xs">Status:</span>
-                <q-badge
-                  class="text-subtitle2 q-px-md q-py-sm"
-                  :color="
-                    selectedPatient.patientType === 'Inpatient' ? 'green' : 'orange'
-                  "
-                >
-                  {{ selectedPatient.patientType || "N/A" }}
-                </q-badge>
-              </div>
-              <div class="col-12 col-sm-4">
-                <span class="text-weight-bold block q-mb-xs">Date Admitted:</span>
-                {{ formatDate(selectedPatient.createdAt) || "N/A" }}
-              </div>
-              <div class="col-12 col-sm-4">
-                <span class="text-weight-bold block q-mb-xs">Attending Physician:</span>
-                <div class="ellipsis">
-                  {{ selectedPatient.physician || "N/A" }}
-                  <q-tooltip>{{ selectedPatient.physician }}</q-tooltip>
-                </div>
-              </div>
-            </div>
-          </div>
         </q-card-section>
 
         <q-separator />
 
         <q-card-actions align="center" class="q-pa-md bg-grey-1">
-          <!-- <q-btn flat label="Close" color="grey-8" v-close-popup /> -->
           <q-btn
             unelevated
-            label="Update Financial Statement"
-            color="blue-10"
-            @click="updateFinanceStatement(selectedPatient)"
+            :label="
+              selectedPatient.forReview == 1 || selectedPatient.forReview == 0
+                ? 'Already Forwarded'
+                : 'Forward to credit and finance'
+            "
+            :color="
+              selectedPatient.forReview == 1 || selectedPatient.forReview == 0
+                ? 'grey'
+                : 'blue-10'
+            "
+            :disable="selectedPatient.forReview == 1 || selectedPatient.forReview == 0"
+            icon-right="send"
+            @click="sendtoCredit(selectedPatient)"
           />
         </q-card-actions>
       </q-card>
@@ -336,6 +333,7 @@
       v-model="viewPatientValidationDialog"
       transition-show="scale"
       transition-hide="scale"
+      backdrop-filter="blur(4px)"
     >
       <q-card style="width: 1000px; max-width: 90vw" class="rounded-borders">
         <q-card-section
@@ -348,68 +346,72 @@
         <q-separator />
 
         <q-card-section class="q-pa-lg scroll" style="max-height: 70vh">
-          <div class="text-overline text-primary q-mb-sm">Parent Information</div>
+          <div class="text-caption text-weight-medium text-primary q-mb-sm">
+            Patient Information
+          </div>
           <div class="row q-col-gutter-md q-mb-lg">
             <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Full Name</div>
+              <div class="text-caption text-grey-8">Full Name</div>
               <div class="text-body2">
                 {{ formatFullName(selectedPatient) }}
               </div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Birthdate</div>
+              <div class="text-caption text-grey-8">Birthdate</div>
               <div class="text-body2">
                 {{ formatDate(selectedPatient.birthdate) }} ({{ selectedPatient.age }}
                 y/o)
               </div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Birthplace</div>
+              <div class="text-caption text-grey-8">Birthplace</div>
               <div class="text-body2">{{ selectedPatient.birthplace || "N/A" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Gender</div>
+              <div class="text-caption text-grey-8">Gender</div>
               <div class="text-body2">{{ selectedPatient.gender || "N/A" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Civil Status</div>
+              <div class="text-caption text-grey-8">Civil Status</div>
               <div class="text-body2">{{ selectedPatient.civilStatus || "N/A" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Occupation</div>
+              <div class="text-caption text-grey-8">Occupation</div>
               <div class="text-body2">{{ selectedPatient.occupation || "N/A" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Nationality</div>
+              <div class="text-caption text-grey-8">Nationality</div>
               <div class="text-body2">{{ selectedPatient.nationality || "N/A" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Religion</div>
+              <div class="text-caption text-grey-8">Religion</div>
               <div class="text-body2">{{ selectedPatient.religion || "N/A" }}</div>
             </div>
           </div>
 
           <q-separator dashed class="q-my-sm" />
-          <div class="text-overline text-primary q-mb-sm">Residential Address</div>
+          <div class="text-caption text-weight-medium text-primary q-mb-sm">
+            Residential Address
+          </div>
           <div class="row q-col-gutter-md q-mb-lg">
             <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Street / House No.</div>
+              <div class="text-caption text-grey-8">Street / House No.</div>
               <div class="text-body2">{{ selectedPatient.addressStreet || "N/A" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Barangay</div>
+              <div class="text-caption text-grey-8">Barangay</div>
               <div class="text-body2">{{ selectedPatient.addressBarangay || "N/A" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">City / Municipality</div>
+              <div class="text-caption text-grey-8">City / Municipality</div>
               <div class="text-body2">{{ selectedPatient.addressCity || "N/A" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Province</div>
+              <div class="text-caption text-grey-8">Province</div>
               <div class="text-body2">{{ selectedPatient.addressProvince || "N/A" }}</div>
             </div>
             <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Region</div>
+              <div class="text-caption text-grey-8">Region</div>
               <div class="text-body2">{{ selectedPatient.addressRegion || "N/A" }}</div>
             </div>
           </div>
@@ -418,9 +420,11 @@
 
           <div class="row q-col-gutter-xl">
             <div class="col-12 col-md-6">
-              <div class="text-overline text-primary q-mb-sm">Emergency & Spouse</div>
+              <div class="text-caption text-weight-medium text-primary q-mb-sm">
+                Emergency & Spouse
+              </div>
 
-              <div style="border-left: 3px solid #1976d2; padding-left: 16px">
+              <div>
                 <div class="q-mb-lg">
                   <div class="text-subtitle2 text-weight-bold">
                     {{ selectedPatient.cpName || "N/A" }}
@@ -469,9 +473,11 @@
             </div>
 
             <div class="col-12 col-md-6">
-              <div class="text-overline text-primary q-mb-sm">Parent Information</div>
+              <div class="text-caption text-weight-medium text-primary q-mb-sm">
+                Parent Information
+              </div>
 
-              <div style="border-left: 3px solid #1976d2; padding-left: 16px">
+              <div>
                 <div class="q-mb-lg">
                   <div class="text-subtitle2 text-weight-bold">
                     {{ selectedPatient.ptFatherName || "N/A" }}
@@ -520,7 +526,9 @@
           </div>
 
           <q-separator dashed class="q-my-sm" />
-          <div class="text-overline text-primary q-mb-sm">Government Identification</div>
+          <div class="text-caption text-weight-medium text-primary q-mb-sm">
+            Government Identification
+          </div>
           <div class="row q-col-gutter-sm">
             <div class="col-6 col-sm-3">
               <q-input
@@ -569,47 +577,151 @@
             label="Send Information to live server"
             color="green-10"
             icon-right="send"
-            @click="validateInformation(selectedPatient)"
+            @click="handleValidatePatient(selectedPatient)"
           />
         </q-card-actions>
       </q-card>
     </q-dialog>
 
-    <financial-statement ref="financialRef" />
+    <q-dialog
+      v-model="showDuplicateDialog"
+      persistent
+      transition-show="scale"
+      transition-hide="scale"
+    >
+      <q-card style="width: 600px; max-width: 90vw">
+        <q-card-section class="text-negative">
+          <div class="text-h6 text-center">
+            <q-icon name="warning" class="q-mr-sm" />Possible Duplicate Found
+            <div class="text-caption text-grey-8">
+              We found existing records that match the details of the patient you are
+              trying to register.
+            </div>
+          </div>
+        </q-card-section>
+
+        <q-card-section>
+          <div
+            class="row q-col-gutter-xs q-ma-xs q-py-sm text-center bg-green-1 rounded-borders"
+          >
+            <div class="col">
+              <div class="text-caption text-grey-7">Name</div>
+              <div class="text-body2 text-weight-bold text-dark">
+                {{ formatFullName(selectedPatient) }}
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="text-caption text-grey-7">Birthdate</div>
+              <div class="text-body2 text-weight-bold text-dark">
+                {{ formatDate(selectedPatient.birthdate) }}
+                <span class="text-grey-7"></span>
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="text-caption text-grey-7">Age</div>
+              <div class="text-body2 text-weight-bold text-dark">
+                {{ selectedPatient.age }}
+                <span class="text-grey-7"></span>
+              </div>
+            </div>
+          </div>
+          <div class="text-caption text-grey-8 q-mt-md q-mb-sm">
+            Select patient you want to link.
+          </div>
+
+          <q-markup-table flat bordered>
+            <thead class="bg-grey-2">
+              <tr>
+                <th class="text-left"></th>
+                <th class="text-left">Patient No</th>
+                <th class="text-left">Full Name</th>
+                <th class="text-left">Birthdate</th>
+                <th class="text-left">Age</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="patient in duplicateList"
+                :key="patient.existingPatientNo"
+                @click="selectedDuplicate = patient"
+                class="cursor-pointer transition-generic"
+                :class="
+                  selectedDuplicate?.existingPatientNo === patient.existingPatientNo
+                    ? 'bg-blue-1'
+                    : 'hover:bg-grey-1'
+                "
+              >
+                <td class="text-left">
+                  <q-radio
+                    v-model="selectedDuplicate"
+                    :val="patient"
+                    dense
+                    color="primary"
+                  />
+                </td>
+                <td class="text-weight-bold text-negative">
+                  {{ patient.existingPatientNo }}
+                </td>
+                <td>
+                  {{ patient.firstName }} {{ patient.middleName }} {{ patient.lastName }}
+                  {{ patient.suffix }}
+                </td>
+                <td>
+                  {{ formatDate(patient.birthdate) }}
+                </td>
+                <td>
+                  {{ patient.age }}
+                </td>
+              </tr>
+            </tbody>
+          </q-markup-table>
+        </q-card-section>
+
+        <q-card-actions align="right" class="bg-grey-1 q-pa-md">
+          <q-btn unelevated label="Cancel" color="grey-7" v-close-popup />
+          <q-btn
+            unelevated
+            label="Ignore & Create New"
+            color="primary"
+            @click="ignoreDuplicate"
+          />
+
+          <q-btn
+            v-if="selectedDuplicate"
+            unelevated
+            label="Link Record"
+            color="negative"
+            @click="confirmLinkPatient"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
 <script>
 import { date } from "quasar";
-import axios from "axios";
-
-import FinancialStatement from "../FinancePage/FinancialStatement.vue";
+import { mapState, mapActions } from "pinia";
+import { useOutpatientStore } from "src/stores/outpatientStore";
 
 import { printInpatientInformation } from "src/composables/printInpatientInformation";
 import { printPatientConsent } from "src/composables/printPatientConsent";
 
 export default {
   name: "OutpatientList",
-  components: {
-    FinancialStatement,
-  },
 
   setup() {
     const { generatePatientPdf } = printInpatientInformation();
     const { generatePatientConsentPdf } = printPatientConsent();
-
     return { generatePatientPdf, generatePatientConsentPdf };
   },
 
   data() {
     return {
-      searchQuery: "",
-      loading: false,
-      hasSearched: false,
-      patientList: [],
       viewDialog: false,
       viewPatientValidationDialog: false,
-      selectedPatient: {},
 
       columns: [
         {
@@ -662,38 +774,66 @@ export default {
       ],
     };
   },
+
+  computed: {
+    ...mapState(useOutpatientStore, [
+      "patientList",
+      "loading",
+      "searchQuery",
+      "hasSearched",
+      "selectedPatient",
+      "showDuplicateDialog",
+      "duplicateList",
+      "selectedDuplicate",
+    ]),
+
+    localSearchQuery: {
+      get() {
+        return this.searchQuery;
+      },
+      set(val) {
+        this.useOutpatientStore().searchQuery = val;
+      },
+    },
+    localSelectedDuplicate: {
+      get() {
+        return this.selectedDuplicate;
+      },
+      set(val) {
+        this.useOutpatientStore().selectedDuplicate = val;
+      },
+    },
+    localShowDuplicateDialog: {
+      get() {
+        return this.showDuplicateDialog;
+      },
+      set(val) {
+        this.useOutpatientStore().showDuplicateDialog = val;
+      },
+    },
+  },
+
   mounted() {
-    this.loadInitialData();
+    this.fetchInitialData();
   },
 
   methods: {
-    async loadInitialData() {
-      this.loading = true;
-      try {
-        const response = await axios.get(
-          "http://10.107.0.2:3000/api/auth/fetchOutpatient"
-        );
-        this.patientList = response.data;
-      } catch (error) {
-        console.error(error);
-        this.$q.notify({
-          type: "negative",
-          message: "Failed to load Outpatient List",
-          position: "top",
-        });
-      } finally {
-        this.loading = false;
-      }
-    },
+    ...mapActions(useOutpatientStore, [
+      "fetchInitialData",
+      "searchPatients",
+      "sendDataInformation",
+      "linkExistingPatient",
+      "ignoreDuplicate",
+      "sendToCredit",
+      "fetchFullPatientData",
+    ]),
 
     handleSearch() {
-      if (this.searchQuery === "") {
-        this.loadInitialData();
-        this.hasSearched = false;
+      if (this.localSearchQuery === "") {
+        this.fetchInitialData();
         return;
       }
-
-      if (this.searchQuery.length < 2) {
+      if (this.localSearchQuery.length < 2) {
         this.$q.notify({
           type: "warning",
           message: "Please enter at least 2 characters",
@@ -701,259 +841,76 @@ export default {
         });
         return;
       }
-
-      this.performSearch();
-    },
-
-    async performSearch() {
-      this.loading = true;
-      try {
-        const response = await axios.get(
-          "http://10.107.0.2:3000/api/auth/searchOutpatient",
-          {
-            params: { query: this.searchQuery },
-          }
-        );
-
-        this.patientList = response.data;
-        this.hasSearched = true;
-
-        if (this.patientList.length === 0) {
-          this.$q.notify({
-            type: "info",
-            message: "No records found.",
-            icon: "info",
-            position: "top",
-          });
-        }
-      } catch (error) {
-        console.error(error);
-        this.$q.notify({
-          type: "negative",
-          message: "Search Failed",
-          position: "top",
-        });
-      } finally {
-        this.loading = false;
-      }
+      this.searchPatients(this.localSearchQuery);
     },
 
     viewPatient(row) {
-      this.selectedPatient = row;
+      this.useOutpatientStore().selectedPatient = row;
       this.viewDialog = true;
     },
 
     validatePatient(row) {
-      this.selectedPatient = row;
+      this.useOutpatientStore().selectedPatient = row;
       this.viewPatientValidationDialog = true;
     },
 
-    async handlePrint(row) {
-      this.loading = true;
-
+    async handleValidatePatient(row) {
       try {
-        const response = await axios.get(
-          `http://10.107.0.2:3000/api/auth/getPatient/${row.patient_id}`
-        );
-
-        const fullPatientData = {
-          ...response.data,
-          patientId: row.patient_id,
-        };
-        await this.generatePatientPdf(fullPatientData);
+        const success = await this.sendDataInformation(row);
+        if (success) {
+          this.viewPatientValidationDialog = false;
+        }
       } catch (error) {
-        console.error("Print Error:", error);
-        this.$q.notify({
-          type: "negative",
-          message: "Failed to fetch full details for printing",
-          position: "top",
-        });
-      } finally {
-        this.loading = false;
+        console.error("Validation failed:", error);
       }
     },
 
-    async handlePrintConsent(row) {
-      this.loading = true;
-
-      try {
-        const response = await axios.get(
-          `http://10.107.0.2:3000/api/auth/getPatient/${row.patient_id}`
-        );
-
-        const fullPatientData = {
-          ...response.data,
-          patientId: row.patient_id,
-        };
-
-        await this.generatePatientConsentPdf(fullPatientData);
-      } catch (error) {
-        console.error("Print Error:", error);
-        this.$q.notify({
-          type: "negative",
-          message: "Failed to fetch full details for printing",
-          position: "top",
-        });
-      } finally {
-        this.loading = false;
+    async confirmLinkPatient() {
+      const success = await this.linkExistingPatient();
+      if (success) {
+        this.viewPatientValidationDialog = false;
       }
+    },
+
+    async handleIgnoreDuplicate() {
+      await this.ignoreDuplicate();
+      this.viewPatientValidationDialog = false;
+    },
+
+    async handleSendToCredit() {
+      if (!this.selectedPatient || !this.selectedPatient.patient_id) {
+        this.$q.notify({ type: "negative", message: "Error: No patient selected" });
+        return;
+      }
+      const success = await this.sendToCredit(this.selectedPatient.patient_id);
+      if (success) this.viewDialog = false;
+    },
+
+    async handlePrint(row) {
+      const fullData = await this.fetchFullPatientData(row.patient_id);
+      if (fullData) await this.generatePatientPdf(fullData);
+    },
+
+    async handlePrintConsent(row) {
+      const fullData = await this.fetchFullPatientData(row.patient_id);
+      if (fullData) await this.generatePatientConsentPdf(fullData);
+    },
+
+    formatFullName(p) {
+      if (!p) return "";
+      if (p.fullName) return p.fullName;
+      const parts = [p.firstName, p.middleName, p.lastName].filter(Boolean);
+      let fullName = parts.join(" ");
+      if (p.suffix) fullName += ` ${p.suffix}`;
+      return fullName;
     },
 
     formatDate(val) {
       if (!val) return "-";
+
       return date.formatDate(val, "MMM D, YYYY");
     },
-    formatFullName(p) {
-      if (!p) return "";
-      const parts = [p.firstName, p.middleName, p.lastName].filter(Boolean);
-      let fullName = parts.join(" ");
-
-      if (p.suffix) {
-        fullName += ` ${p.suffix}`;
-      }
-      return fullName;
-    },
-
-    updateFinanceStatement(row) {
-      this.$refs.financialRef.openFinancialDialog(row);
-      this.viewDialog = false;
-    },
-
-    async validateInformation(patient) {
-      if (!patient) return;
-
-      const errors = [];
-      if (!patient.patient_id) errors.push("Patient ID");
-      if (!patient.lastName) errors.push("Last Name");
-      if (!patient.firstName) errors.push("First Name");
-
-      if (errors.length > 0) {
-        this.$q.notify({
-          type: "warning",
-          message: `Cannot transfer. Missing: ${errors.join(", ")}`,
-          position: "top",
-        });
-        return;
-      }
-
-      this.loading = true;
-      try {
-        await axios.post("http://10.107.0.2:3000/api/auth/sendDataInformation", {
-          patient_id: patient.patient_id,
-        });
-
-        this.$q.notify({
-          type: "positive",
-          message: "Data successfully sent to live server.",
-        });
-
-        this.viewPatientValidationDialog = false;
-        this.loadInitialData();
-      } catch (error) {
-        if (!error.response || error.response.status !== 409) {
-          console.error(error);
-        }
-
-        if (error.response && error.response.status === 409) {
-          const {
-            existingPatientNo,
-            firstName,
-            lastName,
-            middleName,
-            suffix,
-            birthdate,
-          } = error.response.data;
-
-          const formattedBirthdate = new Date(birthdate).toLocaleDateString();
-
-          const fullName = `${firstName} ${middleName || ""} ${lastName} ${suffix || ""}`
-            .trim()
-            .replace(/\s+/g, " ");
-
-          this.$q
-            .dialog({
-              title: '<span class="text-negative">Patient Record Already Exists"</span>',
-              message: `
-                      <div class="q-mb-md">
-                        This patient already exists in the Hospital System.
-                      </div>
-
-                      <div style="background: #fff3e0; padding: 10px; border-radius: 4px; border: 1px solid #ffe0b2;">
-                        <div class="row no-wrap q-mb-xs">
-                          <span class="text-grey-8" style="min-width: 100px;">Patient No:</span>
-                          <span class="text-weight-bold text-primary">${existingPatientNo}</span>
-                        </div>
-                        <div class="row no-wrap q-mb-xs">
-                          <span class="text-grey-8" style="min-width: 100px;">Name:</span>
-                          <span class="text-weight-bold">${fullName}</span>
-                        </div>
-                        <div class="row no-wrap">
-                          <span class="text-grey-8" style="min-width: 100px;">Birthday:</span>
-                          <span class="text-weight-bold">${formattedBirthdate}</span>
-                        </div>
-                      </div>
-
-                      <div class="q-mt-md text-weight-medium">
-                        Do you want to link this registration to the existing record?
-                        <br><span class="text-caption text-grey-7">(This will update the Registration ID to match the Hospital Patient No)</span>
-                      </div>
-                    `,
-              html: true,
-              persistent: true,
-              ok: {
-                label: "Yes, Link Records",
-                color: "primary",
-                flat: false,
-              },
-              cancel: {
-                label: "No, Cancel",
-                color: "negative",
-                flat: true,
-              },
-            })
-            .onOk(async () => {
-              this.loading = true;
-              try {
-                await axios.post(
-                  "http://10.107.0.2:3000/api/auth/linkExistingPatientInfo",
-                  {
-                    patient_id: patient.patient_id,
-                    patientno: existingPatientNo,
-                  }
-                );
-
-                this.$q.notify({
-                  type: "positive",
-                  message: "Patient record linked successfully!",
-                });
-
-                this.viewPatientValidationDialog = false;
-                this.loadInitialData();
-              } catch (linkError) {
-                console.error("Linking failed:", linkError);
-                this.$q.notify({
-                  type: "negative",
-                  message:
-                    linkError.response?.data?.message ||
-                    "Failed to link records. Please try again.",
-                });
-              } finally {
-                this.loading = false;
-              }
-            })
-            .onCancel(() => {});
-        } else {
-          this.$q.notify({
-            type: "negative",
-            message:
-              error.response?.data?.message ||
-              "Failed to send data. Please check connection.",
-          });
-        }
-      } finally {
-        if (this.loading) this.loading = false;
-      }
-    },
+    useOutpatientStore,
   },
 };
 </script>
@@ -1011,4 +968,3 @@ export default {
   letter-spacing: 0.7px;
 }
 </style>
-```

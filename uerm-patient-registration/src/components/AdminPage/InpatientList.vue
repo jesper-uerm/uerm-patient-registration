@@ -24,7 +24,7 @@
         <q-input
           outlined
           dense
-          v-model="searchQuery"
+          v-model="localSearchQuery"
           placeholder="Enter Name or ID"
           @keyup.enter="handleSearch"
           :disable="loading"
@@ -91,14 +91,26 @@
                       <q-item-section avatar>
                         <q-icon name="visibility" color="blue-10" />
                       </q-item-section>
-                      <q-item-section>View Profile</q-item-section>
+                      <q-item-section>View Patient</q-item-section>
                     </q-item>
 
-                    <q-item clickable @click="validatePatient(props.row)">
+                    <q-item
+                      clickable
+                      @click="validatePatient(props.row)"
+                      :disable="props.row.isValidated == 1"
+                    >
                       <q-item-section avatar>
-                        <q-icon name="check" color="blue-10" />
+                        <q-icon
+                          name="check"
+                          :color="props.row.isValidated == 1 ? 'grey' : 'blue-10'"
+                        />
                       </q-item-section>
-                      <q-item-section>Validate</q-item-section>
+                      <q-item-section>
+                        <q-item-label>Validate</q-item-label>
+                        <q-item-label caption v-if="props.row.isValidated == 1"
+                          >Already Validated</q-item-label
+                        >
+                      </q-item-section>
                     </q-item>
 
                     <q-separator />
@@ -292,36 +304,6 @@
               </q-item-section>
             </q-item>
           </q-list>
-
-          <div class="text-subtitle2 text-grey-8 text-uppercase q-mt-lg q-mb-sm">
-            Admission Details
-          </div>
-          <div class="bg-grey-1 q-pa-md rounded-borders text-grey-8">
-            <div class="row q-col-gutter-md">
-              <div class="col-12 col-sm-4">
-                <span class="text-weight-bold block q-mb-xs">Status:</span>
-                <q-badge
-                  class="text-subtitle2 q-px-md q-py-sm"
-                  :color="
-                    selectedPatient.patientType === 'Inpatient' ? 'green' : 'orange'
-                  "
-                >
-                  {{ selectedPatient.patientType || "N/A" }}
-                </q-badge>
-              </div>
-              <div class="col-12 col-sm-4">
-                <span class="text-weight-bold block q-mb-xs">Date Admitted:</span>
-                {{ formatDate(selectedPatient.createdAt) || "N/A" }}
-              </div>
-              <div class="col-12 col-sm-4">
-                <span class="text-weight-bold block q-mb-xs">Attending Physician:</span>
-                <div class="ellipsis">
-                  {{ selectedPatient.physician || "N/A" }}
-                  <q-tooltip>{{ selectedPatient.physician }}</q-tooltip>
-                </div>
-              </div>
-            </div>
-          </div>
         </q-card-section>
 
         <q-separator />
@@ -329,9 +311,19 @@
         <q-card-actions align="center" class="q-pa-md bg-grey-1">
           <q-btn
             unelevated
-            label="Update Financial Statement"
-            color="blue-10"
-            @click="updateFinanceStatement(selectedPatient)"
+            :label="
+              selectedPatient.forReview == 1 || selectedPatient.forReview == 0
+                ? 'Already Forwarded'
+                : 'Forward to credit and finance'
+            "
+            :color="
+              selectedPatient.forReview == 1 || selectedPatient.forReview == 0
+                ? 'grey'
+                : 'blue-10'
+            "
+            :disable="selectedPatient.forReview == 1 || selectedPatient.forReview == 0"
+            icon-right="send"
+            @click="sendtoCredit(selectedPatient)"
           />
         </q-card-actions>
       </q-card>
@@ -585,47 +577,151 @@
             label="Send Information to live server"
             color="green-10"
             icon-right="send"
-            @click="validateInformation(selectedPatient)"
+            @click="handleValidatePatient(selectedPatient)"
           />
         </q-card-actions>
       </q-card>
     </q-dialog>
 
-    <financial-statement ref="financialRef" />
+    <q-dialog
+      v-model="showDuplicateDialog"
+      persistent
+      transition-show="scale"
+      transition-hide="scale"
+    >
+      <q-card style="width: 600px; max-width: 90vw">
+        <q-card-section class="text-negative">
+          <div class="text-h6 text-center">
+            <q-icon name="warning" class="q-mr-sm" />Possible Duplicate Found
+            <div class="text-caption text-grey-8">
+              We found existing records that match the details of the patient you are
+              trying to register.
+            </div>
+          </div>
+        </q-card-section>
+
+        <q-card-section>
+          <div
+            class="row q-col-gutter-xs q-ma-xs q-py-sm text-center bg-green-1 rounded-borders"
+          >
+            <div class="col">
+              <div class="text-caption text-grey-7">Name</div>
+              <div class="text-body2 text-weight-bold text-dark">
+                {{ formatFullName(selectedPatient) }}
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="text-caption text-grey-7">Birthdate</div>
+              <div class="text-body2 text-weight-bold text-dark">
+                {{ formatDate(selectedPatient.birthdate) }}
+                <span class="text-grey-7"></span>
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="text-caption text-grey-7">Age</div>
+              <div class="text-body2 text-weight-bold text-dark">
+                {{ selectedPatient.age }}
+                <span class="text-grey-7"></span>
+              </div>
+            </div>
+          </div>
+          <div class="text-caption text-grey-8 q-mt-md q-mb-sm">
+            Select patient you want to link.
+          </div>
+
+          <q-markup-table flat bordered>
+            <thead class="bg-grey-2">
+              <tr>
+                <th class="text-left"></th>
+                <th class="text-left">Patient No</th>
+                <th class="text-left">Full Name</th>
+                <th class="text-left">Birthdate</th>
+                <th class="text-left">Age</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="patient in duplicateList"
+                :key="patient.existingPatientNo"
+                @click="selectedDuplicate = patient"
+                class="cursor-pointer transition-generic"
+                :class="
+                  selectedDuplicate?.existingPatientNo === patient.existingPatientNo
+                    ? 'bg-blue-1'
+                    : 'hover:bg-grey-1'
+                "
+              >
+                <td class="text-left">
+                  <q-radio
+                    v-model="selectedDuplicate"
+                    :val="patient"
+                    dense
+                    color="primary"
+                  />
+                </td>
+                <td class="text-weight-bold text-negative">
+                  {{ patient.existingPatientNo }}
+                </td>
+                <td>
+                  {{ patient.firstName }} {{ patient.middleName }} {{ patient.lastName }}
+                  {{ patient.suffix }}
+                </td>
+                <td>
+                  {{ formatDate(patient.birthdate) }}
+                </td>
+                <td>
+                  {{ patient.age }}
+                </td>
+              </tr>
+            </tbody>
+          </q-markup-table>
+        </q-card-section>
+
+        <q-card-actions align="right" class="bg-grey-1 q-pa-md">
+          <q-btn unelevated label="Cancel" color="grey-7" v-close-popup />
+          <q-btn
+            unelevated
+            label="Ignore & Create New"
+            color="primary"
+            @click="ignoreDuplicate"
+          />
+
+          <q-btn
+            v-if="selectedDuplicate"
+            unelevated
+            label="Link Record"
+            color="negative"
+            @click="confirmLinkPatient"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
 <script>
 import { date } from "quasar";
-import axios from "axios";
+import { mapState, mapActions } from "pinia";
+import { useInpatientStore } from "src/stores/inpatientStore";
 
 import { printInpatientInformation } from "src/composables/printInpatientInformation";
 import { printPatientConsent } from "src/composables/printPatientConsent";
 
-import FinancialStatement from "../FinancePage/FinancialStatement.vue";
-
 export default {
   name: "InpatientList",
-  components: {
-    FinancialStatement,
-  },
 
   setup() {
     const { generatePatientPdf } = printInpatientInformation();
     const { generatePatientConsentPdf } = printPatientConsent();
-
     return { generatePatientPdf, generatePatientConsentPdf };
   },
 
   data() {
     return {
-      searchQuery: "",
-      loading: false,
-      hasSearched: false,
-      patientList: [],
       viewDialog: false,
       viewPatientValidationDialog: false,
-      selectedPatient: {},
 
       columns: [
         {
@@ -666,7 +762,7 @@ export default {
           field: "addressPresent",
           align: "left",
           classes: "ellipsis",
-          style: "max-width: 25s0px; min-width: 150px",
+          style: "max-width: 250px; min-width: 150px",
         },
         {
           name: "actions",
@@ -679,38 +775,67 @@ export default {
     };
   },
 
+  computed: {
+    ...mapState(useInpatientStore, [
+      "patientList",
+      "loading",
+      "searchQuery",
+      "hasSearched",
+      "selectedPatient",
+      "showDuplicateDialog",
+      "duplicateList",
+      "selectedDuplicate",
+    ]),
+
+    localSearchQuery: {
+      get() {
+        return this.searchQuery;
+      },
+      set(val) {
+        this.useInpatientStore().searchQuery = val;
+      },
+    },
+    localSelectedDuplicate: {
+      get() {
+        return this.selectedDuplicate;
+      },
+      set(val) {
+        this.useInpatientStore().selectedDuplicate = val;
+      },
+    },
+    localShowDuplicateDialog: {
+      get() {
+        return this.showDuplicateDialog;
+      },
+      set(val) {
+        this.useInpatientStore().showDuplicateDialog = val;
+      },
+    },
+  },
+
   mounted() {
-    this.loadInitialData();
+    this.fetchInitialData();
   },
 
   methods: {
-    async loadInitialData() {
-      this.loading = true;
-      try {
-        const response = await axios.get(
-          "http://10.107.0.2:3000/api/auth/fetchInpatient"
-        );
-        this.patientList = response.data;
-      } catch (error) {
-        console.error(error);
-        this.$q.notify({
-          type: "negative",
-          message: "Failed to load Inpatients List",
-          position: "top",
-        });
-      } finally {
-        this.loading = false;
-      }
-    },
+    ...mapActions(useInpatientStore, [
+      "fetchInitialData",
+      "searchPatients",
+      "sendDataInformation",
+      "linkExistingPatient",
+      "ignoreDuplicate",
+      "sendToCredit",
+      "fetchFullPatientData",
+    ]),
+
+    useInpatientStore,
 
     handleSearch() {
-      if (this.searchQuery === "") {
-        this.loadInitialData();
-        this.hasSearched = false;
+      if (this.localSearchQuery === "") {
+        this.fetchInitialData();
         return;
       }
-
-      if (this.searchQuery.length < 2) {
+      if (this.localSearchQuery.length < 2) {
         this.$q.notify({
           type: "warning",
           message: "Please enter at least 2 characters",
@@ -718,259 +843,75 @@ export default {
         });
         return;
       }
-
-      this.performSearch();
-    },
-
-    async performSearch() {
-      this.loading = true;
-      try {
-        const response = await axios.get(
-          "http://10.107.0.2:3000/api/auth/searchInpatient",
-          {
-            params: { query: this.searchQuery },
-          }
-        );
-
-        this.patientList = response.data;
-        this.hasSearched = true;
-
-        if (this.patientList.length === 0) {
-          this.$q.notify({
-            type: "info",
-            message: "No records found.",
-            icon: "info",
-            position: "top",
-          });
-        }
-      } catch (error) {
-        console.error(error);
-        this.$q.notify({
-          type: "negative",
-          message: "Search Failed",
-          position: "top",
-        });
-      } finally {
-        this.loading = false;
-      }
+      this.searchPatients(this.localSearchQuery);
     },
 
     viewPatient(row) {
-      this.selectedPatient = row;
+      this.useInpatientStore().selectedPatient = row;
       this.viewDialog = true;
     },
 
     validatePatient(row) {
-      this.selectedPatient = row;
+      this.useInpatientStore().selectedPatient = row;
       this.viewPatientValidationDialog = true;
     },
 
-    async handlePrint(row) {
-      this.loading = true;
-
+    async handleValidatePatient(row) {
       try {
-        const response = await axios.get(
-          `http://10.107.0.2:3000/api/auth/getPatient/${row.patient_id}`
-        );
-
-        const fullPatientData = {
-          ...response.data,
-          patientId: row.patient_id,
-        };
-
-        await this.generatePatientPdf(fullPatientData);
+        const success = await this.sendDataInformation(row);
+        if (success) {
+          this.viewPatientValidationDialog = false;
+        }
       } catch (error) {
-        console.error("Print Error:", error);
-        this.$q.notify({
-          type: "negative",
-          message: "Failed to fetch full details for printing",
-          position: "top",
-        });
-      } finally {
-        this.loading = false;
+        console.error("Validation failed:", error);
       }
     },
 
-    async handlePrintConsent(row) {
-      this.loading = true;
-
-      try {
-        const response = await axios.get(
-          `http://10.107.0.2:3000/api/auth/getPatient/${row.patient_id}`
-        );
-
-        const fullPatientData = {
-          ...response.data,
-          patientId: row.patient_id,
-        };
-
-        await this.generatePatientConsentPdf(fullPatientData);
-      } catch (error) {
-        console.error("Print Error:", error);
-        this.$q.notify({
-          type: "negative",
-          message: "Failed to fetch full details for printing",
-          position: "top",
-        });
-      } finally {
-        this.loading = false;
+    async confirmLinkPatient() {
+      const success = await this.linkExistingPatient();
+      if (success) {
+        this.viewPatientValidationDialog = false;
       }
+    },
+
+    async handleIgnoreDuplicate() {
+      await this.ignoreDuplicate();
+      this.viewPatientValidationDialog = false;
+    },
+
+    async handleSendToCredit() {
+      if (!this.selectedPatient || !this.selectedPatient.patient_id) {
+        this.$q.notify({ type: "negative", message: "Error: No patient selected" });
+        return;
+      }
+      const success = await this.sendToCredit(this.selectedPatient.patient_id);
+      if (success) {
+        this.viewDialog = false;
+      }
+    },
+
+    async handlePrint(row) {
+      const fullData = await this.fetchFullPatientData(row.patient_id);
+      if (fullData) await this.generatePatientPdf(fullData);
+    },
+
+    async handlePrintConsent(row) {
+      const fullData = await this.fetchFullPatientData(row.patient_id);
+      if (fullData) await this.generatePatientConsentPdf(fullData);
     },
 
     formatDate(val) {
       if (!val) return "-";
       return date.formatDate(val, "MMM D, YYYY");
     },
+
     formatFullName(p) {
       if (!p) return "";
+      if (p.fullName) return p.fullName;
       const parts = [p.firstName, p.middleName, p.lastName].filter(Boolean);
       let fullName = parts.join(" ");
-
-      if (p.suffix) {
-        fullName += ` ${p.suffix}`;
-      }
+      if (p.suffix) fullName += ` ${p.suffix}`;
       return fullName;
-    },
-
-    updateFinanceStatement(row) {
-      this.$refs.financialRef.openFinancialDialog(row);
-      this.viewDialog = false;
-    },
-
-    async validateInformation(patient) {
-      if (!patient) return;
-
-      const errors = [];
-      if (!patient.patient_id) errors.push("Patient ID");
-      if (!patient.lastName) errors.push("Last Name");
-      if (!patient.firstName) errors.push("First Name");
-
-      if (errors.length > 0) {
-        this.$q.notify({
-          type: "warning",
-          message: `Cannot transfer. Missing: ${errors.join(", ")}`,
-          position: "top",
-        });
-        return;
-      }
-
-      this.loading = true;
-      try {
-        await axios.post("http://10.107.0.2:3000/api/auth/sendDataInformation", {
-          patient_id: patient.patient_id,
-        });
-
-        this.$q.notify({
-          type: "positive",
-          message: "Data successfully sent to live server.",
-        });
-
-        this.viewPatientValidationDialog = false;
-        this.loadInitialData();
-      } catch (error) {
-        if (!error.response || error.response.status !== 409) {
-          console.error(error);
-        }
-
-        if (error.response && error.response.status === 409) {
-          const {
-            existingPatientNo,
-            firstName,
-            lastName,
-            middleName,
-            suffix,
-            birthdate,
-          } = error.response.data;
-
-          const formattedBirthdate = new Date(birthdate).toLocaleDateString();
-
-          const fullName = `${firstName} ${middleName || ""} ${lastName} ${suffix || ""}`
-            .trim()
-            .replace(/\s+/g, " ");
-
-          this.$q
-            .dialog({
-              title: '<span class="text-negative">Patient Record Already Exists"</span>',
-              message: `
-                      <div class="q-mb-md">
-                        This patient already exists in the Hospital System.
-                      </div>
-
-                      <div style="background: #fff3e0; padding: 10px; border-radius: 4px; border: 1px solid #ffe0b2;">
-                        <div class="row no-wrap q-mb-xs">
-                          <span class="text-grey-8" style="min-width: 100px;">Patient No:</span>
-                          <span class="text-weight-bold text-primary">${existingPatientNo}</span>
-                        </div>
-                        <div class="row no-wrap q-mb-xs">
-                          <span class="text-grey-8" style="min-width: 100px;">Name:</span>
-                          <span class="text-weight-bold">${fullName}</span>
-                        </div>
-                        <div class="row no-wrap">
-                          <span class="text-grey-8" style="min-width: 100px;">Birthday:</span>
-                          <span class="text-weight-bold">${formattedBirthdate}</span>
-                        </div>
-                      </div>
-
-                      <div class="q-mt-md text-weight-medium">
-                        Do you want to link this registration to the existing record?
-                        <br><span class="text-caption text-grey-7">(This will update the Registration ID to match the Hospital Patient No)</span>
-                      </div>
-                    `,
-              html: true,
-              persistent: true,
-              ok: {
-                label: "Yes, Link Records",
-                color: "primary",
-                flat: false,
-              },
-              cancel: {
-                label: "No, Cancel",
-                color: "negative",
-                flat: true,
-              },
-            })
-            .onOk(async () => {
-              this.loading = true;
-              try {
-                await axios.post(
-                  "http://10.107.0.2:3000/api/auth/linkExistingPatientInfo",
-                  {
-                    patient_id: patient.patient_id,
-                    patientno: existingPatientNo,
-                  }
-                );
-
-                this.$q.notify({
-                  type: "positive",
-                  message: "Patient record linked successfully!",
-                });
-
-                this.viewPatientValidationDialog = false;
-                this.loadInitialData();
-              } catch (linkError) {
-                console.error("Linking failed:", linkError);
-                this.$q.notify({
-                  type: "negative",
-                  message:
-                    linkError.response?.data?.message ||
-                    "Failed to link records. Please try again.",
-                });
-              } finally {
-                this.loading = false;
-              }
-            })
-            .onCancel(() => {});
-        } else {
-          this.$q.notify({
-            type: "negative",
-            message:
-              error.response?.data?.message ||
-              "Failed to send data. Please check connection.",
-          });
-        }
-      } finally {
-        if (this.loading) this.loading = false;
-      }
     },
   },
 };

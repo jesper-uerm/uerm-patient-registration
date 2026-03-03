@@ -100,6 +100,7 @@
 import PatientSourceOfIncome from "src/components/AdminPage/PatientSourceOfIncome.vue";
 import AccreditedHMO from "src/components/FinancePage/AccreditedHMO.vue";
 import ContactPersonSourceOfIncome from "src/components/FinancePage/ContactPersonSourceOfIncome.vue";
+import { useAuthStore } from "src/stores/authStore";
 
 import axios from "axios";
 
@@ -110,6 +111,12 @@ export default {
     AccreditedHMO,
     ContactPersonSourceOfIncome,
   },
+
+  setup() {
+    const authStore = useAuthStore();
+    return { authStore };
+  },
+
   data() {
     return {
       financialDialog: false,
@@ -200,19 +207,27 @@ export default {
         const payload = {
           patientId: this.localPatient.patient_id,
           formData: this.formData,
+          reviewedBy: this.authStore.username,
         };
 
-        await axios.put("http://10.107.0.2:3000/api/auth/updatePatientDetails", payload);
+        await axios.put("http://10.107.0.2:3000/api/patients/details", payload);
 
         this.$q.notify({
           type: "positive",
           position: "top",
           message: "Financial Statement updated successfully!",
         });
+
         this.financialDialog = false;
+
+        if (this.fetchPatients) this.fetchPatients();
       } catch (error) {
-        console.error(error);
-        this.$q.notify({ type: "negative", message: "Failed to save." });
+        console.error("Update Error:", error);
+        this.$q.notify({
+          type: "negative",
+          position: "top",
+          message: error.response?.data?.message || "Failed to save.",
+        });
       }
     },
   },

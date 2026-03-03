@@ -28,7 +28,7 @@
                 <q-form @submit="onSubmit" class="q-gutter-md">
                   <q-input
                     outlined
-                    v-model="username"
+                    v-model="EmployeeCode"
                     label="Employee Number"
                     hint="Enter your employee number"
                   >
@@ -39,7 +39,7 @@
 
                   <q-input
                     outlined
-                    v-model="password"
+                    v-model="WebPassword"
                     :type="isPwd ? 'password' : 'text'"
                     label="Password"
                   >
@@ -101,14 +101,20 @@
 
 <script>
 import axios from "axios";
+import { useAuthStore } from "src/stores/authStore";
 
 export default {
   name: "HospitalLoginPage",
 
+  setup() {
+    const authStore = useAuthStore();
+    return { authStore };
+  },
+
   data() {
     return {
-      username: "",
-      password: "",
+      EmployeeCode: "",
+      WebPassword: "",
       isPwd: true,
       loading: false,
     };
@@ -121,25 +127,24 @@ export default {
   methods: {
     async onSubmit() {
       this.loading = true;
-
       try {
         const response = await axios.post("http://10.107.0.2:3000/api/auth/login", {
-          username: this.username,
-          password: this.password,
+          EmployeeCode: this.EmployeeCode,
+          WebPassword: this.WebPassword,
         });
 
-        localStorage.setItem("userRole", response.data.user.role);
+        this.authStore.saveLoginData(response.data.user);
 
         const targetPath = response.data.redirectPath;
 
         this.$q.notify({
           type: "positive",
-          message: `Login Successful!`,
+          message: `Login Successful! Welcome, ${this.authStore.firstName}`,
         });
 
         this.$router.push(targetPath);
       } catch (error) {
-        console.error(error);
+        console.error("Login Error:", error);
         this.$q.notify({
           type: "negative",
           message: error.response?.data?.message || "Login failed",

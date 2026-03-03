@@ -13,7 +13,7 @@ export function printPatientConsent() {
 
   const getSignatureFromAPI = async (patientId) => {
     try {
-      const response = await fetch(`http://10.107.0.2:3000/api/auth/getpatientSignature/${patientId}`);
+      const response = await fetch(`http://10.107.0.2:3000/api/patients/signature/${patientId}`);
       if (!response.ok) return null;
 
       const data = await response.json();

@@ -78,7 +78,7 @@ export const useReturningPatientStore = defineStore('returningPatient', {
       this.loading = true;
       try {
         const response = await axios.get(
-          "http://10.107.0.2:3000/api/auth/searchInpatient",
+          "http://10.107.0.2:3000/api/patients/search-inpatient",
           { params: { query: this.searchQuery } }
         );
 
@@ -107,7 +107,6 @@ export const useReturningPatientStore = defineStore('returningPatient', {
 
     prepareTriageForm(row) {
       this.showTriageDialog = true;
-
       this.triageForm.patientId = row.PATIENTNO;
       this.triageForm.lastNameTriage = row.LASTNAME;
       this.triageForm.firstNameTriage = row.FIRSTNAME;
@@ -161,7 +160,7 @@ export const useReturningPatientStore = defineStore('returningPatient', {
 
       try {
         const response = await axios.put(
-          "http://10.107.0.2:3000/api/auth/updateTriage",
+          "http://10.107.0.2:3000/api/patients/update-triage",
           this.triageForm
         );
 
@@ -194,7 +193,7 @@ export const useReturningPatientStore = defineStore('returningPatient', {
       this.loading = true;
       try {
         const checkResponse = await axios.get(
-          `http://10.107.0.2:3000/api/auth/checkPatientExists/${patientId}`
+          `http://10.107.0.2:3000/api/patients/check/${patientId}`
         );
 
         const { exists, source } = checkResponse.data;
@@ -209,7 +208,7 @@ export const useReturningPatientStore = defineStore('returningPatient', {
         }
 
         const dataResponse = await axios.get(
-          `http://10.107.0.2:3000/api/auth/getPatient/${patientId}`
+          `http://10.107.0.2:3000/api/patients/${patientId}`
         );
 
         return { data: dataResponse.data, source };
@@ -231,7 +230,7 @@ export const useReturningPatientStore = defineStore('returningPatient', {
       this.loading = true;
       try {
         const response = await axios.get(
-          `http://10.107.0.2:3000/api/auth/getPatient/${patientId}`
+          `http://10.107.0.2:3000/api/patients/${patientId}`
         );
         return { ...response.data, patientId: patientId };
       } catch (error) {

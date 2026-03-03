@@ -119,20 +119,27 @@
                       clickable
                     >
                       <q-item-section avatar>
-                        <q-icon name="update" color="blue-10" />
+                        <q-icon name="content_paste_go" color="blue-10" />
                       </q-item-section>
-                      <q-item-section>For Admission</q-item-section>
+                      <q-item-section>Subject for Admission</q-item-section>
                     </q-item>
-
                     <q-item
                       clickable
-                      v-if="!props.row.isValidated"
                       @click="validatePatient(props.row)"
+                      :disable="props.row.isValidated == 1"
                     >
                       <q-item-section avatar>
-                        <q-icon name="check" color="blue-10" />
+                        <q-icon
+                          name="check"
+                          :color="props.row.isValidated == 1 ? 'grey' : 'blue-10'"
+                        />
                       </q-item-section>
-                      <q-item-section>Validate</q-item-section>
+                      <q-item-section>
+                        <q-item-label>Validate</q-item-label>
+                        <q-item-label caption v-if="props.row.isValidated == 1"
+                          >Already Validated</q-item-label
+                        >
+                      </q-item-section>
                     </q-item>
 
                     <q-separator />
@@ -194,11 +201,23 @@
                             </q-item-section>
                             <q-item-section>Update Triage Form</q-item-section>
                           </q-item>
-                          <q-item clickable @click="validatePatient(props.row)">
+                          <q-item
+                            clickable
+                            @click="validatePatient(props.row)"
+                            :disable="props.row.isValidated == 1"
+                          >
                             <q-item-section avatar>
-                              <q-icon name="check" size="xs" />
+                              <q-icon
+                                name="check"
+                                :color="props.row.isValidated == 1 ? 'grey' : 'blue-10'"
+                              />
                             </q-item-section>
-                            <q-item-section>Validate Information</q-item-section>
+                            <q-item-section>
+                              <q-item-label>Validate</q-item-label>
+                              <q-item-label caption v-if="props.row.isValidated == 1"
+                                >Already Validated</q-item-label
+                              >
+                            </q-item-section>
                           </q-item>
 
                           <q-item clickable @click="handlePrintConsent(props.row)">
@@ -1436,7 +1455,7 @@ export default {
           html: true,
           persistent: true,
           ok: {
-            label: "Admit Patient",
+            label: "Send to Credit/Finance",
             color: "primary",
             unelevated: true,
           },

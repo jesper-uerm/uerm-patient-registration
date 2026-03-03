@@ -47,7 +47,7 @@
     >
       <div
         class="column flex-center q-pa-md q-mt-md relative-position"
-        style="height: 200px"
+        style="min-height: 200px"
       >
         <q-avatar size="160px" class="q-mb-sm shadow-3">
           <img
@@ -60,6 +60,21 @@
             "
           />
         </q-avatar>
+
+        <div class="column items-center q-mt-md q-gutter-y-xs">
+          <div
+            class="bg-grey-2 q-px-md q-py-xs rounded-borders text-caption text-weight-bold text-blue-10"
+          >
+            HI, {{ userName.toUpperCase() }}!
+          </div>
+
+          <div
+            class="text-grey-7 text-weight-medium q-mt-sm"
+            style="font-size: 0.65rem; line-height: 1.6"
+          >
+            {{ userDepartment }}
+          </div>
+        </div>
       </div>
 
       <q-list padding class="text-grey-8">
@@ -133,8 +148,15 @@
 <script>
 import { defineComponent } from "vue";
 import { date } from "quasar";
+import { useAuthStore } from "src/stores/authStore";
+
 export default defineComponent({
   name: "AdminLayout",
+
+  setup() {
+    const authStore = useAuthStore();
+    return { authStore };
+  },
 
   data() {
     return {
@@ -144,6 +166,17 @@ export default defineComponent({
     };
   },
   computed: {
+    userName() {
+      return this.authStore.firstName || "User";
+    },
+    userDepartment() {
+      const dept = this.authStore.role || "General Staff";
+      return dept
+        .toUpperCase()
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+    },
     formattedTime() {
       return date.formatDate(this.now, "h:mm:ss A");
     },
@@ -172,6 +205,7 @@ export default defineComponent({
       this.leftDrawerOpen = !this.leftDrawerOpen;
     },
     logout() {
+      this.authStore.logout();
       this.$router.push("/login");
     },
   },

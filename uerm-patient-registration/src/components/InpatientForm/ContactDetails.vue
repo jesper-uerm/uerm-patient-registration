@@ -59,12 +59,17 @@
         <q-input
           outlined
           dense
-          v-model="formData.spouse.name"
+          v-model="formData.contactDetails.spouseName"
           label="Spouse's Full Name"
         />
       </div>
       <div class="col-12 col-sm-4 col-md-4">
-        <q-input outlined dense v-model="formData.spouse.occupation" label="Occupation" />
+        <q-input
+          outlined
+          dense
+          v-model="formData.contactDetails.spouseOccupation"
+          label="Occupation"
+        />
       </div>
       <div class="col-12 col-sm-4 col-md-4 q-mb-md">
         <q-input
@@ -72,7 +77,7 @@
           dense
           mask="####-###-####"
           unmasked-value
-          v-model="formData.spouse.employerContact"
+          v-model="formData.contactDetails.spouseEmployerContact"
           label="Employer Contact"
         />
       </div>
@@ -83,7 +88,7 @@
         <q-input
           outlined
           dense
-          v-model="formData.spouse.employerName"
+          v-model="formData.contactDetails.spouseEmployerName"
           label="Employer Name"
         />
       </div>
@@ -91,7 +96,7 @@
         <q-input
           outlined
           dense
-          v-model="formData.spouse.employerAddress"
+          v-model="formData.contactDetails.spouseEmployerAddress"
           label="Employer Address"
         />
       </div>
@@ -107,7 +112,7 @@
         <q-input
           outlined
           dense
-          v-model="formData.contactPerson.name"
+          v-model="formData.contactDetails.contactPersonInpatient"
           label-slot
           :rules="[(val) => !!val || 'Required']"
         >
@@ -118,7 +123,7 @@
         <q-select
           outlined
           dense
-          v-model="formData.contactPerson.relationship"
+          v-model="formData.contactDetails.contactPersonInpatientRelationship"
           :options="appOptions.relationships"
           label-slot
           :rules="[(val) => !!val || 'Required']"
@@ -133,7 +138,7 @@
         <q-input
           outlined
           dense
-          v-model="formData.contactPerson.email"
+          v-model="formData.contactDetails.contactPersonInpatientEmail"
           type="email"
           label="Email Address"
         />
@@ -142,7 +147,7 @@
         <q-input
           outlined
           dense
-          v-model="formData.contactPerson.mobile"
+          v-model="formData.contactDetails.contactPersonInpatientMobile"
           label-slot
           mask="####-###-####"
           :rules="[(val) => !!val || 'Required']"
@@ -160,7 +165,7 @@
         <q-input
           outlined
           dense
-          v-model="formData.contactPerson.landline"
+          v-model="formData.contactDetails.contactPersonInpatientLandline"
           label="Landline"
           mask="(##) ####-####"
         >
@@ -176,7 +181,7 @@
         <q-input
           outlined
           dense
-          v-model="formData.contactPerson.address"
+          v-model="formData.contactDetails.contactPersonInpatientAddress"
           type="textarea"
           rows="1"
           label-slot

@@ -45,8 +45,6 @@
               :form="formData.personalInfoOutpatient"
               :civilStatusOptions="civilStatusOptions"
               :religionOptions="religionOptions"
-              :sameAsPresent="sameAsPresent"
-              :sameAsFather="sameAsFather"
               @update:form="(val) => (formData.personalInfoOutpatient = val)"
               @next="step = 2"
             />
@@ -151,7 +149,7 @@ export default {
       };
 
       try {
-        await axios.post("http://10.107.0.2:3000/api/auth/register", finalData);
+        await axios.post("http://10.107.0.2:3000/api/patients/register", finalData);
 
         this.$q.notify({
           type: "positive",

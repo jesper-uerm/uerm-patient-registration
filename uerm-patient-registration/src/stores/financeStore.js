@@ -1,8 +1,17 @@
 import { defineStore } from "pinia";
 import axios from "axios";
+import { Notify } from 'quasar'
+
+const API_URL = "http://10.107.0.2:3000/api/er";
+const PATIENT_API_URL = "http://10.107.0.2:3000/api/patients";
 
 export const useFinanceStore = defineStore("finance", {
   state: () => ({
+    patientList: [],
+    loading: false,
+    hasSearched: false,
+    selectedPatient: {},
+
     ownershipOptions: ["Owned", "Company", "Mortgaged"],
     grossIncomeOptions: [
       { label: "Below 20k", value: "Below 20k" },
@@ -85,6 +94,65 @@ export const useFinanceStore = defineStore("finance", {
 
     },
 
+    async fetchPatients() {
+      this.loading = true;
+      try {
+        const response = await axios.get(`${API_URL}/patients`);
+        this.patientList = response.data;
+      } catch (error) {
+        console.error(error);
+        Notify.create({ type: "negative", message: "Failed to load Emergency List", position: "top" });
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async fetchPatientsFinance() {
+      this.loading = true;
+      try {
+        const response = await axios.get(`${API_URL}/review`);
+        this.patientList = response.data;
+      } catch (error) {
+        console.error(error);
+        Notify.create({ type: "negative", message: "Failed to load Review List", position: "top" });
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    viewPatient(row) {
+      this.selectedPatient = row;
+      this.viewDialog = true;
+    },
+
+    async searchPatientList(query) {
+      if (!query || query.length < 2) {
+        Notify.create({ type: "warning", message: "Please enter at least 22 characters", position: "top" });
+        return;
+      }
+
+      this.loading = true;
+      this.searchQuery = query;
+
+      try {
+        const response = await axios.get(`http://10.107.0.2:3000/api/patients/search-finance`, {
+          params: { query }
+        });
+
+        this.patientList = response.data;
+        this.hasSearched = true;
+
+        if (this.patientList.length === 0) {
+          Notify.create({ type: "info", message: "No recordsssss found.", icon: "info", position: "top" });
+        }
+      } catch (error) {
+        console.error(error);
+        Notify.create({ type: "negative", message: "Search Failed", position: "top" });
+      } finally {
+        this.loading = false;
+      }
+    },
+
     async updatePatientDetails() {
       if (!this.currentPatient?.patient_id) {
         throw new Error("No patient selected for update.");
@@ -97,7 +165,7 @@ export const useFinanceStore = defineStore("finance", {
           formData: this.formData,
         };
 
-        await axios.put("http://10.107.0.2:3000/api/auth/updatePatientDetails", payload);
+        await axios.put("http://10.107.0.2:3000/api/patients/details", payload);
         return { success: true };
       } catch (error) {
         console.error("API Error updating details:", error);
@@ -106,5 +174,17 @@ export const useFinanceStore = defineStore("finance", {
         this.submitting = false;
       }
     },
+
+        async getPatientFullDetails(id) {
+        try {
+            const response = await axios.get(`${PATIENT_API_URL}/${id}`);
+            return { ...response.data, patientId: id };
+        } catch (error) {
+            console.error("Print Error:", error);
+            Notify.create({ type: "negative", message: "Failed to fetch details for printing", position: "top" });
+            throw error;
+        }
+    }
+
   },
 });
