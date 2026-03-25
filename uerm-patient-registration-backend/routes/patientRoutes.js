@@ -9,6 +9,10 @@ router.post('/send-data', PatientController.sendDataInfo);
 
 router.get('/inpatient', PatientController.fetchInpatient);
 router.get('/outpatient', PatientController.fetchOutpatient);
+router.get('/doctors', PatientController.getDoctors);
+router.get('/hmo', PatientController.getHMO);
+
+
 
 router.get('/search-inpatient', PatientController.searchInpatient);
 router.get('/search-outpatient', PatientController.searchOutpatient);

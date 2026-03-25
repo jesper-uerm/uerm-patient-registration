@@ -21,7 +21,7 @@ fetchPieChartData: async (req, res) => {
     try {
         const rawData = await DashboardModel.getPatientTypeCounts();
 
-        const labels = rawData.map(row => row.patientType);
+        const labels = rawData.map(row => row.PATIENTTYPE);
         const series = rawData.map(row => row.total);
 
         res.status(200).json({ labels, series });

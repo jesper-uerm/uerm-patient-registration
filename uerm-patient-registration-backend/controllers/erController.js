@@ -35,8 +35,8 @@ const ErController = {
 
             res.status(200).json({ 
                 message: "Triage data updated successfully",
-                patient_no: result.patient_no,
-                patient_id: result.patient_id
+                PATIENTNO: result.PATIENTNO,
+                ID: result.ID
             });
 
         } catch (error) {
@@ -46,14 +46,14 @@ const ErController = {
     },
 
     admitErPatient: async (req, res) => {
-        const { patient_id } = req.body;
+        const { ID } = req.body;
 
-        if (!patient_id) {
+        if (!ID) {
             return res.status(400).json({ message: "Patient ID is required." });
         }
 
         try {
-            const rowsAffected = await ErModel.admitPatient(patient_id);
+            const rowsAffected = await ErModel.admitPatient(ID);
 
             if (rowsAffected === 0) {
                 return res.status(404).json({ message: "Patient not found." });
@@ -79,9 +79,9 @@ const ErController = {
         }
     },
 
-    fetchErPatientsForReview: async (req, res) => {
+    fetchErPatientsForFinance: async (req, res) => {
         try {
-            const patients = await ErModel.getPatientsForReview();
+            const patients = await ErModel.fetchErPatientsForFinance();
 
             res.status(200).json(patients);
 
@@ -118,6 +118,37 @@ const ErController = {
         } catch (err) {
             console.error("Search Error:", err);
             res.status(500).json({ message: "Database error: " + err.message });
+        }
+    },
+
+    generateCaseNumber: async (req, res) => {
+        try {
+            const data = req.body;
+
+            if (!data || Object.keys(data).length === 0) {
+                return res.status(400).json({ message: "Invalid Request: Payload is missing." });
+            }
+
+            if (!data.patientId) {
+                return res.status(400).json({ message: "Update failed: Patient ID is missing." });
+            }
+
+            const result = await ErModel.generateCaseNumber(data);
+
+            if (!result) {
+                return res.status(404).json({ message: "Failed to update record. Patient ID may be invalid." });
+            }
+
+            return res.status(200).json({ 
+                message: "Case number generated and record updated successfully!",
+                PATIENTNO: result.PATIENTNO,
+                ID: result.ID,
+                // case_no: result.case_no // You might want to return the newly generated case number here too!
+            });
+
+        } catch (error) {
+            console.error("Generate Case Number Error:", error);
+            return res.status(500).json({ message: "Server error: " + error.message });
         }
     }
 };

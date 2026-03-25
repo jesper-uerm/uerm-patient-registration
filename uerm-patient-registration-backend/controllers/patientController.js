@@ -115,7 +115,7 @@ const PatientController = {
         }
 },
 
-updateDetails: async (req, res) => {
+    updateDetails: async (req, res) => {
     try {
         const { patientId, formData, reviewedBy } = req.body;
 
@@ -215,13 +215,13 @@ updateDetails: async (req, res) => {
 
     linkPatient: async (req, res) => {
         try {
-            const { patient_id, patientno } = req.body;
+            const { ID, patientno } = req.body;
 
-            if (!patient_id || !patientno) {
+            if (!ID || !patientno) {
                 return res.status(400).json({ message: "Missing Patient ID or Matched Hospital No." });
             }
 
-            await PatientModel.linkPatientRecord(patient_id, patientno);
+            await PatientModel.linkPatientRecord(ID, patientno);
 
             res.status(200).json({ 
                 message: "Patient successfully linked. Data synchronized with descriptive values." 
@@ -235,13 +235,13 @@ updateDetails: async (req, res) => {
 
     sendDataInfo: async (req, res) => {
         try {
-            const { patient_id, force } = req.body;
+            const { ID, force } = req.body;
 
-            if (!patient_id) {
+            if (!ID) {
                 return res.status(400).json({ message: "Patient ID is required" });
             }
 
-            const result = await PatientModel.transferPatientToLegacy(patient_id, force);
+            const result = await PatientModel.transferPatientToLegacy(ID, force);
 
             if (result.status === 'NOT_FOUND') {
                 return res.status(404).json({ message: "Patient not found in Registration records." });
@@ -358,14 +358,12 @@ updateDetails: async (req, res) => {
                 return res.status(400).json({ message: "Patient ID is required" });
             }
 
-            // Fetch raw signature data
             const signatureData = await PatientModel.getSignatureByPatientId(id);
 
-            if (signatureData && signatureData.eSignature) {
-                const binaryData = signatureData.eSignature;
+            if (signatureData && signatureData.SIGNATURE) {
+                const binaryData = signatureData.SIGNATURE;
                 const base64Signature = binaryData.toString('base64');
 
-                // Determine MIME type based on magic bytes
                 let mimeType = 'image/png';
                 if (base64Signature.startsWith('/9j/')) {
                     mimeType = 'image/jpeg';
@@ -386,13 +384,13 @@ updateDetails: async (req, res) => {
 
     sendToCredit: async (req, res) => {
     try {
-        const { patient_id } = req.body; 
+        const { ID } = req.body; 
 
-        if (!patient_id) {
+        if (!ID) {
             return res.status(400).send('Patient ID is required');
         }
 
-        await PatientModel.sendToCredit(patient_id);
+        await PatientModel.sendToCredit(ID);
 
         res.json({ success: true, message: 'Patient sent to Credit for review.' });
 
@@ -400,6 +398,31 @@ updateDetails: async (req, res) => {
         console.error('Controller Error:', error);
         res.status(500).send('Database Error');
     }
+},
+    getDoctors: async (req, res) => {
+            try {
+                const doctors = await PatientModel.getDoctors();
+                res.json(doctors || []); 
+            } catch (error) {
+                console.error('Error fetching doctors:', error);
+                res.status(500).json({
+                    message: 'Failed to fetch doctor list',
+                    error: error.message
+                });
+            }
+},
+
+    getHMO: async (req, res) => {
+            try {
+                const hmo = await PatientModel.getHMO();
+                res.json(hmo || []); 
+            } catch (error) {
+                console.error('Error fetching HMO:', error);
+                res.status(500).json({
+                    message: 'Failed to fetch HMO list',
+                    error: error.message
+                });
+            }
 },
 
 };

@@ -2,8 +2,6 @@ const { sql } = require('../config/db');
 const bcrypt = require('bcryptjs'); 
 const UserModel = require('../models/userModel');
 
-
-
 exports.getTpersonnelSignature = async (req, res) => {
     try {
         const { id } = req.params; 
