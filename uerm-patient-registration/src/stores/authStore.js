@@ -9,6 +9,11 @@ export const useAuthStore = defineStore('auth', {
     department: '',
     token: null
   }),
+  getters: {
+    fullName: (state) => {
+      return `${state.firstName} ${state.lastName}`.trim();
+    }
+  },
   persist: true,
   actions: {
     saveLoginData(userData) {

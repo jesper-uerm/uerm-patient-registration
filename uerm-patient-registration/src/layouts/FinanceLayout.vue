@@ -104,12 +104,12 @@
           class="q-mx-sm rounded-borders q-mb-xs"
         >
           <q-item-section avatar>
-            <q-icon name="emergency" />
+            <q-icon name="fact_check" />
           </q-item-section>
-          <q-item-section>For Approval</q-item-section>
+          <q-item-section>Assessment</q-item-section>
         </q-item>
 
-        <!-- <q-item
+        <q-item
           clickable
           v-ripple
           to=""
@@ -117,10 +117,10 @@
           class="q-mx-sm rounded-borders q-mb-xs"
         >
           <q-item-section avatar>
-            <q-icon name="bed" />
+            <q-icon name="assignment" />
           </q-item-section>
-          <q-item-section>Admission Logs</q-item-section>
-        </q-item> -->
+          <q-item-section>Approval</q-item-section>
+        </q-item>
 
         <q-separator spaced class="q-mx-md" />
 

@@ -63,7 +63,7 @@
 
         <div class="column items-center q-mt-md q-gutter-y-xs">
           <div
-            class="bg-grey-2 q-px-md q-py-xs rounded-borders text-caption text-weight-bold text-blue-10"
+            class="bg-grey-2 q-px-md q-py-xs rounded-borders text-subtitle1 text-weight-bold text-blue-10"
           >
             HI, {{ userName.toUpperCase() }}!
           </div>

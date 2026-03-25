@@ -142,7 +142,7 @@ export const useInpatientStore = defineStore("inpatient", {
       philhealth: '',
       sss: '',
       tin: '',
-      others: ''
+      pwd: ''
     },
 
     socioEconomic: {

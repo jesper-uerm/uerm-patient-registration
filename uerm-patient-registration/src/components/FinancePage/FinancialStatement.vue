@@ -5,14 +5,12 @@
     transition-show="scale"
     transition-hide="scale"
     backdrop-filter="blur(4px)"
+    maximized
   >
-    <q-card
-      class="column no-wrap"
-      style="width: 1200px; max-width: 95vw; max-height: 95vh"
-    >
+    <q-card class="column no-wrap">
       <q-card-section
         class="column text-center text-white q-py-md relative-position"
-        style="background-color: #004aad"
+        style="background-color: #004aad; flex: 0 0 auto"
       >
         <div class="text-h6 text-bold">FINANCIAL STATEMENT FORM</div>
         <div class="text-caption text-white-7" style="line-height: 1.2">
@@ -28,88 +26,122 @@
         />
       </q-card-section>
 
-      <q-card-section class="col scroll">
-        <q-stepper
-          v-model="step"
-          ref="stepper"
-          color="primary"
-          done-color="positive"
-          animated
-          flat
-          alternative-labels
-        >
-          <q-step
-            :name="1"
-            title="Patient Source Of Income"
-            icon="person"
-            :done="step > 1"
-          >
-            <patient-source-of-income
-              :form="formData.patientSourceOfIncome"
-              :local-patient="localPatient"
-              :yesNoOptions="yesNoOptions"
-              :mopOptions="mopOptions"
-              :ownershipOptions="ownershipOptions"
-              :sourceIncomeOptions="sourceIncomeOptions"
-              :grossIncomeOptions="grossIncomeOptions"
-              :homeOwnershipOptions="homeOwnershipOptions"
-              :yearsOfStayOptions="yearsOfStayOptions"
-              @update:form="(val) => (formData.patientSourceOfIncome = val)"
-              @next="step = 2"
-            />
-          </q-step>
-          <q-step
-            :name="2"
-            title="Contact Person Source Of Income"
-            label="fsafsa"
-            icon="person"
-            :done="step > 2"
-          >
-            <contact-person-source-of-income
-              :form="formData.ContactPersonSourceOfIncome"
-              :local-patient="localPatient"
-              :yesNoOptions="yesNoOptions"
-              :ownershipOptions="ownershipOptions"
-              :sourceIncomeOptions="sourceIncomeOptions"
-              :grossIncomeOptions="grossIncomeOptions"
-              :homeOwnershipOptions="homeOwnershipOptions"
-              :yearsOfStayOptions="yearsOfStayOptions"
-              @update:form="(val) => (formData.ContactPersonSourceOfIncome = val)"
-              @prev="step = 1"
-              @next="step = 3"
-            />
-          </q-step>
-          <q-step :name="3" title="HMO" icon="payments" :done="step > 3">
-            <accredited-h-m-o
-              ref="hmoForm"
-              :form="formData.hmoForm"
-              :mopOptions="mopOptions"
-              @update:form="(val) => (formData.hmoForm = val)"
-              @prev="step = 2"
-              @close="financialDialog = false"
-              @submit="updateDetails"
-            />
-          </q-step>
-        </q-stepper>
+      <q-card-section class="col q-pa-none">
+        <div class="row fit">
+          <div class="col-12 col-md-7 scroll q-pa-md border-right">
+            <q-stepper
+              v-model="step"
+              ref="stepper"
+              color="primary"
+              done-color="positive"
+              animated
+              flat
+              alternative-labels
+            >
+              <q-step
+                :name="1"
+                title="Patient/Person Responsible/Ward"
+                icon="person"
+                :done="step > 1"
+              >
+                <patient-source-of-income
+                  :local-patient="localPatient"
+                  @next="step = 2"
+                />
+              </q-step>
+
+              <q-step
+                :name="2"
+                title="Transfer Patient/HMO/MOP"
+                icon="person"
+                :done="step > 2"
+              >
+                <transfer-h-m-o
+                  :local-patient="localPatient"
+                  @prev="step = 1"
+                  @next="step = 3"
+                />
+              </q-step>
+
+              <q-step :name="3" title="Admission" icon="payments" :done="step > 3">
+                <admission-patient
+                  ref="admisson"
+                  @prev="step = 2"
+                  @close="financialDialog = false"
+                  @submit="updateDetails"
+                />
+              </q-step>
+            </q-stepper>
+          </div>
+
+          <div class="col-12 col-md-5 scroll q-pa-md bg-grey-1">
+            <q-card flat bordered class="bg-blue-1" style="border-color: #bbdefb">
+              <q-card-section class="q-py-sm q-px-md row items-center no-wrap">
+                <q-icon name="info" color="blue-8" size="sm" class="q-mr-sm" />
+                <div class="text-caption text-blue-9" style="line-height: 1.2">
+                  Display record list.
+                </div>
+              </q-card-section>
+            </q-card>
+
+            <!-- <q-table
+              flat
+              bordered
+              :rows="tableRows"
+              :columns="tableColumns"
+              row-key="id"
+              hide-pagination
+              separator="horizontal"
+              table-header-class="bg-grey-3 text-weight-bold"
+            >
+              <template v-slot:body-cell-date="props">
+                <q-td :props="props" class="text-grey-7">
+                  {{ props.row.date }}
+                </q-td>
+              </template>
+
+              <template v-slot:body-cell-amount="props">
+                <q-td :props="props" class="text-weight-bold text-grey-9">
+                  {{ props.row.amount }}
+                </q-td>
+              </template>
+
+              <template v-slot:bottom-row>
+                <q-tr class="bg-blue-grey-1">
+                  <q-td
+                    colspan="2"
+                    class="text-right text-weight-bold text-uppercase text-grey-8"
+                  >
+                    Total Balance:
+                  </q-td>
+                  <q-td class="text-right text-weight-bolder text-blue-10 text-subtitle2">
+                    ₱ 15,500.00
+                  </q-td>
+                </q-tr>
+              </template>
+            </q-table> -->
+          </div>
+        </div>
       </q-card-section>
     </q-card>
   </q-dialog>
 </template>
 
 <script>
-import PatientSourceOfIncome from "src/components/AdminPage/PatientSourceOfIncome.vue";
-import AccreditedHMO from "src/components/FinancePage/AccreditedHMO.vue";
-import ContactPersonSourceOfIncome from "src/components/FinancePage/ContactPersonSourceOfIncome.vue";
+import PatientSourceOfIncome from "src/components/FinancePage/PatientSourceOfIncome.vue";
+import AdmissionPatient from "src/components/FinancePage/AdmissionPatient.vue";
+import TransferHMO from "src/components/FinancePage/TransferHMO.vue";
 import { useAuthStore } from "src/stores/authStore";
 
-import axios from "axios";
+import { mapWritableState, mapActions } from "pinia";
+import { useFinanceStore } from "src/stores/financeStore";
 
 export default {
   name: "FinancialStatement",
   components: {
     PatientSourceOfIncome,
-    AccreditedHMO,
-    ContactPersonSourceOfIncome,
+    AdmissionPatient,
+    TransferHMO,
   },
 
   setup() {
@@ -121,97 +153,57 @@ export default {
     return {
       financialDialog: false,
       step: 1,
-      submitting: false,
       localPatient: {},
-      ownershipOptions: ["Owned", "Company", "Mortgaged"],
-      grossIncomeOptions: [
-        { label: "Below 20k", value: "Below 20k" },
-        { label: "20k - 50k", value: "20k - 50k" },
-        { label: "Above 50k", value: "Above 50k" },
-      ],
-      mopOptions: [
-        { label: "Cash", value: "Cash" },
-        { label: "Credit Card", value: "Credit Card" },
-        { label: "Others", value: "Others" },
-      ],
-      homeOwnershipOptions: [
-        { label: "Owned", value: "Owned" },
-        { label: "Rented", value: "Rented" },
-        { label: "Mortgaged", value: "Mortgaged" },
-      ],
-      yearsOfStayOptions: [
-        { label: "0-1 Year", value: "0-1 Year" },
-        { label: "1-5 Years", value: "1-5 Years" },
-        { label: "5+ Years", value: "5+ Years" },
-      ],
 
-      yesNoOptions: [
-        { label: "Yes", value: "yes" },
-        { label: "No", value: "no" },
+      tableColumns: [
+        { name: "date", label: "Date", field: "date", align: "left", sortable: true },
+        {
+          name: "description",
+          label: "Description",
+          field: "description",
+          align: "left",
+        },
+        {
+          name: "amount",
+          label: "Amount",
+          field: "amount",
+          align: "right",
+          sortable: true,
+        },
       ],
-      sourceIncomeOptions: [
-        { label: "Full-Time Employment", value: "Full-Time Employment" },
-        { label: "Business", value: "Business" },
-        { label: "Remittance", value: "Remittance" },
-        { label: "Other", value: "Others" },
+      tableRows: [
+        {
+          id: 1,
+          date: "2023-10-01",
+          description: "Initial Deposit",
+          amount: "₱ 5,000.00",
+        },
+        { id: 2, date: "2023-10-03", description: "Lab Tests", amount: "₱ 2,500.00" },
+        { id: 3, date: "2023-10-05", description: "Room Charge", amount: "₱ 8,000.00" },
       ],
-
-      formData: {
-        patientSourceOfIncome: {
-          sourceOfIncome: "",
-          specificSourceOfIncome: "",
-          pt_gross_income: "",
-          pt_home_ownership: "",
-          pt_years_of_stay: "",
-          pthasCar: "",
-          carOwnership: "",
-          numberOfCars: "",
-
-          mop: "",
-          specificmop: "",
-          creditCard: "",
-          bank: "",
-        },
-        ContactPersonSourceOfIncome: {
-          sourceOfIncomeContactPerson: "",
-          specificSourceOfIncomeContactPerson: "",
-          cp_gross_income: "",
-          cp_home_ownership: "",
-          cp_years_of_stay: "",
-          cphasCar: "",
-          cpcarOwnership: "",
-          cpnumberOfCars: "",
-        },
-        hmo: {
-          hmoName: "",
-          memberId: "",
-          validityDate: "",
-          desiredRoom: "",
-          informedIncrement: "",
-          hmoStaff: "",
-          hmoDateTime: "",
-        },
-        // signature: null,
-      },
     };
   },
+
+  computed: {
+    ...mapWritableState(useFinanceStore, ["submitting"]),
+  },
+
   methods: {
+    ...mapActions(useFinanceStore, ["setCurrentPatient", "updatePatientDetails"]),
+
     openFinancialDialog(patientData) {
       this.step = 1;
       this.localPatient = patientData;
+
+      this.setCurrentPatient(patientData);
+
       this.financialDialog = true;
     },
 
     async updateDetails() {
-      try {
-        const payload = {
-          patientId: this.localPatient.patient_id,
-          formData: this.formData,
-          reviewedBy: this.authStore.username,
-        };
+      const result = await this.updatePatientDetails();
 
-        await axios.put("http://10.107.0.2:3000/api/patients/details", payload);
-
+      if (result.success) {
         this.$q.notify({
           type: "positive",
           position: "top",
@@ -220,20 +212,32 @@ export default {
 
         this.financialDialog = false;
 
-        if (this.fetchPatients) this.fetchPatients();
-      } catch (error) {
-        console.error("Update Error:", error);
+        if (this.$parent && this.$parent.fetchPatients) {
+          this.$parent.fetchPatients();
+        }
+      } else {
         this.$q.notify({
           type: "negative",
           position: "top",
-          message: error.response?.data?.message || "Failed to save.",
+          message: result.error?.response?.data?.message || "Failed to save.",
         });
       }
     },
   },
 };
 </script>
+
 <style scoped>
+.border-right {
+  border-right: 1px solid #e0e0e0;
+}
+@media (max-width: 1023px) {
+  .border-right {
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+  }
+}
+
 :deep(.q-stepper__title) {
   font-size: 12px;
   font-weight: bold;

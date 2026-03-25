@@ -52,7 +52,6 @@ export function printEmergencyPatientInformation() {
 
         const processSignature = (rawSig) => {
             if (!rawSig) return null;
-
             let finalSigString = '';
 
             if (typeof rawSig === 'object' && rawSig.type === 'Buffer' && Array.isArray(rawSig.data)) {
@@ -94,40 +93,51 @@ export function printEmergencyPatientInformation() {
         const createCell = (label, value) => ({
             stack: [
                 { text: label.toUpperCase(), fontSize: 7, bold: true, color: '#888888', margin: [0, 0, 0, 4] },
-                { text: value || '-', fontSize: 10, bold: true, colsor: '#333333', margin: [0, 0, 0, 1] }
+                { text: String(value || '-'), fontSize: 10, bold: true, color: '#333333', margin: [0, 0, 0, 1] }
             ],
             margin: [0, 0, 0, 0]
         });
 
-        const lastname = patient.lastName || 'Unknown';
-        const firstname = patient.firstName || 'Unknown';
-        const middlename = patient.middleName || '';
-        const birthdate = patient.birthdate ? new Date(patient.birthdate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '-';
-        const age = patient.age ? patient.age.toString() : '-';
-        const sex = patient.gender || patient.sex || '-';
-        const chiefComplaint = patient.chiefComplaint || '-';
+        const lastname = patient.LASTNAME || 'Unknown';
+        const firstname = patient.FIRSTNAME || 'Unknown';
+        const middlename = patient.MIDDLENAME || '';
 
-        const temp = patient.temp || '-';
-        const heartrate = patient.heartrate || '-';
-        const oxygen = patient.oxygen || '-';
-        const bp = patient.bp || '-';
-        const respirate = patient.respirate || '-';
-        const painScore = patient.painScore || '-';
-        const avpu = patient.avpu || '-';
+        const birthdate = patient.BIRTHDATE
+            ? new Date(patient.BIRTHDATE).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).toUpperCase()
+            : '-';
 
-        const contagious = patient.contagious || '-';
-        const isolation = patient.isolation || '-';
-        const symptoms = patient.symptoms || '-';
-        const cpd = patient.cpd || '-';
-        const level = patient.level || '-';
-        const remarks = patient.remarks || '-';
+        const age = patient.AGE ? patient.AGE.toString() : '-';
+        const sex = patient.SEX || patient.GENDER || '-';
+        const chiefComplaint = patient.CHIEFCOMPLAINT || '-';
 
-        const personnelName = patient.personnel_name || patient.personnel || 'Triage Officer';
-        const createdAt = patient.createdAt ? new Date(patient.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '-';
+        const temp = patient.TEMP || '-';
+        const heartrate = patient.HEARTRATE || '-';
+        const oxygen = patient.OXYGEN || '-';
+        const bp = patient.BP || '-';
+        const respirate = patient.RESPIRATE || '-';
+        const painScore = patient.PAINSCORE || '-';
+        const avpu = patient.AVPU || '-';
+
+        const contagious = patient.CONTAGIOUS || '-';
+        const isolation = patient.ISOLATION || '-';
+        const symptoms = patient.SYMPTOMS || '-';
+        const cpd = patient.CPD || '-';
+        const level = patient.LEVEL || '-';
+        const remarks = patient.REMARKS || '-';
+
+        const personnelName = patient.PERSONNEL || patient.PERSONNEL_NAME || 'Triage Officer';
+        const createdAt = patient.CREATEDAT
+            ? new Date(patient.CREATEDAT).toLocaleDateString('en-US', {
+                timeZone: 'Asia/Manila',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+            }).toUpperCase()
+            : '-';
 
         const docDefinition = {
             pageMargins: [30, 30, 30, 30],
-            info: { title: `Record_${firstname + '_' + lastname}` },
+            info: { title: `Record_${firstname}_${lastname}` },
 
             content: [
                 {
@@ -158,7 +168,7 @@ export function printEmergencyPatientInformation() {
                         body: [
                             [{ text: 'PATIENT INFORMATION', fillColor: '#eeeeee', style: 'sectionHeader', alignment: 'center', colSpan: 4 }, {}, {}, {}],
                             [
-                                createCell('Name', `${firstname} ${middlename} ${lastname}`),
+                                createCell('Name', `${firstname} ${middlename} ${lastname}`.trim()),
                                 createCell('Birthdate', birthdate),
                                 createCell('Age', age),
                                 createCell('Sex', sex),
@@ -189,13 +199,13 @@ export function printEmergencyPatientInformation() {
                                 {}
                             ],
                             [
-                                { ...createCell('Screening for Contagious Infectious Disease', contagious), colSpan: 2 },
+                                { ...createCell('Contagious Screening', contagious), colSpan: 2 },
                                 {},
-                                { ...createCell('Check for Presence of Any of the Following:', symptoms), colSpan: 1 },
-                                { ...createCell('Initiate Isolation Precaution and Transfer Immediately to:', isolation), colSpan: 1 },
+                                { ...createCell('Symptoms', symptoms), colSpan: 1 },
+                                { ...createCell('Isolation Precaution', isolation), colSpan: 1 },
                             ],
                             [
-                                { ...createCell('Cardio-Pulmonary Distress', cpd), colSpan: 1 },
+                                { ...createCell('CP Distress', cpd), colSpan: 1 },
                                 { ...createCell('Triage-Level', level), colSpan: 1 },
                                 { ...createCell('Remarks', remarks), colSpan: 2 },
                                 {},
@@ -253,6 +263,7 @@ export function printEmergencyPatientInformation() {
         console.error('PDF Generation Error:', err);
         alert('PDF Error: ' + err.message);
     }
-};
+  };
+
   return { generateTriagePatientPdf };
 }

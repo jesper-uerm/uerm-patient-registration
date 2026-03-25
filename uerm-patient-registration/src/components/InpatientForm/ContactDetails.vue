@@ -42,9 +42,9 @@
         <q-input
           outlined
           dense
-          v-model="formData.govtIds.others"
+          v-model="formData.govtIds.pwd"
           type="number"
-          label="Others"
+          label="PWD No."
         />
       </div>
     </div>

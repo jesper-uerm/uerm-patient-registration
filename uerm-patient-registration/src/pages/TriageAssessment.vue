@@ -56,7 +56,6 @@
               :initial-signature="formData.patientSignature"
               @update:signature="(val) => (formData.patientSignature = val)"
               @prev="step = 1"
-              @submit="onSubmit"
             />
           </q-step>
         </q-stepper>

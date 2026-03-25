@@ -5,23 +5,11 @@
         <q-card class="text-white bg-blue-9">
           <q-card-section horizontal>
             <q-card-section class="col">
-              <div
-                class="text-h4 text-weight-bolder"
-                :class="{
-                  'text-h5': !$q.screen.lt.md,
-                  'text-h5': $q.screen.lt.md,
-                }"
-              >
+              <div class="text-h4 text-weight-bolder text-h5">
                 <q-spinner v-if="loading" color="white" size="0.8em" />
                 <span v-else>{{ inpatientCount }}</span>
               </div>
-              <div
-                class="text-subtitle2"
-                :class="{
-                  'text-subtitle2': !$q.screen.lt.md,
-                  'text-caption': $q.screen.lt.md,
-                }"
-              >
+              <div :class="['text-subtitle2', { 'text-caption': $q.screen.lt.md }]">
                 Admitted
               </div>
             </q-card-section>
@@ -35,27 +23,16 @@
           </q-card-section>
         </q-card>
       </div>
+
       <div class="col-4 col-md-4">
         <q-card class="text-white bg-blue-9">
           <q-card-section horizontal>
             <q-card-section class="col">
-              <div
-                class="text-h4 text-weight-bolder"
-                :class="{
-                  'text-h5': !$q.screen.lt.md,
-                  'text-h5': $q.screen.lt.md,
-                }"
-              >
+              <div class="text-h4 text-weight-bolder text-h5">
                 <q-spinner v-if="loading" color="white" size="0.8em" />
                 <span v-else>{{ outpatientCount }}</span>
               </div>
-              <div
-                class="text-subtitle2"
-                :class="{
-                  'text-subtitle2': !$q.screen.lt.md,
-                  'text-caption': $q.screen.lt.md,
-                }"
-              >
+              <div :class="['text-subtitle2', { 'text-caption': $q.screen.lt.md }]">
                 OPD
               </div>
             </q-card-section>
@@ -69,27 +46,16 @@
           </q-card-section>
         </q-card>
       </div>
+
       <div class="col-4 col-md-4">
         <q-card class="text-white bg-blue-9">
           <q-card-section horizontal>
             <q-card-section class="col">
-              <div
-                class="text-h4 text-weight-bolder"
-                :class="{
-                  'text-h5': !$q.screen.gt.md,
-                  'text-h5': $q.screen.lt.md,
-                }"
-              >
+              <div class="text-h4 text-weight-bolder text-h5">
                 <q-spinner v-if="loading" color="white" size="0.8em" />
                 <span v-else>{{ erpatientCount }}</span>
               </div>
-              <div
-                class="text-subtitle2"
-                :class="{
-                  'text-subtitle2': !$q.screen.lt.md,
-                  'text-caption': $q.screen.lt.md,
-                }"
-              >
+              <div :class="['text-subtitle2', { 'text-caption': $q.screen.lt.md }]">
                 ER
               </div>
             </q-card-section>
@@ -120,9 +86,9 @@
                   width="100%"
                   height="350"
                   type="line"
-                  :options="chartOptions"
-                  :series="series"
-                ></apexchart>
+                  :options="chartOptionsLine"
+                  :series="lineSeries"
+                />
               </div>
             </div>
           </q-card-section>
@@ -144,42 +110,38 @@
                   height="320"
                   type="pie"
                   :options="chartOptionsPie"
-                  :series="seriesPie"
-                ></apexchart>
+                  :series="pieSeries"
+                />
               </div>
             </div>
           </q-card-section>
         </q-card>
       </div>
     </div>
+
     <q-card class="no-shadow" style="border: 1px solid #f0f0f0">
       <q-card-section class="row items-center q-pb-none q-mb-md">
         <div class="text-h7 text-weight-bold text-center text-uppercase">
           Real-time Admissions
         </div>
         <q-space />
-        <q-btn
-          icon="file_download"
-          flat
-          round
-          dense
-          color="grey-7"
-          tooltip="Export CSV"
-        />
+        <q-btn icon="file_download" flat round dense color="grey-7">
+          <q-tooltip>Export CSV</q-tooltip>
+        </q-btn>
       </q-card-section>
 
       <q-card-section class="q-pa-none">
         <q-table
           :rows="patientList"
           :columns="columns"
-          row-key="patient_id"
+          row-key="ID"
           :loading="loading"
           flat
           :rows-per-page-options="[5, 10]"
           class="clean-table"
           header-class="bg-grey-1 text-grey-8 text-weight-bold text-uppercase"
         >
-          <template v-slot:body-cell-patient_id="props">
+          <template v-slot:body-cell-PATIENTNO="props">
             <q-td :props="props">
               <span class="text-grey-8">#{{ props.value }}</span>
             </q-td>
@@ -197,20 +159,20 @@
                 rounded
                 class="q-px-sm q-py-xs"
                 :color="
-                  props.row.patientType === 'Emergency' || props.row.patientType === 'ER'
+                  props.row.PATIENTTYPE === 'Emergency' || props.row.PATIENTTYPE === 'ER'
                     ? 'red-1'
-                    : props.row.patientType === 'Inpatient'
+                    : props.row.PATIENTTYPE === 'Inpatient'
                     ? 'green-1'
                     : 'blue-1'
                 "
                 :text-color="
-                  props.row.patientType === 'Emergency' || props.row.patientType === 'ER'
+                  props.row.PATIENTTYPE === 'Emergency' || props.row.PATIENTTYPE === 'ER'
                     ? 'red-9'
-                    : props.row.patientType === 'Inpatient'
+                    : props.row.PATIENTTYPE === 'Inpatient'
                     ? 'green-9'
                     : 'blue-9'
                 "
-                :label="props.row.patientType"
+                :label="props.row.PATIENTTYPE"
               />
             </q-td>
           </template>
@@ -222,23 +184,18 @@
 
 <script>
 import { date } from "quasar";
-import axios from "axios";
+import { mapState, mapActions } from "pinia";
+import { useFinanceStore } from "src/stores/financeStore";
 
 export default {
   name: "DashboardPage",
   data() {
     return {
-      patientList: [],
-      loading: false,
-      inpatientCount: 0,
-      outpatientCount: 0,
-      erpatientCount: 0,
-
       columns: [
         {
-          name: "patient_id",
+          name: "PATIENTNO",
           label: "Patient ID",
-          field: "patient_id",
+          field: "PATIENTNO",
           align: "center",
           sortable: true,
           style: "width: 100px",
@@ -250,12 +207,7 @@ export default {
           align: "center",
           sortable: true,
         },
-        {
-          name: "type",
-          label: "Type",
-          field: "patientType",
-          align: "center",
-        },
+        { name: "type", label: "Type", field: "patientType", align: "center" },
         {
           name: "createdAt",
           label: "Date",
@@ -264,14 +216,39 @@ export default {
           format: (val) => (val ? date.formatDate(val, "MMM D, YYYY") : "-"),
         },
       ],
+    };
+  },
+  computed: {
+    ...mapState(useFinanceStore, [
+      "patientList",
+      "loading",
+      "inpatientCount",
+      "outpatientCount",
+      "erpatientCount",
+      "pieSeries",
+      "pieLabels",
+      "lineSeries",
+      "lineCategories",
+    ]),
 
-      series: [],
-      chartOptions: {
+    chartOptionsPie() {
+      return {
+        chart: { id: "patient-type-pie" },
+        labels: this.pieLabels,
+        colors: ["#1976D2", "#26A69A", "#9C27B0"],
+        legend: { position: "bottom" },
+        noData: { text: "Loading..." },
+      };
+    },
+
+    chartOptionsLine() {
+      return {
         chart: { id: "weekly-trend" },
         xaxis: {
-          categories: [],
+          categories: this.lineCategories,
           labels: {
             formatter: function (value) {
+              if (!value) return "";
               const date = new Date(value + "-01");
               return date.toLocaleDateString("en-US", {
                 month: "short",
@@ -281,89 +258,27 @@ export default {
           },
         },
         colors: ["#1976D2", "#26A69A", "#9C27B0"],
-      },
-
-      seriesPie: [],
-      chartOptionsPie: {
-        chart: {
-          id: "patient-type-pie",
-        },
-        labels: [],
-        colors: ["#1976D2", "#26A69A", "#9C27B0"],
-        legend: {
-          position: "bottom",
-        },
-        noData: {
-          text: "Loading...",
-        },
-      },
-    };
+      };
+    },
   },
   mounted() {
-    this.loadPieData();
-    this.loadTrendData();
-    this.loadInitialData();
+    this.loadAllData();
   },
   methods: {
-    async loadPieData() {
+    ...mapActions(useFinanceStore, [
+      "fetchAllPatients",
+      "fetchPieData",
+      "fetchTrendData",
+    ]),
+
+    async loadAllData() {
+      this.fetchPieData();
+      this.fetchTrendData();
+
       try {
-        const response = await this.$axios.get(
-          "http://10.107.0.2:3000/api/dashboard/pie-chart"
-        );
-
-        this.seriesPie = response.data.series;
-
-        this.chartOptionsPie = {
-          ...this.chartOptionsPie,
-          labels: response.data.labels,
-        };
+        await this.fetchAllPatients();
       } catch (error) {
-        console.error("Chart Load Error:", error);
-      }
-    },
-
-    async loadTrendData() {
-      try {
-        const response = await this.$axios.get(
-          "http://10.107.0.2:3000/api/dashboard/line-chart"
-        );
-
-        this.chartOptions = {
-          ...this.chartOptions,
-          xaxis: {
-            ...this.chartOptions.xaxis,
-            categories: response.data.categories,
-          },
-        };
-
-        this.series = response.data.series;
-      } catch (error) {
-        console.error("Error loading trends:", error);
-      }
-    },
-    async loadInitialData() {
-      this.loading = true;
-      try {
-        const response = await axios.get("http://10.107.0.2:3000/api/patients/");
-        this.patientList = response.data;
-        const inpatients = this.patientList.filter((p) => p.patientType === "Inpatient");
-        const outpatients = this.patientList.filter(
-          (p) => p.patientType === "Outpatient"
-        );
-        const erpatients = this.patientList.filter((p) => p.patientType === "Emergency");
-
-        this.inpatientCount = inpatients.length;
-        this.outpatientCount = outpatients.length;
-        this.erpatientCount = erpatients.length;
-      } catch (error) {
-        console.error(error);
-        this.$q.notify({
-          type: "negative",
-          message: "Failed to load Patients",
-          position: "top",
-        });
-      } finally {
-        this.loading = false;
+        console.error("Dashboard failed to load patient data", error);
       }
     },
   },

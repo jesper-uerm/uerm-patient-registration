@@ -1,9 +1,6 @@
 <template>
   <q-page class="q-pa-md bg-grey-4 q-py-xl">
-    <q-card
-      class="column no-shadow"
-      style="border: 1px solid #e0e0e0; border-radius: 8px"
-    >
+    <q-card class="no-shadow" style="border: 1px solid #e0e0e0; border-radius: 8px">
       <q-card-section class="col-auto q-py-md q-px-lg" style="background-color: #004aad">
         <div class="row items-left text-left justify-left text-uppercase">
           <div>
@@ -61,9 +58,9 @@
           :rows-per-page-options="[10]"
           class="clean-table fit"
           header-class="bg-grey-1 text-grey-8 text-weight-bold text-uppercase"
-          @row-click="(evt, row) => viewPatient(row)"
+          @row-click="(evt, row) => $refs.financialStatementRef.openFinancialDialog(row)"
         >
-          <template v-slot:body-cell-patient_id="props">
+          <template v-slot:body-cell-patient_no="props">
             <q-td :props="props">
               <span class="text-grey-8">#{{ props.value }}</span>
             </q-td>
@@ -80,67 +77,33 @@
           <template v-slot:body-cell-patientType="props">
             <q-td :props="props">
               <q-badge
-                v-if="props.value == 'Inpatient'"
-                color="grey-6"
+                v-if="props.value == 'IPD'"
+                color="blue-6"
                 label="Inpatient"
                 outline
               />
-
               <q-badge
-                v-else-if="props.value == 'Emergency'"
-                color="grey-6"
+                v-else-if="props.value == 'OPD'"
+                color="red-6"
                 label="Emergency Patient"
                 outline
               />
-
-              <q-badge
-                v-else-if="props.value == 'Outpatient'"
-                color="grey-6"
-                label="Outpatient"
-                outline
-              />
             </q-td>
           </template>
 
-          <template v-slot:body-cell-forReview="props">
+          <template v-slot:body-cell-DATEAD="props">
             <q-td :props="props">
-              <q-badge v-if="props.value == 0" color="red-6" label="For Review" outline />
-
-              <q-badge
-                v-else-if="props.value == 1"
-                color="green-6"
-                label="Reviewed"
-                outline
-              />
-
-              <q-badge v-else color="grey-6" label="Emergency Patient" outline />
+              <q-chip outline square color="blue-8" size="sm" class="text-weight-bold">
+                {{ props.value }}
+              </q-chip>
             </q-td>
           </template>
 
-          <template v-slot:body-cell-addressPresent="props">
-            <q-td :props="props" style="max-width: 150px">
-              <div class="ellipsis text-grey-7">
-                {{ formData.addressPresent }}
-
-                <q-tooltip>{{ formData.addressPresent }}</q-tooltip>
-              </div>
-            </q-td>
-          </template>
-
-          <!-- large/mmedium screen -->
           <template v-slot:body-cell-actions="props">
             <q-td :props="props" class="text-center" @click.stop>
               <q-btn flat round color="grey-7" icon="more_vert">
                 <q-menu cover auto-close>
-                  <q-list style="min-width: 150px">
-                    <q-item clickable @click="handlePrint(props.row)">
-                      <q-item-section avatar>
-                        <q-icon name="print" color="green-8" />
-                      </q-item-section>
-
-                      <q-item-section>Print Record</q-item-section>
-                    </q-item>
-                  </q-list>
+                  <q-list style="min-width: 150px"> </q-list>
                 </q-menu>
               </q-btn>
             </q-td>
@@ -217,7 +180,7 @@
       </q-card-section>
     </q-card>
 
-    <q-dialog v-model="viewDialog" transition-show="scale" transition-hide="scale">
+    <!-- <q-dialog v-model="viewDialog" transition-show="scale" transition-hide="scale">
       <q-card style="width: 700px; max-width: 80vw" class="rounded-borders">
         <q-card-section class="bg-gradient-primary text-white q-pa-md">
           <div class="row items-center text-center justify-center justify-between">
@@ -336,15 +299,13 @@
             label="Update Patient Finance"
             color="blue-10"
             @click="updateFinanceStatement(selectedPatient)"
-            :disable="selectedPatient?.forReview == 1"
+            :disable="!!selectedPatient?.reviewedBy"
           >
-            <q-tooltip v-if="selectedPatient?.forReview == 1">
-              Already Reviewed
-            </q-tooltip>
+            <q-tooltip v-if="selectedPatient?.reviewedBy"> Already Reviewed </q-tooltip>
           </q-btn>
         </q-card-actions>
       </q-card>
-    </q-dialog>
+    </q-dialog> -->
 
     <financial-statement ref="financialStatementRef" />
   </q-page>
@@ -354,19 +315,10 @@ import FinancialStatement from "src/components/FinancePage/FinancialStatement.vu
 import { date } from "quasar";
 import { mapState, mapActions, mapWritableState } from "pinia";
 import { useFinanceStore } from "src/stores/financeStore";
-import { printInpatientInformation } from "src/composables/printInpatientInformation";
 
 export default {
   name: "PatientFinanceList",
   components: { FinancialStatement },
-
-  setup() {
-    const { generatePatientPdf } = printInpatientInformation();
-
-    return {
-      generatePatientPdf,
-    };
-  },
 
   data() {
     return {
@@ -374,30 +326,39 @@ export default {
       viewDialog: false,
       columns: [
         {
-          name: "patient_no",
-          label: "PATIENTNO",
-          field: "patient_no",
+          name: "PATIENTNO",
+          label: "Patient No.",
+          field: "PATIENTNO",
           align: "center",
           sortable: true,
-          style: "width: 80px; font-weight: bold",
+          style: "width: 100px; font-weight: bold",
+          format: (val) => (Array.isArray(val) ? val[0] : val ? val : "N/A"),
+        },
+        {
+          name: "CASENO",
+          label: "Case No.",
+          field: "CASENO",
+          align: "center",
+          sortable: true,
+          style: "width: 120px; font-weight: bold",
           format: (val) => (val ? val : "N/A"),
         },
         {
           name: "fullName",
-          label: "Patient Name",
+          label: "Name",
           field: "fullName",
           align: "center",
           sortable: true,
           style: "width: 250px",
         },
         {
-          name: "birthdate",
+          name: "birthdateStr",
           label: "Birthdate",
-          field: "birthdate",
+          field: "birthdateStr",
           align: "center",
           format: (val) => (val ? date.formatDate(val, "MMM D, YYYY") : "-"),
           classes: "text-grey-7",
-          style: "width: 180px",
+          style: "width: 120px",
         },
         {
           name: "patientType",
@@ -407,21 +368,21 @@ export default {
           sortable: true,
           style: "width: 120px",
         },
-
         {
-          name: "forReview",
-          label: "Status",
-          field: "forReview",
+          name: "DATEAD",
+          label: "Date Admitted",
+          field: "DATEAD",
           align: "center",
           sortable: true,
-          style: "width: 120px",
+          format: (val) => (val ? date.formatDate(val, "MMM D, YYYY h:mm A") : "-"),
+          style: "width: 180px",
         },
         {
           name: "actions",
           label: "Actions",
           field: "actions",
           align: "center",
-          style: "width: 150px",
+          style: "width: 120px",
         },
       ],
     };
@@ -432,7 +393,6 @@ export default {
       "patientList",
       "fetchPatientsFinance",
       "loading",
-      "getPatientFullDetails",
       "hasSearched",
     ]),
     ...mapWritableState(useFinanceStore, ["selectedPatient"]),
@@ -453,25 +413,20 @@ export default {
       this.searchPatientList(this.searchQuery);
     },
 
-    viewPatient(row) {
-      this.selectedPatient = row;
-      this.viewDialog = true;
-    },
+    // viewPatient(row) {
+    //   this.selectedPatient = row;
+    //   this.viewDialog = true;
+    // },
 
-    updateFinanceStatement(row) {
-      this.selectedPatient = row;
-      this.$refs.financialStatementRef.openFinancialDialog(row);
-      this.viewDialog = false;
-    },
+    // updateFinanceStatement(row) {
+    //   this.selectedPatient = row;
+    //   this.$refs.financialStatementRef.openFinancialDialog(row);
+    //   this.viewDialog = false;
+    // },
 
     formatDate(val) {
       if (!val) return "-";
       return date.formatDate(val, "MMM D, YYYY");
-    },
-
-    async handlePrint(row) {
-      const data = await this.getPatientFullDetails(row.patient_id);
-      if (data) await this.generatePatientPdf(data);
     },
   },
 };

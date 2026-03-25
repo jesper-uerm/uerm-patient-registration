@@ -142,7 +142,7 @@
                 <apexchart
                   width="100%"
                   height="320"
-                  type="pie"
+                  type="donut"
                   :options="computedPieOptions"
                   :series="pieSeries"
                 ></apexchart>
@@ -179,7 +179,7 @@
           class="clean-table"
           header-class="bg-grey-1 text-grey-8 text-weight-bold text-uppercase"
         >
-          <template v-slot:body-cell-patient_id="props">
+          <template v-slot:body-cell-PATIENTNO="props">
             <q-td :props="props">
               <span class="text-grey-8">#{{ props.value }}</span>
             </q-td>
@@ -197,20 +197,20 @@
                 rounded
                 class="q-px-sm q-py-xs"
                 :color="
-                  props.row.patientType === 'Emergency' || props.row.patientType === 'ER'
+                  props.row.PATIENTTYPE === 'Emergency' || props.row.patientType === 'ER'
                     ? 'red-1'
-                    : props.row.patientType === 'Inpatient'
+                    : props.row.PATIENTTYPE === 'Inpatient'
                     ? 'green-1'
                     : 'blue-1'
                 "
                 :text-color="
-                  props.row.patientType === 'Emergency' || props.row.patientType === 'ER'
+                  props.row.PATIENTTYPE === 'Emergency' || props.row.PATIENTTYPE === 'ER'
                     ? 'red-9'
-                    : props.row.patientType === 'Inpatient'
+                    : props.row.PATIENTTYPE === 'Inpatient'
                     ? 'green-9'
                     : 'blue-9'
                 "
-                :label="props.row.patientType"
+                :label="props.row.PATIENTTYPE"
               />
             </q-td>
           </template>
@@ -233,9 +233,9 @@ export default defineComponent({
     return {
       columns: [
         {
-          name: "patient_id",
-          label: "Patient ID",
-          field: "patient_id",
+          name: "PATIENTNO",
+          label: "Patient NO",
+          field: "PATIENTNO",
           align: "center",
           sortable: true,
           style: "width: 100px",
@@ -249,9 +249,9 @@ export default defineComponent({
         },
         { name: "type", label: "Type", field: "patientType", align: "center" },
         {
-          name: "createdAt",
+          name: "CREATEDAT",
           label: "Date",
-          field: "createdAt",
+          field: "CREATEDAT",
           align: "center",
           format: (val) => (val ? date.formatDate(val, "MMM D, YYYY") : "-"),
         },
@@ -269,7 +269,7 @@ export default defineComponent({
         },
       },
       basePieOptions: {
-        chart: { id: "patient-type-pie" },
+        chart: { type: "donut", id: "patient-type-pie" },
         colors: ["#1976D2", "#26A69A", "#9C27B0"],
         legend: { position: "bottom" },
       },

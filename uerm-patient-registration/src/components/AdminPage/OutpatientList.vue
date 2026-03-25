@@ -1,9 +1,6 @@
 <template>
   <q-page class="q-pa-md bg-grey-4 q-py-xl">
-    <q-card
-      class="column no-shadow"
-      style="border: 1px solid #e0e0e0; border-radius: 8px"
-    >
+    <q-card class="no-shadow" style="border: 1px solid #e0e0e0; border-radius: 8px">
       <q-card-section class="col-auto q-py-md q-px-lg" style="background-color: #004aad">
         <div class="row items-left text-left justify-left text-uppercase">
           <div>
@@ -312,18 +309,14 @@
           <q-btn
             unelevated
             :label="
-              selectedPatient.forReview == 1 || selectedPatient.forReview == 0
+              selectedPatient.forReview
                 ? 'Already Forwarded'
                 : 'Forward to credit and finance'
             "
-            :color="
-              selectedPatient.forReview == 1 || selectedPatient.forReview == 0
-                ? 'grey'
-                : 'blue-10'
-            "
-            :disable="selectedPatient.forReview == 1 || selectedPatient.forReview == 0"
+            :color="selectedPatient.forReview ? 'grey' : 'blue-10'"
+            :disable="selectedPatient.forReview"
             icon-right="send"
-            @click="sendtoCredit(selectedPatient)"
+            @click="handleSendToCredit(selectedPatient)"
           />
         </q-card-actions>
       </q-card>

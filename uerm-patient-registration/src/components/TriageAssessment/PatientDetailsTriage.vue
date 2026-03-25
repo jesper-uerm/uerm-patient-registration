@@ -108,7 +108,7 @@
     </div>
 
     <div class="row" :class="$q.screen.lt.sm ? 'q-col-gutter-xs' : 'q-col-gutter-sm'">
-      <div class="col-12 col-sm-4">
+      <div class="col-12 col-sm-3">
         <q-input
           outlined
           dense
@@ -118,7 +118,7 @@
         />
       </div>
 
-      <div class="col-12 col-sm-4">
+      <div class="col-12 col-sm-3">
         <q-select
           outlined
           dense
@@ -141,13 +141,11 @@
           <template v-slot:label> Infirmary <span class="text-red">*</span> </template>
         </q-select>
       </div>
-      <div class="col-12 col-sm-4">
-        <q-input
-          outlined
-          dense
-          v-model="formData.scidnoTriage"
-          label="SC ID No. / PWD ID No."
-        />
+      <div class="col-12 col-sm-3">
+        <q-input outlined dense v-model="formData.scidnoTriage" label="SC ID No." />
+      </div>
+      <div class="col-12 col-sm-3">
+        <q-input outlined dense v-model="formData.pwdTriage" label="PWD ID No." />
       </div>
     </div>
 

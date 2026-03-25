@@ -94,7 +94,7 @@
 
 <script>
 import { mapWritableState, mapActions } from "pinia";
-import { useTriageStore } from "../../stores/triageStore"; // Adjust path
+import { useTriageStore } from "../../stores/triageStore";
 import SignaturePad from "src/components/InpatientForm/SignaturePad.vue";
 
 export default {

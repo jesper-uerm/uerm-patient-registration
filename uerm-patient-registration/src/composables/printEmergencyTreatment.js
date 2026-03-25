@@ -63,31 +63,42 @@ export function printEmergencyTreatment() {
             margin: [0, 0, 0, 0]
         });
 
-        const patient_id = patient.patient_id || '-';
-        const lastname = patient.lastName || 'Unknown';
-        const firstname = patient.firstName || 'Unknown';
-        const middlename = patient.middleName || '-';
-        const birthdate = patient.birthdate ? new Date(patient.birthdate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '-';
-        const age = patient.age ? patient.age.toString() : '-';
-        const sex = patient.gender || patient.sex || '-';
-        const weight = patient.weight || '-';
-        const civilStatus = patient.civilStatus || '-';
-        const contactPerson = patient.cpName || '-';
-        const contactAddress = patient.cpAddress || '-';
-        const contactNumber = [patient.cpMobile, patient.cpLandline] .filter(Boolean) .join(' - ');
+        const patient_id = patient.ID || '-';
+        const lastname = (patient.LASTNAME || 'UNKNOWN').toUpperCase();
+        const firstname = (patient.FIRSTNAME || 'UNKNOWN').toUpperCase();
+        const middlename = (patient.MIDDLENAME || '-').toUpperCase();
 
-        const broughtBy = patient.broughtBy || '-';
-        const philHealthCateg = patient.philHealthCateg || '-';
-        const hmo = patient.hmo || '-';
-        const infirmary = patient.infirmary || '-';
-        const seniorId = patient.seniorId || '-';
+        const birthdate = patient.BIRTHDATE
+            ? new Date(patient.BIRTHDATE).toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+            }).toUpperCase()
+            : '-';
 
-        const temp = patient.temp || '-';
-        const heartrate = patient.heartrate || '-';
-        const bp = patient.bp || '-';
-        const respirate = patient.respirate || '-';
-        const ptCondition = patient.ptCondition || '-';
-        const chiefComplaint = patient.chiefComplaint || '-';
+        const age = patient.AGE ? patient.AGE.toString() : '-';
+        const sex = (patient.SEX || '-').toUpperCase();
+        const weight = (patient.WEIGHT || '-').toString().toUpperCase();
+        const civilStatus = (patient.CIVILSTATUS || '-').toUpperCase();
+
+        const contactPerson = (patient.CPNAME || '-').toUpperCase();
+        const contactAddress = (patient.CPADDRESS || '-').toUpperCase();
+        const contactNumber = [patient.CPMOBILE, patient.CPLANDLINE]
+            .filter(Boolean)
+            .join(' - ') || '-';
+
+        const broughtBy = (patient.BROUGHTBY || '-').toUpperCase();
+        const philHealthCateg = (patient.PHILHEALTHCATEG || '-').toUpperCase();
+        const hmo = (patient.HMO || '-').toUpperCase();
+        const infirmary = (patient.INFIRMARY || '-').toUpperCase();
+        const seniorId = (patient.SENIORID || '-').toUpperCase();
+
+        const temp = (patient.TEMP || '-').toString().toUpperCase();
+        const heartrate = (patient.HEARTRATE || '-').toString().toUpperCase();
+        const bp = (patient.BP || '-').toUpperCase();
+        const respirate = (patient.RESPIRATE || '-').toString().toUpperCase();
+        const ptCondition = (patient.PTCONDITION || '-').toUpperCase();
+        const chiefComplaint = (patient.CHIEFCOMPLAINT || '-').toUpperCase();
 
         const docDefinition = {
             pageMargins: [30, 30, 30, 30],

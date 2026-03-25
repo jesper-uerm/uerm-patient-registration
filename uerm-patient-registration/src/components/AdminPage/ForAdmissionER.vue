@@ -1,9 +1,6 @@
 <template>
   <q-page class="q-pa-md bg-grey-4 q-py-xl">
-    <q-card
-      class="column no-shadow"
-      style="border: 1px solid #e0e0e0; border-radius: 8px"
-    >
+    <q-card class="no-shadow" style="border: 1px solid #e0e0e0; border-radius: 8px">
       <q-card-section class="col-auto q-py-md q-px-lg" style="background-color: #004aad">
         <div class="row items-left text-left justify-left text-uppercase">
           <div>
@@ -61,7 +58,7 @@
           class="clean-table fit"
           header-class="bg-grey-1 text-grey-8 text-weight-bold text-uppercase"
         >
-          <template v-slot:body-cell-patient_id="props">
+          <template v-slot:body-cell-PATIENTNO="props">
             <q-td :props="props">
               <span class="text-grey-8">#{{ props.value }}</span>
             </q-td>
@@ -73,10 +70,10 @@
             </q-td>
           </template>
 
-          <template v-slot:body-cell-isAdmitted="props">
+          <template v-slot:body-cell-ISADMITTED="props">
             <q-td :props="props">
               <q-badge
-                v-if="props.value == 1"
+                v-if="props.value == 0"
                 color="red-6"
                 label="For Admission"
                 outline
@@ -108,7 +105,7 @@
                 <q-menu cover auto-close>
                   <q-list style="min-width: 150px">
                     <q-item
-                      v-if="props.row.isAdmitted == 1"
+                      v-if="props.row.ISADMITTED == 0"
                       clickable
                       @click="showAdmissionForm(props.row)"
                     >
@@ -258,9 +255,9 @@ export default defineComponent({
     return {
       columns: [
         {
-          name: "patient_no",
+          name: "PATIENTNO",
           label: "PATIENTNO",
-          field: "patient_no",
+          field: "PATIENTNO",
           align: "center",
           sortable: true,
           style: "width: 80px; font-weight: bold",
@@ -275,18 +272,18 @@ export default defineComponent({
           style: "width: 250px",
         },
         {
-          name: "birthdate",
+          name: "birthdateStr",
           label: "Birthdate",
-          field: "birthdate",
+          field: "birthdateStr",
           align: "center",
           format: (val) => (val ? date.formatDate(val, "MMM D, YYYY") : "-"),
           classes: "text-grey-7",
           style: "width: 180px",
         },
         {
-          name: "isAdmitted",
+          name: "ISADMITTED",
           label: "Status",
-          field: "isAdmitted",
+          field: "ISADMITTED",
           align: "center",
           sortable: true,
           style: "width: 120px",

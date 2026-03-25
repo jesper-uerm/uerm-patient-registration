@@ -19,6 +19,7 @@ export const useTriageStore = defineStore('triage', {
     lineCategories: [],
     TriageAssessmentFormDialog: true,
     triageDialog: false,
+    caseNumberDialog: false,
     viewPatientValidationDialog: false,
     showAdmissionDialog: false,
     step: 1,
@@ -28,6 +29,11 @@ export const useTriageStore = defineStore('triage', {
     searchQuery: "",
     hasSearched: false,
     selectedPatient: {},
+
+    appOptions: {
+      relationships: ['Parent', 'Spouse', 'Sibling', 'Child', 'Guardian', 'Other'],
+    },
+
     formData: {
       patientId: null,
       patientNo: null,
@@ -42,7 +48,7 @@ export const useTriageStore = defineStore('triage', {
       contactPersonTriageAddress: "",
       contactPersonTriageMobile: "",
       scidnoTriage: "",
-      infirmary: "",
+      infirmary: null,
       hmoName: "",
       civilStatus: "",
       chiefComplaintTriage: "",
@@ -62,7 +68,39 @@ export const useTriageStore = defineStore('triage', {
       personnelTriage: "",
       dateTriage: "",
       patientSignature: null,
-      personnelSignature: null
+      personnelSignature: null,
+
+      casefullname: "",
+      casepatientno: "",
+      caseBirthdate: "",
+      caseAge: "",
+      caseSeniorId: "",
+      casepwdId: "",
+      casedtAdmission: "",
+      caseadmDiagnosis: "",
+      casefromER: "",
+      caseserviceType: "",
+      casepdfRemarks: "",
+      caseRemarks: "",
+      caseerPhysician: "",
+      caseAllergies: "",
+      caseAdmittedBy: "",
+      caseCensusInfirmary: "",
+      caseDepartment: "",
+      caseCompany: "",
+      caseHmo: "",
+      caseEmployer: "",
+      caseCardNo: "",
+      caseCovAmount: "",
+      caseAppCode: "",
+      caseEffectivity: "",
+      casermPlan: "",
+      caseLoa: "",
+      caseApprov: "",
+      caseInformantName:"",
+      caseInfAddress:"",
+      caseInfRelationship:""
+
     },
   }),
 
@@ -75,30 +113,30 @@ export const useTriageStore = defineStore('triage', {
   },
 
   actions: {
-async fetchDashboardData() {
-    this.loading = true;
-    try {
-      const [pieRes, lineRes, statsRes] = await Promise.all([
-        axios.get(`${DASHBOARD_API_URL}/pie-chart`),
-        axios.get(`${DASHBOARD_API_URL}/line-chart`),
-        axios.get(`${DASHBOARD_API_URL}/stats`)
-      ]);
+    async fetchDashboardData() {
+        this.loading = true;
+        try {
+          const [pieRes, lineRes, statsRes] = await Promise.all([
+            axios.get(`${DASHBOARD_API_URL}/pie-chart`),
+            axios.get(`${DASHBOARD_API_URL}/line-chart`),
+            axios.get(`${DASHBOARD_API_URL}/stats`)
+          ]);
 
-      this.pieSeries = pieRes.data.series;
-      this.pieLabels = pieRes.data.labels;
-      this.lineSeries = lineRes.data.series;
-      this.lineCategories = lineRes.data.categories;
+          this.pieSeries = pieRes.data.series;
+          this.pieLabels = pieRes.data.labels;
+          this.lineSeries = lineRes.data.series;
+          this.lineCategories = lineRes.data.categories;
 
-      this.inpatientCount = statsRes.data.inpatient;
-      this.outpatientCount = statsRes.data.outpatient;
-      this.erpatientCount = statsRes.data.emergency;
+          this.inpatientCount = statsRes.data.inpatient;
+          this.outpatientCount = statsRes.data.outpatient;
+          this.erpatientCount = statsRes.data.emergency;
 
-    } catch (error) {
-      console.error("Dashboard Fetch Error:", error);
-    } finally {
-      this.loading = false;
-    }
-},
+        } catch (error) {
+          console.error("Dashboard Fetch Error:", error);
+        } finally {
+          this.loading = false;
+        }
+    },
 
     openDialog() {
       this.resetForm();
@@ -205,7 +243,7 @@ async fetchDashboardData() {
     } finally {
       this.loading = false;
     }
-  },
+    },
 
     async submitRegistration() {
       if (!this.formData.patientSignature) {
@@ -249,20 +287,49 @@ async fetchDashboardData() {
     updateTriage(row) {
       this.resetForm();
 
-      this.formData.patientId = row.patient_id;
-      this.formData.lastNameTriage = row.lastName;
-      this.formData.firstNameTriage = row.firstName;
-      this.formData.middleNameTriage = row.middleName || "";
-      this.formData.suffixTriage = row.suffix || "";
-      this.formData.ageTriage = row.age;
+      this.formData.patientId = row.ID;
+      this.formData.patientNo = row.PATIENTNO;
+      this.formData.lastNameTriage = row.LASTNAME;
+      this.formData.firstNameTriage = row.FIRSTNAME;
+      this.formData.middleNameTriage = row.MIDDLENAME || "";
+      this.formData.suffixTriage = row.SUFFIX || "";
+      this.formData.ageTriage = row.AGE;
       this.formData.genderTriage = row.gender;
 
 
-      if (row.birthdate) {
-        this.formData.birthdateTriage = date.formatDate(row.birthdate, "YYYY/MM/DD");
+      if (row.BIRTHDATE) {
+        this.formData.birthdateTriage = date.formatDate(row.BIRTHDATE, "YYYY/MM/DD");
       }
 
       this.triageDialog = true;
+    },
+
+    casenumForm(row) {
+
+      const midInitial = row.middleName ? ` ${row.middleName.charAt(0)}.` : "";
+      const suffix = row.suffix ? ` ${row.suffix}` : "";
+      this.formData.casefullname = `${row.lastName}, ${row.firstName}${midInitial}${suffix}`;
+
+      this.formData.casepatientno = row.patient_no || "";
+      this.formData.caseBirthdate = row.birthdate || "";
+      this.formData.caseAge = row.age || "";
+      this.formData.caseSeniorId = row.seniorId || "";
+      this.formData.casepwdId = row.pwd || "";
+
+      if (row.dtAdmission) {
+        this.formData.casedtAdmission = date.formatDate(row.dtAdmission, "YYYY/MM/DD");
+      }
+      if (row.effectivity) {
+        this.formData.caseEffectivity = date.formatDate(row.effectivity, "YYYY/MM/DD");
+      }
+
+      this.formData.chiefComplaintTriage = row.chiefComplaint || "";
+      this.formData.caseRemarks = row.remarks || "";
+      this.formData.caseCensusInfirmary = row.infirmary || "";
+      this.formData.caseDepartment = row.department || "";
+      this.formData.caseHmo = row.hmo || "";
+
+      this.caseNumberDialog = true;
     },
 
     async updateTriageRecord(signatureString) {
@@ -273,7 +340,8 @@ async fetchDashboardData() {
       const payload = {
         ...this.formData,
         personnelSignature: signatureString,
-        patientId: this.formData.patientId
+        patientId: this.formData.patientId,
+        patientNo: this.formData.patientNo
       };
 
       this.loading = true;
@@ -294,11 +362,46 @@ async fetchDashboardData() {
       }
     },
 
+    async submitCaseNumber() {
+      if (!this.formData.patientId) {
+        Notify.create({
+          type: "negative",
+          message: "Error: No Patient ID found. Cannot update."
+        });
+        return;
+      }
+      const payload = {
+        ...this.formData
+      };
+      this.loading = true;
+      try {
+        const response = await axios.post(`${API_URL}/case`, payload);
+        if (response.status === 200) {
+          Notify.create({
+            type: "positive",
+            message: "Patient record updated successfully!",
+            position: "top"
+          });
+          this.caseNumberDialog = false;
+          this.fetchPatients();
+        }
+      } catch (error) {
+        console.error("Update Error:", error);
+        const errMsg =error.response?.data?.message || "Failed to update record.";
+        Notify.create({
+          type: "negative",
+          message: errMsg
+        });
+      } finally {
+        this.loading = false;
+      }
+    },
+
     async admitPatient(patient) {
         Loading.show({ message: "Updating status..." });
         try {
           await axios.put(`${API_URL}/admit`, {
-            patient_id: patient.patient_id,
+            ID: patient.ID,
           });
 
           Notify.create({ type: "positive", message: "Patient admitted successfully!", position: "top" });
@@ -331,7 +434,7 @@ async fetchDashboardData() {
       this.loading = true;
       try {
         await axios.post(`${PATIENT_API_URL}/send-data`, {
-          patient_id: patient.patient_id,
+          ID: patient.ID,
           force: isForce
         });
         Notify.create({ type: "positive", message: "Data sent successfully." });
@@ -354,7 +457,7 @@ async fetchDashboardData() {
         this.loading = true;
         try {
             await axios.post(`${PATIENT_API_URL}/link`, {
-                patient_id: patientId,
+                ID: patientId,
                 patientno: existingPatientNo,
             });
             Notify.create({ type: "positive", message: "Linked successfully!" });
