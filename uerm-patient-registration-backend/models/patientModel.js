@@ -248,86 +248,82 @@ const PatientModel = {
     }
 },
 
-    updatePatientDetails: async (id, data, reviewedBy) => {
-    try {
-        const pool = await poolPromise;
-        const request = pool.request();
+    upsertPatientCredit: async (caseno, patientno, data, reviewedBy) => {
+        try {
+            const pool = await poolPromise;
+            const request = pool.request();
 
-        request.input('patientId', sql.Int, id);
-        request.input('reviewedBy', sql.NVarChar, reviewedBy ? reviewedBy.toUpperCase() : null); 
+            request.input('caseno', sql.VarChar, caseno);
+            request.input('patientno', sql.VarChar, patientno);
+            request.input('reviewedBy', sql.NVarChar, reviewedBy ? reviewedBy.toUpperCase() : null);
 
-        request.input('ptSourceIncome', sql.NVarChar, data.ptSourceIncome ? data.ptSourceIncome.toUpperCase() : null);
-        request.input('specificSourceOfIncome', sql.NVarChar, data.specificSourceOfIncome ? data.specificSourceOfIncome.toUpperCase() : null);
-        request.input('ptGrossIncome', sql.NVarChar, data.ptGrossIncome ? data.ptGrossIncome.toUpperCase() : null);
-        request.input('ptHomeOwnership', sql.NVarChar, data.ptHomeOwnership ? data.ptHomeOwnership.toUpperCase() : null);
-        request.input('ptYearsStay', sql.NVarChar, data.ptYearsStay ? data.ptYearsStay.toUpperCase() : null);
-        request.input('ptCars', sql.NVarChar, data.ptCars ? data.ptCars.toUpperCase() : null);
-        request.input('ptCarOwnership', sql.NVarChar, data.ptCarOwnership ? data.ptCarOwnership.toUpperCase() : null);
-        request.input('ptNumberOfCars', sql.NVarChar, data.ptNumberOfCars ? data.ptNumberOfCars.toUpperCase() : null);
+            request.input('SSS_CARD_CLASS', sql.NVarChar, data.fnsssCard || null);
+            request.input('VISIT_TYPE_SER', sql.NVarChar, data.fnvisitTypeService || null);
+            request.input('NUM_ADMISSION_SER', sql.Int, data.fnnumAdmissionService || 0);
+            request.input('EXP_DATE', sql.Date, data.fnExpDate || null);
+            request.input('LAST_ADM_DATE_SER', sql.Date, data.fnLastAdmDateService || null);
+            request.input('COORDINATED_BY_SER', sql.NVarChar, data.fnCoordinateByService || null);
 
-        request.input('cpIncomeSource', sql.NVarChar, data.cpIncomeSource ? data.cpIncomeSource.toUpperCase() : null);
-        request.input('cpGrossIncome', sql.NVarChar, data.cpGrossIncome ? data.cpGrossIncome.toUpperCase() : null);
-        request.input('cpHomeOwnership', sql.NVarChar, data.cpHomeOwnership ? data.cpHomeOwnership.toUpperCase() : null);
-        request.input('cpHomeStay', sql.NVarChar, data.cpHomeStay ? data.cpHomeStay.toUpperCase() : null);
-        request.input('cpHasCar', sql.NVarChar, data.cpHasCar ? data.cpHasCar.toUpperCase() : null);
-        request.input('cpCarOwnership', sql.NVarChar, data.cpCarOwnership ? data.cpCarOwnership.toUpperCase() : null);
-        request.input('cpNumberOfCars', sql.NVarChar, data.cpNumberOfCars ? data.cpNumberOfCars.toUpperCase() : null);
+            request.input('VISIT_TYPE_PAY', sql.NVarChar, data.fnvisitTypePay || null);
+            request.input('NUM_ADMISSION_PAY', sql.Int, data.fnnumAdmissionPay || 0);
+            request.input('LAST_ADM_DATE_PAY', sql.Date, data.fnLastAdmDatePay || null);
+            request.input('COORDINATED_BY_PAY', sql.NVarChar, data.fnCoordinateByPay || null); 
 
-        request.input('modeOfPayment', sql.NVarChar, data.modeOfPayment ? data.modeOfPayment.toUpperCase() : null);
-        request.input('specificModeOfPayment', sql.NVarChar, data.specificModeOfPayment ? data.specificModeOfPayment.toUpperCase() : null);
-        request.input('creditCards', sql.NVarChar, data.creditCards ? data.creditCards.toUpperCase() : null);
-        request.input('bankAffiliations', sql.NVarChar, data.bankAffiliations ? data.bankAffiliations.toUpperCase() : null);
+            request.input('TRANS_FROM', sql.NVarChar, data.fntransFrom || null);
+            request.input('REASON_OF_TRANSFER', sql.NVarChar, data.fnrsofTransfer || null);
+            request.input('ADMISSION_STATUS', sql.NVarChar, data.fnAdmissionStatus || null);
+            request.input('REMARKS_TRANSFER', sql.NVarChar, data.fnremarksTransfer || null);
 
-        request.input('hmoName', sql.NVarChar, data.hmoName ? data.hmoName.toUpperCase() : null);
-        request.input('hmoMemberId', sql.NVarChar, data.hmoMemberId ? data.hmoMemberId.toUpperCase() : null);
-        request.input('hmoValidityDate', sql.NVarChar, data.hmoValidityDate ? data.hmoValidityDate.toUpperCase() : null);
-        request.input('hmoStaffName', sql.NVarChar, data.hmoStaffName ? data.hmoStaffName.toUpperCase() : null);
-        request.input('hmoApprovalDate', sql.NVarChar, data.hmoApprovalDate ? data.hmoApprovalDate.toUpperCase() : null);
-        request.input('desiredRoom', sql.NVarChar, data.desiredRoom ? data.desiredRoom.toUpperCase() : null);
-        request.input('informedIncrement', sql.NVarChar, data.informedIncrement ? data.informedIncrement.toUpperCase() : null);
+            request.input('HMO', sql.NVarChar, data.fnHmo || null);
+            request.input('HMO_INITIAL_STATUS', sql.NVarChar, data.fnHmoInitialStatus || null);
+            request.input('PHIC_STATUS', sql.NVarChar, data.fnphStatus || null);
+            request.input('PHIC_NUM', sql.NVarChar, data.fnphNumber || null);
+            request.input('PHIC_REMARKS', sql.NVarChar, data.fnphRemarks || null);
+            request.input('MOP', sql.NVarChar, data.fnMop || null);
 
-        await request.query(`
-        UPDATE PATIENTREG
-        SET 
-            PTSOURCEINCOME = @ptSourceIncome,
-            SPECIFICSOURCEOFINCOME = @specificSourceOfIncome,
-            PTGROSSINCOME = @ptGrossIncome,
-            PTHOMEOWNERSHIP = @ptHomeOwnership,
-            PTYEARSSTAY = @ptYearsStay,
-            PTCARS = @ptCars,
-            PTCAROWNERSHIP = @ptCarOwnership,
-            PTNUMBEROFCARS = @ptNumberOfCars, 
+            request.input('ADM_PHYSICIAN', sql.NVarChar, data.fnadmPhysician || null);
+            request.input('ATT_PHYSICIAN', sql.NVarChar, data.fnatnPhysician || null); 
+            request.input('CONTACT_PHYSICIAN', sql.NVarChar, data.fncontactatnPhysician || null);
+            request.input('DEPARTMENT', sql.NVarChar, data.fnDepartment || null);
+            request.input('ROOM_ADMISSION', sql.NVarChar, data.fnrmAdmission || null);
+            request.input('COST', sql.Decimal(18,2), data.fnCost || null);
+            request.input('LENGTH_STAY', sql.NVarChar, data.fnlengthStay || null);
+            request.input('ADM_PROCEDURE', sql.NVarChar, data.fnadmProcedure || null);
 
-            CPINCOMESOURCE = @cpIncomeSource,
-            CPGROSSINCOME = @cpGrossIncome,
-            CPHOMEOWNERSHIP = @cpHomeOwnership,
-            CPHOMESTAY = @cpHomeStay,
-            CPHASCAR = @cpHasCar,
-            CPCAROWNERSHIP = @cpCarOwnership,
-            CPNUMBEROFCARS = @cpNumberOfCars, 
+            request.input('OR_DEPOSIT', sql.NVarChar, data.fnorDeposit || null);
+            request.input('REQ_DEPOSIT', sql.Decimal(18,2), data.fnreqDeposit || null);
+            request.input('TO_DEPOSIT', sql.Decimal(18,2), data.fntoDeposit || null);
+            request.input('TO_FOLLOW_DEPOSIT', sql.Decimal(18,2), data.fntofollowDeposit || null);
 
-            MODEOFPAYMENT = @modeOfPayment,
-            SPECIFICMODEOFPAYMENT = @specificModeOfPayment,
-            CREDITCARDS = @creditCards,
-            BANKAFFILIATIONS = @bankAffiliations,
-            
-            HMO = @hmoName,
-            HMOID = @hmoMemberId,
-            HMOVALIDITY = @hmoValidityDate,
-            HMOSTAFFNAME = @hmoStaffName,
-            HMOAPPROVALDATE = @hmoApprovalDate,
-            DESIREDROOMAVAILABLE = @desiredRoom,
-            INFORMEDINCREMENT = @informedIncrement,
-            
-            REVIEWEDBY = @reviewedBy,
-            FORREVIEW = 1
-        WHERE ID = @patientId
-        `);
+            request.input('ADM_REMARKS', sql.NVarChar, data.fnadmRemarks || null);
+            request.input('STATUS', sql.NVarChar, data.fnStatus || null);
+            request.input('APPROVED_BY', sql.NVarChar, data.fnApprovedBY || null);
 
-        return true;
-    } catch (err) {
-        throw err;
-    }
+            await request.query(`
+                INSERT INTO PATIENTREG_CREDIT (
+                    CASENO, PATIENTNO, SSS_CARD_CLASS, VISIT_TYPE_SER, NUM_ADMISSION_SER, EXP_DATE, LAST_ADM_DATE_SER, COORDINATED_BY_SER,
+                    VISIT_TYPE_PAY, NUM_ADMISSION_PAY, LAST_ADM_DATE_PAY, COORDINATED_BY_PAY,
+                    TRANS_FROM, REASON_OF_TRANSFER, ADMISSION_STATUS, REMARKS_TRANSFER,
+                    HMO, HMO_INITIAL_STATUS, PHIC_STATUS, PHIC_NUM, PHIC_REMARKS, MOP,
+                    ADM_PHYSICIAN, ATT_PHYSICIAN, CONTACT_PHYSICIAN, DEPARTMENT, ROOM_ADMISSION, COST, LENGTH_STAY, ADM_PROCEDURE,
+                    OR_DEPOSIT, REQ_DEPOSIT, TO_DEPOSIT, TO_FOLLOW_DEPOSIT,
+                    ADM_REMARKS, STATUS, APPROVED_BY, FOR_APPROV, EVALUATED_BY, CREATEDAT, UPDATEDAT
+                ) VALUES (
+                    @caseno, @patientno, @SSS_CARD_CLASS, @VISIT_TYPE_SER, @NUM_ADMISSION_SER, @EXP_DATE, @LAST_ADM_DATE_SER, @COORDINATED_BY_SER,
+                    @VISIT_TYPE_PAY, @NUM_ADMISSION_PAY, @LAST_ADM_DATE_PAY, @COORDINATED_BY_PAY,
+                    @TRANS_FROM, @REASON_OF_TRANSFER, @ADMISSION_STATUS, @REMARKS_TRANSFER,
+                    @HMO, @HMO_INITIAL_STATUS, @PHIC_STATUS, @PHIC_NUM, @PHIC_REMARKS, @MOP,
+                    @ADM_PHYSICIAN, @ATT_PHYSICIAN, @CONTACT_PHYSICIAN, @DEPARTMENT, @ROOM_ADMISSION, @COST, @LENGTH_STAY, @ADM_PROCEDURE,
+                    @OR_DEPOSIT, @REQ_DEPOSIT, @TO_DEPOSIT, @TO_FOLLOW_DEPOSIT,
+                    @ADM_REMARKS, @STATUS, @APPROVED_BY, 1, @reviewedBy, GETDATE(), GETDATE()
+                )
+            `);
+
+            return true;
+
+        } catch (err) {
+            throw err;
+        }
 },
 
     getPatientById: async (id) => {
@@ -536,7 +532,7 @@ const PatientModel = {
         }
 },
 
-    transferPatientToLegacy: async (id, force) => {
+transferPatientToLegacy: async (id, force) => {
         let transaction;
         try {
             const pool = await poolPromise;
@@ -613,7 +609,7 @@ const PatientModel = {
                 INSERT INTO UERMMMC.dbo.PATIENTINFO (
                     PATIENTNO, 
                     LASTNAME, FIRSTNAME, MIDDLENAME, SUFFIX,
-                    BARANGAY, MUNICIPALITY,
+                    BARANGAY, MUNICIPALITY, ADDRESS,
                     SEX, STATUS,
                     RELIGION, NATIONALITY,
                     DBIRTH, AGE, BPLACE,
@@ -629,24 +625,33 @@ const PatientModel = {
                 )
                 SELECT 
                     @generatedPATIENTNO, 
-                    LASTNAME, FIRSTNAME, MIDDLENAME, SUFFIX,
-                    ADDRESSBARANGAY, ADDRESSCITY,
-                    SEX, CIVILSTATUS,
-                    RELIGION, NATIONALITY,
-                    BIRTHDATE, AGE, BIRTHPLACE,
-                    OCCUPATION,
-                    CPNAME, CPRELATIONSHIP, 
-                    ISNULL(CPLANDLINE, CPMOBILE), 
-                    CPADDRESS,
-                    CPLANDLINE, CPMOBILE,
-                    SPOUSENAME, SPOUSEOCCUPATION,
-                    SPOUSEEMPLOYERNAME, SPOUSEEMPLOYERADDRESS, SPOUSEEMPLOYERCONTACT, 
-                    PTFATHERNAME, PTFATHERADDRESS, PTFATHERCONTACT,
-                    PTMOTHERMAIDENNAME, PTMOTHERADDRESS, PTMOTHERCONTACT,
-                    SSSGSISID, TINID, SENIORID, PHILHEALTHID, PWD,
+                    PR.LASTNAME, PR.FIRSTNAME, PR.MIDDLENAME, PR.SUFFIX,
+                    
+                    (SELECT TOP 1 CODE FROM UERMMMC.dbo.BARANGAYS WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(PR.ADDRESSBARANGAY)))), 
+                    (SELECT TOP 1 CODE FROM UERMMMC.dbo.MUNICIPALITY WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(PR.ADDRESSCITY)))), 
+                    
+                    PR.ADDRESSPERMANENT,
+                    PR.SEX, PR.CIVILSTATUS,
+                    
+                    (SELECT TOP 1 CODE FROM UERMMMC.dbo.RELIGION WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(PR.RELIGION)))), 
+                    (SELECT TOP 1 CODE FROM UERMMMC.dbo.NATIONALITY WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(PR.NATIONALITY)))), 
+                    
+                    PR.BIRTHDATE, PR.AGE, PR.BIRTHPLACE,
+                    
+                    (SELECT TOP 1 CODE FROM UERMMMC.dbo.OCCUPATION WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(PR.OCCUPATION)))), 
+                    
+                    PR.CPNAME, PR.CPRELATIONSHIP, 
+                    ISNULL(PR.CPLANDLINE, PR.CPMOBILE), 
+                    PR.CPADDRESS,
+                    PR.CPLANDLINE, PR.CPMOBILE,
+                    PR.SPOUSENAME, PR.SPOUSEOCCUPATION,
+                    PR.SPOUSEEMPLOYERNAME, PR.SPOUSEEMPLOYERADDRESS, PR.SPOUSEEMPLOYERCONTACT, 
+                    PR.PTFATHERNAME, PR.PTFATHERADDRESS, PR.PTFATHERCONTACT,
+                    PR.PTMOTHERMAIDENNAME, PR.PTMOTHERADDRESS, PR.PTMOTHERCONTACT,
+                    PR.SSSGSISID, PR.TINID, PR.SENIORID, PR.PHILHEALTHID, PR.PWD,
                     'UERMPATIENTREG', 'UERMPATIENTREG'
-                FROM PATIENTREG
-                WHERE ID = @id;
+                FROM PATIENTREG PR
+                WHERE PR.ID = @id;
 
                 UPDATE PATIENTREG
                 SET PATIENTNO = @generatedPATIENTNO, ISVALIDATED = 1
@@ -674,7 +679,7 @@ const PatientModel = {
             }
             throw err;
         }
-},
+    },
 
     searchInpatientRecords: async (searchTerm) => {
         try {
@@ -770,77 +775,126 @@ const PatientModel = {
         }
 },
 
-searchFinanceRecord: async (query) => {
-        try {
-            const pool = await poolPromise;
-            const request = pool.request();
-            
-            const cleanQuery = (query || '').toString().trim();
+//finance
+    searchFinanceRecord: async (query) => {
+    try {
+        const pool = await poolPromise;
+        const searchPattern = `%${query}%`;
 
-            let sqlQuery = `
-                SELECT TOP 20
-                    C.CASENO,
-                    C.PATIENTNO, 
-                    C.DATEAD, 
-                    C.PATIENT_CATEGORY,
-                    C.PATIENTTYPE AS patientType,
-                    PI.SEX AS gender,
-                    PI.AGE AS age, 
-                    PI.UDF_PHILHEALTHNO AS philhealthNo,
-                    SS.Classification AS class,
-                    SS.Validity AS expiration,
-                    PR.ISRETURNING AS visitType,
-                    (ISNULL(PI.FIRSTNAME, '') + ' ' + ISNULL(PI.MIDDLENAME + ' ', '') + ISNULL(PI.LASTNAME, '')) AS fullName,
-                    FORMAT(PI.DBIRTH, 'yyyy-MM-dd') AS birthdateStr,
-                    PI.ADDRESS AS address,
-                    C.CC AS chiefComplaint 
-                FROM UERMMMC.dbo.CASES C
-                LEFT JOIN UERMMMC.dbo.PATIENTINFO PI 
-                    ON C.PATIENTNO = PI.PATIENTNO
-                LEFT JOIN UERMHIMS.dbo.SocialServiceClass SS 
-                    ON C.CASENO = SS.CaseNo 
-                    AND C.PATIENTNO = SS.PatientNo 
-                LEFT JOIN UERMMMC.dbo.PATIENTREG PR 
-                    ON PI.PATIENTNO = PR.PATIENTNO 
-                WHERE 
-                    C.UDF_CaseDept = 'ER'
-                    AND C.PATIENTTYPE = 'OPD'
-                    AND C.ForAdmission = 1
-            `;
+        const result = await pool.request()
+            .input('searchQuery', sql.VarChar, searchPattern)
+            .query(`
+            SELECT
+                C.CASENO, C.PATIENTNO, C.DATEAD, C.PATIENT_CATEGORY,
+                C.PATIENTTYPE AS patientType, C.CC AS chiefComplaint, C.LAST_ROOM,
+                PI.SEX AS gender, PI.AGE AS age, PI.UDF_PHILHEALTHNO AS philhealthNo,
+                PI.ADDRESS AS address, SS.Classification AS ssClass, SS.Validity AS expiration,
+                PRC.IS_APPROVED,
+                (ISNULL(PI.FIRSTNAME, '') + ' ' + ISNULL(PI.MIDDLENAME + ' ', '') + ISNULL(PI.LASTNAME, '')) AS fullName,
+                FORMAT(PI.DBIRTH, 'yyyy-MM-dd') AS birthdateStr,
+                R.TYPE_CODE AS typeCode
+            FROM UERMMMC.dbo.CASES C
+            LEFT JOIN UERMMMC.dbo.PATIENTINFO PI ON C.PATIENTNO = PI.PATIENTNO
+            LEFT JOIN UERMMMC.dbo.ROOMS R ON C.LAST_ROOM = R.ROOMNO   
+            LEFT JOIN UERMMMC.dbo.PATIENTREG_CREDIT PRC ON C.CASENO = PRC.CASENO
+            OUTER APPLY (
+                SELECT TOP 1 Classification, Validity FROM UERMHIMS.dbo.SocialServiceClass 
+                WHERE RTRIM(PatientNo) = RTRIM(C.PATIENTNO)
+            ) SS
+            WHERE C.UDF_CaseDept = 'ER'
+                AND C.PATIENTTYPE = 'OPD'
+                AND C.ForAdmission = 1
+                AND (PRC.FOR_APPROV = 0 OR PRC.FOR_APPROV IS NULL) -- Logic for Pending
+                AND (
+                    C.CASENO LIKE @searchQuery 
+                    OR C.PATIENTNO LIKE @searchQuery
+                    OR PI.LASTNAME LIKE @searchQuery 
+                    OR PI.FIRSTNAME LIKE @searchQuery
+                    OR (ISNULL(PI.FIRSTNAME, '') + ' ' + ISNULL(PI.LASTNAME, '')) LIKE @searchQuery
+                    OR (ISNULL(PI.LASTNAME, '') + ' ' + ISNULL(PI.FIRSTNAME, '')) LIKE @searchQuery
+                    OR (ISNULL(PI.LASTNAME, '') + ', ' + ISNULL(PI.FIRSTNAME, '')) LIKE @searchQuery
+                )
+            ORDER BY C.DATEAD DESC
+            `);
+        return result.recordset;
+    } catch (err) {
+        console.error("Model Error (searchFinanceRecord):", err);
+        throw err;
+    }
+},
 
-            const isNumeric = /^\d+$/.test(cleanQuery);
+    searchFinanceRecordApproval: async (query) => {
+    try {
+        const pool = await poolPromise;
+        
+        const searchPattern = `%${query}%`;
+        const exactId = isNaN(query) ? 0 : parseInt(query);
 
-            if (isNumeric) {
-                sqlQuery += ` AND CAST(C.PATIENTNO AS VARCHAR) LIKE @numericId `;
-                request.input('numericId', sql.VarChar, `${cleanQuery}%`);
-            } else {
-                const searchTerms = cleanQuery.split(/\s+/).filter(term => term.length > 0);
+        const result = await pool.request()
+            .input('searchQuery', sql.VarChar, searchPattern)
+            .input('exactId', sql.Int, exactId)
+            .query(`
+            SELECT
+                C.CASENO,
+                C.PATIENTNO, 
+                C.DATEAD, 
+                C.PATIENT_CATEGORY,
+                C.PATIENTTYPE AS patientType,
+                C.CC AS chiefComplaint, 
+                C.LAST_ROOM,
+                PI.SEX AS gender,
+                PI.AGE AS age, 
+                PI.UDF_PHILHEALTHNO AS philhealthNo,
+                PI.ADDRESS AS address,
+                SS.Classification AS ssClass,
+                SS.Validity AS expiration,
+                PR.ISRETURNING AS visitType,
+                PRC.IS_APPROVED, 
                 
-                searchTerms.forEach((term, index) => {
-                    const paramName = `term${index}`;
-                    request.input(paramName, sql.NVarChar, `%${term}%`);
-                    
-                    sqlQuery += ` 
-                        AND (
-                            PI.LASTNAME LIKE @${paramName} 
-                            OR PI.FIRSTNAME LIKE @${paramName}
-                            OR PI.MIDDLENAME LIKE @${paramName}
-                            OR (ISNULL(PI.FIRSTNAME, '') + ' ' + ISNULL(PI.LASTNAME, '')) LIKE @${paramName}
-                        ) 
-                    `;
-                });
-            }
+                (ISNULL(PI.FIRSTNAME, '') + ' ' + ISNULL(PI.MIDDLENAME + ' ', '') + ISNULL(PI.LASTNAME, '')) AS fullName,
+                FORMAT(PI.DBIRTH, 'yyyy-MM-dd') AS birthdateStr,
+                R.TYPE_CODE AS typeCode,
 
-            sqlQuery += ` ORDER BY C.DATEAD DESC`;
+                (SELECT TOP 1 C_SUB.DATEAD FROM UERMMMC.dbo.CASES C_SUB WHERE C_SUB.PATIENTNO = C.PATIENTNO AND C_SUB.isPay = 0 ORDER BY C_SUB.DATEAD DESC) AS lastAdSer,
+                (SELECT TOP 1 C_SUB.DATEAD FROM UERMMMC.dbo.CASES C_SUB WHERE C_SUB.PATIENTNO = C.PATIENTNO AND C_SUB.isPay = 1 ORDER BY C_SUB.DATEAD DESC) AS lastAdPay,  
+                (SELECT COUNT(C_SUB.CASENO) FROM UERMMMC.dbo.CASES C_SUB INNER JOIN UERMMMC.dbo.ROOMS R_SUB ON C_SUB.LAST_ROOM = R_SUB.ROOMNO WHERE C_SUB.PATIENTNO = C.PATIENTNO AND R_SUB.TYPE_CODE = 'SER') AS admissionCountSer,
+                (SELECT COUNT(C_SUB.CASENO) FROM UERMMMC.dbo.CASES C_SUB INNER JOIN UERMMMC.dbo.ROOMS R_SUB ON C_SUB.LAST_ROOM = R_SUB.ROOMNO WHERE C_SUB.PATIENTNO = C.PATIENTNO AND R_SUB.TYPE_CODE != 'SER') AS admissionCountPay
 
-            const result = await request.query(sqlQuery);
-            return result.recordset;
+            FROM UERMMMC.dbo.CASES C
+            LEFT JOIN UERMMMC.dbo.PATIENTINFO PI ON C.PATIENTNO = PI.PATIENTNO
+            LEFT JOIN UERMMMC.dbo.PATIENTREG PR ON PI.PATIENTNO = PR.PATIENTNO
+            LEFT JOIN UERMMMC.dbo.ROOMS R ON C.LAST_ROOM = R.ROOMNO   
+            LEFT JOIN UERMMMC.dbo.PATIENTREG_CREDIT PRC ON C.CASENO = PRC.CASENO
+            OUTER APPLY (
+                SELECT TOP 1 Classification, Validity 
+                FROM UERMHIMS.dbo.SocialServiceClass 
+                WHERE RTRIM(PatientNo) = RTRIM(C.PATIENTNO)
+            ) SS
 
-        } catch (err) {
-            console.error("Model Error (searchFinanceRecord):", err);
-            throw err;
-        }
-    },
+            WHERE C.UDF_CaseDept = 'ER'
+                AND C.PATIENTTYPE = 'OPD'
+                AND C.ForAdmission = 1
+                AND (PRC.FOR_APPROV = 1)
+                AND (
+                    C.CASENO LIKE @searchQuery 
+                    OR C.PATIENTNO LIKE @searchQuery
+                    OR PI.LASTNAME LIKE @searchQuery 
+                    OR PI.FIRSTNAME LIKE @searchQuery
+                    OR (ISNULL(PI.FIRSTNAME, '') + ' ' + ISNULL(PI.LASTNAME, '')) LIKE @searchQuery
+                    OR (ISNULL(PI.LASTNAME, '') + ' ' + ISNULL(PI.FIRSTNAME, '')) LIKE @searchQuery
+                    OR (ISNULL(PI.LASTNAME, '') + ', ' + ISNULL(PI.FIRSTNAME, '')) LIKE @searchQuery
+                )
+                
+            ORDER BY C.DATEAD DESC
+            `);
+
+        return result.recordset;
+
+    } catch (err) {
+        console.error("Model Error (searchFinanceRecordApproval):", err);
+        throw err;
+    }
+},
 
     fetchInpatientRecords: async () => {
         try {
@@ -1002,7 +1056,61 @@ searchFinanceRecord: async (query) => {
             } catch (error) {
                 throw error;
             }
-}
+},
+
+    getAssessmentDetailsByCaseno: async (caseno) => {
+    try {
+        const pool = await poolPromise;
+        const request = pool.request();
+
+        request.input('caseno', sql.VarChar, caseno);
+
+        const result = await request.query(`
+            SELECT * FROM PATIENTREG_CREDIT 
+            WHERE CASENO = @caseno
+        `);
+
+        return result.recordset.length > 0 ? result.recordset[0] : null;
+
+    } catch (err) {
+        throw err;
+    }
+},
+
+    approvePatient: async (caseNo, approvedBy) => {
+    const pool = await poolPromise; 
+    const result = await pool.request()
+        .input('caseNo', sql.VarChar, caseNo) 
+        .input('approvedBy', sql.VarChar, approvedBy) 
+        .query(`
+            UPDATE PATIENTREG_CREDIT 
+            SET IS_APPROVED = 1, 
+                APPROVED_BY = @approvedBy, 
+                UPDATEDAT = GETDATE() 
+            WHERE CASENO = @caseNo
+        `);
+    return result.rowsAffected[0];
+},
+
+    disapprovePatient: async (caseNo) => {
+        try {
+            const pool = await poolPromise; 
+            
+            const result = await pool.request()
+                .input('caseNo', sql.VarChar, caseNo) 
+                .query(`
+                    UPDATE PATIENTREG_CREDIT 
+                    SET IS_APPROVED = 0 
+                    WHERE CASENO = @caseNo
+                `);
+
+            return result.rowsAffected[0];
+
+        } catch (err) {
+            console.error("Model Error (disapprovePatient):", err);
+            throw err;
+        }
+},
 
 };
 

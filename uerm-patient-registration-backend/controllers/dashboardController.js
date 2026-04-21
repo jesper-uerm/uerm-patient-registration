@@ -7,7 +7,7 @@ fetchDashboardStats: async (req, res) => {
         const stats = await DashboardModel.getDashboardStats();
         
         res.status(200).json({
-        inpatient: stats.inpatient || 0,
+        forAdmission: stats.forAdmission || 0,
         outpatient: stats.outpatient || 0,
         emergency: stats.emergency || 0
         });
@@ -19,9 +19,9 @@ fetchDashboardStats: async (req, res) => {
 
 fetchPieChartData: async (req, res) => {
     try {
-        const rawData = await DashboardModel.getPatientTypeCounts();
+        const rawData = await DashboardModel.getPaymentTypeCounts();
 
-        const labels = rawData.map(row => row.PATIENTTYPE);
+        const labels = rawData.map(row => row.paymentType);
         const series = rawData.map(row => row.total);
 
         res.status(200).json({ labels, series });
@@ -35,29 +35,20 @@ fetchPieChartData: async (req, res) => {
 fetchLineChartData: async (req, res) => {
     try {
         const rawData = await DashboardModel.getMonthlyTrends();
-        const periods = Array.from(new Set(rawData.map(item => item.period))).sort();
 
-        const seriesMap = {
-            'Inpatient': new Array(periods.length).fill(0),
-            'Outpatient': new Array(periods.length).fill(0), 
-            'Emergency':  new Array(periods.length).fill(0)
-    };
+        const periods = rawData.map(row => row.period);
+        const admittedData = rawData.map(row => row.admitted_total);
+        const opdData = rawData.map(row => row.opd_total);
+        const erData = rawData.map(row => row.er_total);
 
-    rawData.forEach(row => {
-        const periodIndex = periods.indexOf(row.period);
-        if (seriesMap[row.type] !== undefined) {
-            seriesMap[row.type][periodIndex] = row.total;
-        }
-    });
-
-    res.status(200).json({
-        categories: periods, 
-        series: [
-            { name: 'Admitted', data: seriesMap['Inpatient'] },
-            { name: 'OPD',      data: seriesMap['Outpatient'] }, 
-            { name: 'ER',       data: seriesMap['Emergency'] }
-        ]
-    });
+        res.status(200).json({
+            categories: periods, 
+            series: [
+                { name: 'Admitted', data: admittedData },
+                { name: 'OPD',      data: opdData }, 
+                { name: 'ER',       data: erData }
+            ]
+        });
 
     } catch (err) {
         console.error("Trend Error:", err);

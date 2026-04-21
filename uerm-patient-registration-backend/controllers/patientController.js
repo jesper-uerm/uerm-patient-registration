@@ -116,59 +116,31 @@ const PatientController = {
 },
 
     updateDetails: async (req, res) => {
-    try {
-        const { patientId, formData, reviewedBy } = req.body;
+        try {
+            const { caseno, patientno, formData, reviewedBy } = req.body;
 
-        if (!patientId || !formData) {
-            return res.status(400).json({ success: false, message: "Missing patientId or form data." });
+            if (!caseno || !patientno || !formData) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Missing CASENO, PATIENTNO or form data.",
+                });
+            }
+
+            await PatientModel.upsertPatientCredit(caseno, patientno, formData, reviewedBy);
+
+            res.status(200).json({
+                success: true,
+                message: "Patient credit details saved successfully.",
+            });
+
+        } catch (error) {
+            console.error("Update Details Error:", error);
+            res.status(500).json({
+                success: false,
+                message: "Server error while updating details.",
+            });
         }
-
-        const ptData = formData.patientSourceOfIncome || {};
-        const cpData = formData.ContactPersonSourceOfIncome || {};
-        const hmo = formData.hmoForm || {};
-
-        const updateData = {
-            ptSourceIncome: ptData.sourceOfIncome,
-            specificSourceOfIncome: ptData.sourceOfIncome === 'Others' ? ptData.specificSourceOfIncome : null,
-            ptGrossIncome: ptData.pt_gross_income ? JSON.stringify(ptData.pt_gross_income) : null,
-            ptHomeOwnership: ptData.pt_home_ownership ? JSON.stringify(ptData.pt_home_ownership) : null,
-            ptYearsStay: ptData.pt_years_of_stay ? JSON.stringify(ptData.pt_years_of_stay) : null,
-            ptCars: ptData.pthasCar,
-            ptCarOwnership: ptData.pthasCar === 'yes' ? ptData.carOwnership : null,
-            ptNumberOfCars: ptData.pthasCar === 'yes' ? String(ptData.numberOfCars) : null,
-
-            cpIncomeSource: cpData.sourceOfIncomeContactPerson,
-            cpSpecificSourceIncome: cpData.sourceOfIncomeContactPerson === 'Others' ? cpData.specificSourceOfIncomeContactPerson : null,
-            cpGrossIncome: cpData.cp_gross_income ? JSON.stringify(cpData.cp_gross_income) : null,
-            cpHomeOwnership: cpData.cp_home_ownership ? JSON.stringify(cpData.cp_home_ownership) : null,
-            cpHomeStay: cpData.cp_years_of_stay ? JSON.stringify(cpData.cp_years_of_stay) : null,
-            cpHasCar: cpData.cphasCar,
-            cpCarOwnership: cpData.cphasCar === 'yes' ? cpData.cpcarOwnership : null,
-            cpNumberOfCars: cpData.cphasCar === 'yes' ? String(cpData.cpnumberOfCars) : '0',
-
-            modeOfPayment: ptData.mop,
-            specificModeOfPayment: ptData.mop === 'Others' ? ptData.specificmop : null,
-            creditCards: String(ptData.creditCard || 0),
-            bankAffiliations: ptData.bank,
-
-            hmoName: hmo.hmoName,
-            hmoMemberId: hmo.hmomemberId,
-            hmoValidityDate: hmo.hmovalidityDate || null,
-            hmoStaffName: hmo.hmoStaff,
-            hmoApprovalDate: hmo.hmoDateTime || null,
-            desiredRoom: hmo.desiredRoom,
-            informedIncrement: hmo.informedIncrement
-        };
-
-        await PatientModel.updatePatientDetails(patientId, updateData, reviewedBy);
-
-        res.status(200).json({ success: true, message: "Patient details updated successfully." });
-
-    } catch (error) {
-        console.error("Update Details Error:", error);
-        res.status(500).json({ success: false, message: "Server error while updating details." });
-    }
-},
+    },
 
     getById: async (req, res) => {
             try {
@@ -300,22 +272,36 @@ const PatientController = {
         }
 },
 
-    searchFinance: async (req, res) => {
-        try {
-            const { query } = req.query;
+searchFinance: async (req, res) => {
+    try {
+        const { query } = req.query;
 
-            if (!query || query.trim() === '') {
-                return res.status(200).json([]);
-            }
+        const results = await PatientModel.searchFinanceRecord(query);
 
-            const results = await PatientModel.searchFinanceRecord(query.trim());
+        res.status(200).json(results);
+    } catch (err) {
+        console.error("Search Error:", err); 
+        res.status(500).json({ 
+            message: "Database error during search.",
+            error: err.message 
+        });
+    }
+},
 
-            res.status(200).json(results);
+searchFinanceApproval: async (req, res) => {
+    try {
+        const { query } = req.query;
 
-        } catch (err) {
-            console.error("Search Error:", err);
-            res.status(500).json({ message: "Database error", error: err.message });
-        }
+        const results = await PatientModel.searchFinanceRecordApproval(query);
+
+        res.status(200).json(results);
+    } catch (err) {
+        console.error("Search Error:", err); 
+        res.status(500).json({ 
+            message: "Database error during search.",
+            error: err.message 
+        });
+    }
 },
 
     fetchInpatient: async (req, res) => {
@@ -424,6 +410,84 @@ const PatientController = {
                 });
             }
 },
+
+    fetchAssessmentDetails: async (req, res) => {
+    try {
+        const { caseno } = req.params;
+
+        if (!caseno) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Case number is required." 
+            });
+        }
+
+        const patientDetails = await PatientModel.getAssessmentDetailsByCaseno(caseno);
+
+        if (!patientDetails) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "Patient assessment details not found." 
+            });
+        }
+
+        return res.status(200).json(patientDetails);
+
+    } catch (error) {
+        console.error("Error fetching assessment details:", error);
+        return res.status(500).json({ 
+            success: false, 
+            message: "Internal server error.", 
+            error: error.message 
+        });
+    }
+},
+
+    approvePatient: async (req, res) => {
+    // FIX: Destructure both fields from req.body
+    const { CASENO, approvedBy } = req.body;
+
+    // Check both to be safe
+    if (!CASENO || !approvedBy) {
+        return res.status(400).json({ 
+            message: "Case Number (CASENO) and Approved By are required." 
+        });
+    }
+
+    try {
+        // FIX: Pass both arguments to your model
+        const rowsAffected = await PatientModel.approvePatient(CASENO, approvedBy);
+
+        if (rowsAffected === 0) {
+            return res.status(404).json({ message: "Record with this Case Number not found." });
+        }
+
+        res.status(200).json({ message: "Patient successfully admitted." });
+    } catch (err) {
+        console.error("Admit Patient Error:", err);
+        res.status(500).json({ message: "Server error: " + err.message });
+    }
+    },
+    disapprovePatient: async (req, res) => {
+        const { CASENO } = req.body;
+
+        if (!CASENO) {
+            return res.status(400).json({ message: "Case Number (CASENO) is required." });
+        }
+
+        try {
+            const rowsAffected = await PatientModel.disapprovePatient(CASENO);
+
+            if (rowsAffected === 0) {
+                return res.status(404).json({ message: "Record with this Case Number not found." });
+            }
+
+            res.status(200).json({ message: "Patient declined admission." });
+        } catch (err) {
+            console.error("Admit Patient Error:", err);
+            res.status(500).json({ message: "Server error: " + err.message });
+        }
+    },
 
 };
 
