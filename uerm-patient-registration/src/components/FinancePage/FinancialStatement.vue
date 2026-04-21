@@ -75,7 +75,7 @@
           </div>
 
           <div class="col-12 col-md-5 scroll q-pa-md bg-grey-1">
-            <q-card flat bordered class="bg-blue-1" style="border-color: #bbdefb">
+            <q-card flat bordered class="bg-blue-1 q-mb-md" style="border-color: #bbdefb">
               <q-card-section class="q-py-sm q-px-md row items-center no-wrap">
                 <q-icon name="info" color="blue-8" size="sm" class="q-mr-sm" />
                 <div class="text-caption text-blue-9" style="line-height: 1.2">
@@ -83,43 +83,22 @@
                 </div>
               </q-card-section>
             </q-card>
-
-            <!-- <q-table
+            <q-table
               flat
               bordered
-              :rows="tableRows"
-              :columns="tableColumns"
-              row-key="id"
+              :rows="patientRecord"
+              :columns="columns"
+              row-key="PATIENTNO"
               hide-pagination
+              :pagination="{ rowsPerPage: 0 }"
               separator="horizontal"
               table-header-class="bg-grey-3 text-weight-bold"
+              :loading="loading"
             >
-              <template v-slot:body-cell-date="props">
-                <q-td :props="props" class="text-grey-7">
-                  {{ props.row.date }}
-                </q-td>
+              <template v-slot:loading>
+                <q-inner-loading showing color="primary" />
               </template>
-
-              <template v-slot:body-cell-amount="props">
-                <q-td :props="props" class="text-weight-bold text-grey-9">
-                  {{ props.row.amount }}
-                </q-td>
-              </template>
-
-              <template v-slot:bottom-row>
-                <q-tr class="bg-blue-grey-1">
-                  <q-td
-                    colspan="2"
-                    class="text-right text-weight-bold text-uppercase text-grey-8"
-                  >
-                    Total Balance:
-                  </q-td>
-                  <q-td class="text-right text-weight-bolder text-blue-10 text-subtitle2">
-                    ₱ 15,500.00
-                  </q-td>
-                </q-tr>
-              </template>
-            </q-table> -->
+            </q-table>
           </div>
         </div>
       </q-card-section>
@@ -128,6 +107,7 @@
 </template>
 
 <script>
+import { date } from "quasar";
 import PatientSourceOfIncome from "src/components/FinancePage/PatientSourceOfIncome.vue";
 import AdmissionPatient from "src/components/FinancePage/AdmissionPatient.vue";
 import TransferHMO from "src/components/FinancePage/TransferHMO.vue";
@@ -155,47 +135,89 @@ export default {
       step: 1,
       localPatient: {},
 
-      tableColumns: [
-        { name: "date", label: "Date", field: "date", align: "left", sortable: true },
+      columns: [
         {
-          name: "description",
-          label: "Description",
-          field: "description",
+          name: "datead",
+          label: "Date Admittted",
+          field: "DATEAD",
           align: "left",
+          format: (val) => (val ? date.formatDate(val, "MMM D, YYYY") : "-"),
         },
         {
-          name: "amount",
-          label: "Amount",
-          field: "amount",
-          align: "right",
+          name: "caseno",
+          label: "Case No.",
+          field: "CASENO",
+          align: "left",
           sortable: true,
         },
-      ],
-      tableRows: [
         {
-          id: 1,
-          date: "2023-10-01",
-          description: "Initial Deposit",
-          amount: "₱ 5,000.00",
+          name: "room",
+          label: "Ward",
+          field: "room",
+          align: "left",
+          sortable: true,
         },
-        { id: 2, date: "2023-10-03", description: "Lab Tests", amount: "₱ 2,500.00" },
-        { id: 3, date: "2023-10-05", description: "Room Charge", amount: "₱ 8,000.00" },
+        {
+          name: "physician",
+          label: "Physician",
+          field: "physician",
+          align: "left",
+          sortable: true,
+          format: (val) => {
+            if (!val || val.trim() === "") return "N/A";
+            return val;
+          },
+        },
+        {
+          name: "ward",
+          label: "Disc Code",
+          field: "ward",
+          align: "left",
+          sortable: true,
+        },
+        {
+          name: "patientype",
+          label: "Type",
+          field: "patientType",
+          align: "left",
+          sortable: true,
+        },
+        {
+          name: "patientCat",
+          label: "Category",
+          field: "patientCat",
+          align: "left",
+          sortable: true,
+        },
+        {
+          name: "pn",
+          label: "PN",
+          field: "promissory",
+          align: "left",
+          sortable: true,
+        },
       ],
     };
   },
 
   computed: {
-    ...mapWritableState(useFinanceStore, ["submitting"]),
+    ...mapWritableState(useFinanceStore, ["submitting", "patientRecord", "loading"]),
   },
 
   methods: {
-    ...mapActions(useFinanceStore, ["setCurrentPatient", "updatePatientDetails"]),
+    ...mapActions(useFinanceStore, [
+      "setCurrentPatient",
+      "updatePatientDetails",
+      "fetchPatientRecords",
+    ]),
 
     openFinancialDialog(patientData) {
       this.step = 1;
       this.localPatient = patientData;
 
       this.setCurrentPatient(patientData);
+
+      this.fetchPatientRecords(patientData.PATIENTNO);
 
       this.financialDialog = true;
     },

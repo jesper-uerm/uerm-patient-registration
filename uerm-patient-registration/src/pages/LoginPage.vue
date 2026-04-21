@@ -139,7 +139,7 @@ export default {
 
         this.$q.notify({
           type: "positive",
-          message: `Login Successful! Welcome, ${this.authStore.firstName}`,
+          message: `Welcome, ${this.authStore.firstName}`,
         });
 
         this.$router.push(targetPath);

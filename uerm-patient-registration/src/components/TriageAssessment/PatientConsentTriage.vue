@@ -93,15 +93,13 @@
 </template>
 
 <script>
-import { mapWritableState, mapActions } from "pinia";
+import { mapWritableState } from "pinia";
 import { useTriageStore } from "../../stores/triageStore";
 import SignaturePad from "src/components/InpatientForm/SignaturePad.vue";
 
 export default {
   name: "PatientConsentTriage",
-  components: {
-    SignaturePad,
-  },
+  components: { SignaturePad },
 
   data() {
     return {
@@ -110,37 +108,48 @@ export default {
   },
 
   computed: {
-    ...mapWritableState(useTriageStore, ["formData", "step", "submitting"]),
+    ...mapWritableState(useTriageStore, ["formData"]),
   },
 
   watch: {
     "formData.patientSignature"(val) {
-      if (val) this.hasError = false;
+      if (val && val.length > 200) {
+        this.hasError = false;
+      }
     },
   },
-  methods: {
-    ...mapActions(useTriageStore, ["submitRegistration"]),
 
+  methods: {
     async trySubmit() {
-      if (!this.formData.patientSignature) {
+      const sig = this.formData.patientSignature;
+
+      if (!sig || sig.length < 200) {
         this.hasError = true;
-        this.$q.notify({
-          type: "warning",
-          position: "top",
-          message: "Please sign the consent form to proceed.",
-        });
         return;
       }
-
       this.hasError = false;
-      await this.submitRegistration();
+      this.$emit("submit");
     },
 
     onBack() {
-      this.step = 1;
+      this.$emit("prev");
     },
   },
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.bounce-in {
+  animation: bounceIn 0.5s;
+}
+@keyframes bounceIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>

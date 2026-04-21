@@ -7,7 +7,7 @@
   >
     <q-card
       class="column no-wrap"
-      style="width: 1300px; max-width: 95vw; max-height: 87vh; border-radius: 20px"
+      style="width: 1100px; max-width: 95vw; max-height: 87vh; border-radius: 20px"
     >
       <q-card-section
         class="column text-center text-white q-py-md relative-position"
@@ -42,21 +42,11 @@
           :contracted="$q.screen.lt.sm"
         >
           <q-step :name="1" title="Personal Info" icon="person" :done="step > 1">
-            <patient-details-triage
-              :form="formData.personalInfoTriage"
-              @update:form="(val) => (formData.personalInfoTriage = val)"
-              @next="step = 2"
-            />
+            <patient-details-triage @next="handleStepOneSuccess" />
           </q-step>
 
           <q-step :name="2" title="Patient Consent" icon="verified_user" :done="step > 2">
-            <patient-consent-triage
-              :form="formData.PatientConsentTriageForm"
-              @update:form="(val) => (formData.PatientConsentTriageForm = val)"
-              :initial-signature="formData.patientSignature"
-              @update:signature="(val) => (formData.patientSignature = val)"
-              @prev="step = 1"
-            />
+            <patient-consent-triage @prev="step = 1" @submit="handleFinalSubmit" />
           </q-step>
         </q-stepper>
       </q-card-section>
@@ -72,16 +62,22 @@ import PatientConsentTriage from "../components/TriageAssessment/PatientConsentT
 
 export default {
   name: "TriageAssessment",
+
   components: {
     PatientDetailsTriage,
     PatientConsentTriage,
+  },
+
+  data() {
+    return {
+      localDetailsData: {},
+    };
   },
 
   computed: {
     ...mapWritableState(useTriageStore, [
       "TriageAssessmentFormDialog",
       "step",
-      "formData",
       "submitting",
     ]),
   },
@@ -92,24 +88,33 @@ export default {
     show() {
       this.openDialog();
     },
+
+    handleStepOneSuccess(detailsFromChild) {
+      this.localDetailsData = detailsFromChild;
+      this.step = 2;
+    },
+
+    async handleFinalSubmit() {
+      const triageStore = useTriageStore();
+
+      const payload = {
+        ...this.localDetailsData,
+        ...triageStore.formData,
+      };
+
+      console.log("ACTUAL Signature in Store:", triageStore.formData.patientSignature);
+      await this.submitRegistration(payload);
+    },
   },
 };
 </script>
-
 <style scoped>
-:deep(.q-stepper__title) {
-  font-size: 12px;
-  font-weight: bold;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  margin-top: 8px;
-}
 :deep(.q-stepper__dot) {
-  width: 40px;
-  height: 40px;
-  font-size: 20px;
+  font-size: 18px;
+  width: 35px;
+  height: 35px;
 }
-:deep(.q-stepper__step-inner) {
-  padding-top: 0 !important;
+:deep(.q-stepper__line) {
+  top: 20px;
 }
 </style>

@@ -195,6 +195,43 @@
           <div class="text-caption2 q-mb-md q-py-sm bg-grey-4 text-center text-uppercase">
             Service Ward
           </div>
+          <div class="row q-col-gutter-xs q-mb-md">
+            <div class="col-12 col-sm-4 col-md-4">
+              <q-input
+                outlined
+                dense
+                type="date"
+                v-model="formData.fnExpDate"
+                label="Expiration Date"
+                stack-label
+                readonly
+              />
+            </div>
+            <div class="col-12 col-sm-4 col-md-4">
+              <div class="col-12 col-sm-12 col-md-12">
+                <q-input
+                  outlined
+                  dense
+                  type="date"
+                  v-model="formData.fnLastAdmDateService"
+                  label="Last Admission Date"
+                  stack-label
+                  readonly
+                />
+              </div>
+            </div>
+            <div class="col-12 col-sm-4 col-md-4">
+              <q-input
+                outlined
+                dense
+                type="number"
+                v-model="formData.fnnumAdmissionService"
+                label="Number of Admission"
+                stack-label
+                readonly
+              />
+            </div>
+          </div>
           <div class="row q-col-gutter-xs">
             <div class="col-12 col-sm-4 col-md-4 q-mb-md">
               <q-input
@@ -239,41 +276,6 @@
               />
             </div>
             <div class="col-12 col-sm-6 col-md-6">
-              <q-input
-                outlined
-                dense
-                type="number"
-                v-model="formData.fnnumAdmissionService"
-                label="Number of Admission"
-                stack-label
-                readonly
-              />
-            </div>
-          </div>
-          <div class="row q-col-gutter-xs q-mb-md">
-            <div class="col-12 col-sm-4 col-md-4">
-              <q-input
-                outlined
-                dense
-                type="date"
-                v-model="formData.fnExpDate"
-                label="Expiration Date"
-                stack-label
-              />
-            </div>
-            <div class="col-12 col-sm-4 col-md-4">
-              <div class="col-12 col-sm-12 col-md-12">
-                <q-input
-                  outlined
-                  dense
-                  type="date"
-                  v-model="formData.fnLastAdmDateService"
-                  label="Last Admission Date"
-                  stack-label
-                />
-              </div>
-            </div>
-            <div class="col-12 col-sm-4 col-md-4">
               <q-select
                 outlined
                 dense

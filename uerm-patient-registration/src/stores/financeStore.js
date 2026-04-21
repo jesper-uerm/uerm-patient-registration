@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import axios from "axios";
-import { Notify } from "quasar";
+import { Notify, Loading } from "quasar";
+import { useAuthStore } from 'src/stores/authStore';
 
 const API_URL = "http://10.107.0.2:3000/api/er";
 const PATIENT_API_URL = "http://10.107.0.2:3000/api/patients";
@@ -9,10 +10,18 @@ const DASHBOARD_API_URL = "http://10.107.0.2:3000/api/dashboard";
 export const useFinanceStore = defineStore("finance", {
   state: () => ({
     patientList: [],
+    patientListApproval: [],
+    patientRecord: [],
     loading: false,
     hasSearched: false,
     selectedPatient: {},
     viewDialog: false,
+
+    approvedCount: 0,
+    declinedCount: 0,
+
+    patientDetails: null,
+    detailsLoading: false,
 
     pieSeries: [],
     pieLabels: [],
@@ -81,7 +90,7 @@ export const useFinanceStore = defineStore("finance", {
       fnCost: "",
       fnlengthStay: "",
       fnadmProcedure: "",
-      frorDeposit: "",
+      fnorDeposit: "",
       fnreqDeposit: "",
       fntoDeposit: "",
       fntofollowDeposit: "",
@@ -92,18 +101,33 @@ export const useFinanceStore = defineStore("finance", {
     },
   }),
 
-  getters: {
-    inpatientCount: (state) =>
-      state.patientList.filter((p) => p.patientType === "Inpatient").length,
-    outpatientCount: (state) =>
-      state.patientList.filter((p) => p.patientType === "Outpatient").length,
-    erpatientCount: (state) =>
-      state.patientList.filter(
-        (p) => p.patientType === "Emergency" || p.patientType === "ER"
-      ).length,
-  },
-
   actions: {
+    async fetchFinanceDashboardData() {
+      this.loading = true;
+      try {
+        const [pieRes, lineRes, listRes] = await Promise.all([
+          axios.get(`${DASHBOARD_API_URL}/pie-chart`),
+          axios.get(`${DASHBOARD_API_URL}/line-chart`),
+          axios.get(`${API_URL}/finance`),
+        ]);
+
+        this.pieSeries = pieRes.data.series;
+        this.pieLabels = pieRes.data.labels;
+        this.lineSeries = lineRes.data.series;
+        this.lineCategories = lineRes.data.categories;
+
+        this.patientList = listRes.data;
+
+        this.approvedCount = this.patientList.filter((p) => p.is_approved === true).length;
+        this.declinedCount = this.patientList.filter((p) => p.is_approved === false).length;
+
+      } catch (error) {
+        console.error('Finance Dashboard Fetch Error:', error);
+      } finally {
+        this.loading = false;
+      }
+    },
+
     async fetchDoctors() {
       if (this.allDoctors?.length > 0) return;
 
@@ -146,45 +170,14 @@ export const useFinanceStore = defineStore("finance", {
       }
     },
 
-    // setCurrentPatient(patientData) {
-    //   this.currentPatient = patientData;
-    //   console.log('Patient Data:', patientData);
-
-    //   const visitType =
-    //   patientData.visitType == 1 ? 'Returning' : 'First Time';
-
-    //   const now = new Date();
-    //   const localDateTime = new Date(now.getTime() - (now.getTimezoneOffset() * 60000))
-    //     .toISOString()
-    //     .slice(0, 16);
-
-    //   Object.assign(this.formData, {
-    //     fnDateTime: localDateTime,
-    //     fnName: (patientData.fullName || '').trim().toUpperCase(),
-    //     fnAge: patientData.age || '',
-    //     fnGender: patientData.gender || '',
-    //     fnAddress: patientData.address || '',
-    //     fnsssCard: patientData.class || '',
-    //     fnvisitTypeService: visitType,
-    //     fnExpDate: patientData.expiration
-    //       ? new Date(patientData.expiration).toISOString().split('T')[0]
-    //       : null,
-    //     fnLastAdmDateService: patientData.DATEAD
-    //       ? new Date(patientData.DATEAD).toISOString().split('T')[0]
-    //       : null,
-    //     fnvisitTypePay: visitType,
-    //     fnphNumber: patientData.philhealthNo
-    //       ? patientData.philhealthNo.toString().replace(/\D/g, '').replace(/^(\d{2})(\d{9})(\d{1})$/, '$1-$2-$3')
-    //       : '',
-    //     fnnumAdmissionService: patientData.ssEntryCount || 0,
-    //   });
-    // },
-
     setCurrentPatient(patientData) {
       this.currentPatient = patientData;
-      console.log('Patient Data Received:', patientData);
 
-      const visitType = patientData.visitType == 1 ? 'Returning' : '';
+      const authStore = useAuthStore();
+
+      const visitTypePay = patientData.admissionCountPay >= 1 ? 'Returning' : '';
+      const visitTypeSer = patientData.admissionCountSer >= 1 ? 'Returning' : '';
+
       const now = new Date();
       const localDateTime = new Date(now.getTime() - (now.getTimezoneOffset() * 60000))
         .toISOString()
@@ -199,22 +192,30 @@ export const useFinanceStore = defineStore("finance", {
 
         fnsssCard: patientData.ssClass || '',
 
-        fnvisitTypeService: visitType,
-        fnvisitTypePay: visitType,
+        fnvisitTypeService: visitTypeSer,
+        fnvisitTypePay: visitTypePay,
 
         fnExpDate: (patientData.expiration && patientData.expiration !== '')
           ? new Date(patientData.expiration).toISOString().split('T')[0]
           : null,
 
-        fnLastAdmDateService: (patientData.DATEAD && patientData.DATEAD !== '')
-          ? new Date(patientData.DATEAD).toISOString().split('T')[0]
+        fnLastAdmDateService: (patientData.lastAdSer && patientData.lastAdSer !== '')
+          ? new Date(patientData.lastAdSer).toISOString().split('T')[0]
           : null,
 
         fnphNumber: patientData.philhealthNo
           ? patientData.philhealthNo.toString().replace(/\D/g, '').replace(/^(\d{2})(\d{9})(\d{1})$/, '$1-$2-$3')
           : '',
 
-        fnnumAdmissionService: patientData.ssEntryCount || 0,
+        fnnumAdmissionService: patientData.admissionCountSer || 0,
+
+        fnnumAdmissionPay: patientData.admissionCountPay || 0 ,
+        fnLastAdmDatePay: (patientData.lastAdPay && patientData.lastAdPay !== '')
+          ? new Date(patientData.lastAdPay).toISOString().split('T')[0]
+          : null,
+
+        fnEvaluatedBY: authStore.fullName || '',
+
       });
     },
 
@@ -241,44 +242,16 @@ export const useFinanceStore = defineStore("finance", {
       }
     },
 
-    viewPatient(row) {
-      this.selectedPatient = row;
-      this.viewDialog = true;
-    },
-
-    async searchPatientList(query) {
-      if (!query || query.length < 2) {
-        Notify.create({
-          type: "warning",
-          message: "Please enter at least 2 characters",
-          position: "top",
-        });
-        return;
-      }
-
+    async fetchPatientsFinanceApproval() {
       this.loading = true;
-
       try {
-        const response = await axios.get(`${PATIENT_API_URL}/search-finance`, {
-          params: { query },
-        });
-
-        this.patientList = response.data;
-        this.hasSearched = true;
-
-        if (this.patientList.length === 0) {
-          Notify.create({
-            type: "info",
-            message: "No records found.",
-            icon: "info",
-            position: "top",
-          });
-        }
+        const response = await axios.get(`${API_URL}/financeApproval`);
+        this.patientListApproval = response.data;
       } catch (error) {
         console.error(error);
         Notify.create({
           type: "negative",
-          message: "Search Failed",
+          message: "Failed to load Review List",
           position: "top",
         });
       } finally {
@@ -286,16 +259,94 @@ export const useFinanceStore = defineStore("finance", {
       }
     },
 
+    async fetchPatientRecords(PATIENTNO) {
+      this.loading = true;
+      try {
+      const response = await axios.get(`${API_URL}/${PATIENTNO}/records`);
+        this.patientRecord = response.data;
+      } catch (error) {
+        console.error(error);
+        Notify.create({
+          type: "negative",
+          message: "Failed to load Record List",
+          position: "top",
+        });
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async fetchPatientDetailsCredit(caseno) {
+      this.detailsLoading = true;
+      this.patientDetails = null;
+
+      try {
+      const response = await axios.get(`${PATIENT_API_URL}/assessment-details/${caseno}`);
+        this.patientDetails = response.data;
+      } catch (error) {
+        console.error("Error fetching patient details:", error);
+      } finally {
+        this.detailsLoading = false;
+      }
+    },
+
+    viewPatient(row) {
+      this.selectedPatient = row;
+      this.viewDialog = true;
+    },
+
+  async searchPatientList(query) {
+      this.loading = true;
+      this.hasSearched = true;
+
+      this.patientList = [];
+
+      try {
+          const response = await axios.get(`${PATIENT_API_URL}/search-finance`, {
+            params: { query },
+          });
+
+          this.patientList = response.data;
+      } catch (error) {
+          console.error("Search failed:", error);
+      } finally {
+          this.loading = false;
+      }
+    },
+
+  async searchPatientListApproval(query) {
+      this.loading = true;
+      this.hasSearched = true;
+
+      this.patientListApproval = [];
+
+      try {
+          const response = await axios.get(`${PATIENT_API_URL}/search-finance-approval`, {
+            params: { query },
+          });
+
+          this.patientListApproval = response.data;
+      } catch (error) {
+          console.error("Search failed:", error);
+      } finally {
+          this.loading = false;
+      }
+  },
+
     async updatePatientDetails() {
-      if (!this.currentPatient?.patient_id) {
+      if (!this.currentPatient?.CASENO || !this.currentPatient?.PATIENTNO) {
         throw new Error("No patient selected for update.");
       }
 
       this.submitting = true;
       try {
+        const authStore = useAuthStore();
+
         const payload = {
-          patientId: this.currentPatient.patient_id,
+          caseno: this.currentPatient.CASENO,
+          patientno: this.currentPatient.PATIENTNO,
           formData: this.formData,
+          reviewedBy: authStore.fullName || '',
         };
 
         await axios.put(`${PATIENT_API_URL}/details`, payload);
@@ -308,40 +359,60 @@ export const useFinanceStore = defineStore("finance", {
       }
     },
 
-    async fetchAllPatients() {
-      this.loading = true;
+    async approvePatient(patient) {
+    if (!patient || !patient.CASENO) {
+      Notify.create({ type: 'negative', message: 'Case Number is missing.' });
+      return;
+    }
+
+    const authStore = useAuthStore();
+    const userName = authStore.fullName || 'Unknown User';
+
+    Loading.show({ message: 'Updating status...' });
+
+    try {
+      await axios.put(`${PATIENT_API_URL}/approve`, {
+        CASENO: patient.CASENO,
+        approvedBy: userName
+      });
+
+      Notify.create({
+        type: 'positive',
+        message: 'Patient admitted successfully!',
+        position: 'top',
+      });
+
+      await this.fetchPatientsFinanceApproval();
+    } catch (error) {
+      console.error('Update failed:', error);
+      Notify.create({ type: 'negative', message: 'Failed to update status.', position: 'top' });
+    } finally {
+      Loading.hide();
+    }
+  },
+
+    async disapprovePatient(patient) {
+      if (!patient || !patient.CASENO) {
+        Notify.create({ type: 'negative', message: 'Case Number is missing.' });
+        return;
+      }
+
+      Loading.show({ message: 'Updating status...' });
       try {
-        const response = await axios.get(`${PATIENT_API_URL}/`);
-        this.patientList = response.data;
-      } catch (error) {
-        console.error(error);
+        await axios.put(`${PATIENT_API_URL}/disapprove`, { CASENO: patient.CASENO });
+
         Notify.create({
-          type: "negative",
-          message: "Failed to load all patients for dashboard",
-          position: "top",
+          type: 'warning',
+          message: 'Patient has been declined.',
+          position: 'top',
         });
+
+        await this.fetchPatientsFinanceApproval();
+      } catch (error) {
+        console.error('Update failed:', error);
+        Notify.create({ type: 'negative', message: 'Failed to update status.', position: 'top' });
       } finally {
-        this.loading = false;
-      }
-    },
-
-    async fetchPieData() {
-      try {
-        const response = await axios.get(`${DASHBOARD_API_URL}/pie-chart`);
-        this.pieSeries = response.data.series;
-        this.pieLabels = response.data.labels;
-      } catch (error) {
-        console.error("Chart Load Error:", error);
-      }
-    },
-
-    async fetchTrendData() {
-      try {
-        const response = await axios.get(`${DASHBOARD_API_URL}/line-chart`);
-        this.lineSeries = response.data.series;
-        this.lineCategories = response.data.categories;
-      } catch (error) {
-        console.error("Error loading trends:", error);
+        Loading.hide();
       }
     },
   },

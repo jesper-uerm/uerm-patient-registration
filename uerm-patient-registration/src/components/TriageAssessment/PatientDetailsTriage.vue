@@ -40,7 +40,7 @@
     </div>
 
     <div class="row" :class="$q.screen.lt.sm ? 'q-col-gutter-xs' : 'q-col-gutter-sm'">
-      <div class="col-12 col-sm-3">
+      <div class="col-12 col-sm-4">
         <q-input
           outlined
           dense
@@ -54,10 +54,7 @@
           <template v-slot:append>
             <q-icon name="event" class="cursor-pointer">
               <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                <q-date
-                  v-model="formData.birthdateTriage"
-                  @update:model-value="calculateAge"
-                >
+                <q-date v-model="formData.birthdateTriage">
                   <div class="row items-center justify-end">
                     <q-btn v-close-popup label="Close" color="primary" flat />
                   </div>
@@ -67,30 +64,19 @@
           </template>
         </q-input>
       </div>
-      <div class="col-12 col-sm-3 q-mb-md">
-        <q-input
-          outlined
-          dense
-          type="number"
-          v-model="formData.ageTriage"
-          label="Age"
-          readonly
-          bg-color="grey-2"
-        />
-      </div>
-      <div class="col-12 col-sm-3">
+      <div class="col-12 col-sm-4">
         <q-select
           outlined
           dense
           v-model="formData.genderTriage"
-          :options="['Male', 'Female']"
+          :options="['Male', 'Female', 'Others']"
           label-slot
           :rules="[(val) => !!val || 'Required']"
         >
           <template v-slot:label> Gender <span class="text-red">*</span> </template>
         </q-select>
       </div>
-      <div class="col-12 col-sm-3">
+      <div class="col-12 col-sm-4">
         <q-select
           outlined
           dense
@@ -107,18 +93,41 @@
       </div>
     </div>
 
-    <div class="row" :class="$q.screen.lt.sm ? 'q-col-gutter-xs' : 'q-col-gutter-sm'">
-      <div class="col-12 col-sm-3">
+    <div
+      class="row q-mb-md"
+      :class="$q.screen.lt.sm ? 'q-col-gutter-xs' : 'q-col-gutter-sm'"
+    >
+      <div v-if="isSenior" class="col-12">
         <q-input
           outlined
           dense
-          v-model="formData.hmoName"
-          label="HMO Provider"
-          hint="e.g. Maxicare, Intellicare"
+          v-model="formData.scidnoTriage"
+          label="Senior Citizen ID No."
         />
       </div>
+    </div>
 
-      <div class="col-12 col-sm-3">
+    <div class="row" :class="$q.screen.lt.sm ? 'q-col-gutter-xs' : 'q-col-gutter-sm'">
+      <div class="col-12 col-sm-4">
+        <q-select
+          outlined
+          dense
+          v-model="formData.hmoName"
+          :options="hmo || []"
+          emit-value
+          map-options
+          label="HMO"
+          stack-label
+        >
+          <template v-slot:no-option>
+            <q-item>
+              <q-item-section class="text-grey"> No HMO found </q-item-section>
+            </q-item>
+          </template>
+        </q-select>
+      </div>
+
+      <div class="col-12 col-sm-4">
         <q-select
           outlined
           dense
@@ -141,65 +150,102 @@
           <template v-slot:label> Infirmary <span class="text-red">*</span> </template>
         </q-select>
       </div>
-      <div class="col-12 col-sm-3">
-        <q-input outlined dense v-model="formData.scidnoTriage" label="SC ID No." />
-      </div>
-      <div class="col-12 col-sm-3">
+      <div class="col-12 col-sm-4">
         <q-input outlined dense v-model="formData.pwdTriage" label="PWD ID No." />
       </div>
     </div>
-
-    <div class="text-subtitle2= text-bold q-my-md">
-      Person to notify in case of Emergency:
-    </div>
-
-    <div class="row" :class="$q.screen.lt.sm ? 'q-col-gutter-xs' : 'q-col-gutter-sm'">
-      <div class="col-12 col-sm-6">
+    <div class="row q-col-gutter-xs">
+      <div class="col-12">
         <q-input
+          v-model="formData.streetName"
+          label-slot
           outlined
           dense
-          v-model="formData.contactPersonTriage"
-          label-slot
-          :rules="[(val) => !!val || 'Required']"
+          lazy-rules
+          :rules="[(val) => !!val || 'Please enter street name or house number']"
         >
-          <template v-slot:label> Full Name <span class="text-red">*</span> </template>
+          <template v-slot:label>
+            Street / House Number / Building <span class="text-red">*</span>
+          </template>
         </q-input>
       </div>
-      <div class="col-12 col-sm-6">
-        <q-input
+
+      <div class="col-12 col-sm-3 col-md-3">
+        <q-select
+          v-model="formData.selectedRegion"
+          :options="formData.addressOptions.regions"
+          option-label="name"
+          option-value="code"
+          label-slot
           outlined
           dense
-          v-model="formData.contactPersonTriageMobile"
+          :loading="formData.addressLoading.regions"
+          @update:model-value="handleLoadProvinces"
+          lazy-rules
+          :rules="[(val) => !!val || 'Required']"
+        >
+          <template v-slot:label> Region <span class="text-red">*</span> </template>
+        </q-select>
+      </div>
+
+      <div class="col-12 col-sm-3 col-md-3">
+        <q-select
+          v-model="formData.selectedProvince"
+          :options="formData.addressOptions.provinces"
+          option-label="name"
+          option-value="code"
           label-slot
-          mask="####-###-####"
+          :disable="!formData.selectedRegion"
+          outlined
+          dense
+          :loading="formData.addressLoading.provinces"
+          @update:model-value="handleLoadCities"
+          :rules="[(val) => !!val || 'Required']"
+        >
+          <template v-slot:label> Province <span class="text-red">*</span> </template>
+        </q-select>
+      </div>
+
+      <div class="col-12 col-sm-3 col-md-3">
+        <q-select
+          v-model="formData.selectedCity"
+          :options="formData.addressOptions.cities"
+          option-label="name"
+          option-value="code"
+          label-slot
+          :disable="!formData.selectedProvince"
+          outlined
+          dense
+          :loading="formData.addressLoading.cities"
+          @update:model-value="handleLoadBarangays"
           :rules="[(val) => !!val || 'Required']"
         >
           <template v-slot:label>
-            Mobile Number <span class="text-red">*</span>
+            City/Municipality <span class="text-red">*</span>
           </template>
-
-          <template v-slot:append>
-            <q-icon name="smartphone" />
-          </template>
-        </q-input>
+        </q-select>
       </div>
-      <div class="col-12 col-md-12">
-        <q-input
+
+      <div class="col-12 col-sm-3 col-md-3">
+        <q-select
+          v-model="formData.selectedBarangay"
+          :options="formData.addressOptions.barangays"
+          option-label="name"
+          option-value="code"
+          label-slot
+          :disable="!formData.selectedCity"
           outlined
           dense
-          v-model="formData.contactPersonTriageAddress"
-          type="textarea"
-          rows="1"
-          label-slot
+          :loading="formData.addressLoading.barangays"
           :rules="[(val) => !!val || 'Required']"
         >
-          <template v-slot:label> Home Address <span class="text-red">*</span> </template>
-        </q-input>
+          <template v-slot:label> Barangay <span class="text-red">*</span> </template>
+        </q-select>
       </div>
     </div>
-
     <q-stepper-navigation class="text-center" :class="$q.screen.lt.sm ? '' : 'q-mt-xs'">
       <q-btn
+        unelevated
         color="blue-10"
         icon-right="arrow_forward"
         style="width: 120px"
@@ -211,41 +257,142 @@
 </template>
 
 <script>
-import { mapWritableState } from "pinia";
+import { mapWritableState, mapActions } from "pinia";
 import { useTriageStore } from "../../stores/triageStore";
 import { date } from "quasar";
 
 export default {
   name: "PatientDetailsTriage",
 
-  computed: {
-    ...mapWritableState(useTriageStore, ["formData", "step"]),
+  data() {
+    return {
+      formData: {
+        patientId: null,
+        patientNo: null,
+        lastNameTriage: "",
+        firstNameTriage: "",
+        middleNameTriage: "",
+        suffixTriage: "",
+        birthdateTriage: "",
+        ageTriage: "",
+        genderTriage: "",
+        contactPersonTriage: "",
+        contactPersonTriageAddress: "",
+        contactPersonTriageMobile: "",
+        scidnoTriage: "",
+        infirmary: "N/A",
+        hmoName: "",
+        civilStatus: "",
+        chiefComplaintTriage: "",
+        tempTriage: "",
+        heartRateTriage: "",
+        oxygenTriage: "",
+        bpTriage: "",
+        respiRateTriage: "",
+        painScoreTriage: "",
+        avpuTriage: "",
+        contagiousTriage: "",
+        isolationPrecautionTriage: "",
+        cpdTriage: "",
+        levelTriage: "",
+        checkforPresense: [],
+        remarksTriage: "",
+        personnelTriage: "",
+        dateTriage: "",
+        patientSignature: null,
+        personnelSignature: null,
+        selectedRegion: null,
+        selectedProvince: null,
+        selectedCity: null,
+        selectedBarangay: null,
+        streetName: "",
+
+        addressOptions: { regions: [], provinces: [], cities: [], barangays: [] },
+        addressLoading: {
+          regions: false,
+          provinces: false,
+          cities: false,
+          barangays: false,
+        },
+      },
+    };
   },
 
-  mounted() {
+  computed: {
+    ...mapWritableState(useTriageStore, ["step", "hmo"]),
+
+    formattedBirthdate() {
+      return this.formData.birthdateTriage
+        ? date.formatDate(this.formData.birthdateTriage, "YYYY/MM/DD")
+        : "";
+    },
+
+    isSenior() {
+      if (!this.formData.birthdateTriage) return false;
+
+      const today = new Date();
+      const birthDate = new Date(this.formData.birthdateTriage);
+
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+
+      return age >= 60;
+    },
+  },
+
+  async mounted() {
+    await this.handleLoadRegions();
+    await this.fetchHmo();
+
     if (!this.formData.dateTriage) {
       this.formData.dateTriage = date.formatDate(Date.now(), "YYYY/MM/DD");
     }
   },
 
+  watch: {
+    isSenior(newVal) {
+      if (!newVal) {
+        this.formData.scidnoTriage = "";
+      }
+    },
+  },
+
   methods: {
-    calculateAge(newDate) {
-      if (!newDate) return;
-      this.formData.ageTriage = date.getDateDiff(Date.now(), new Date(newDate), "years");
+    ...mapActions(useTriageStore, [
+      "fetchHmo",
+      "loadRegions",
+      "loadProvinces",
+      "loadCities",
+      "loadBarangays",
+    ]),
+
+    async handleLoadRegions() {
+      await this.loadRegions(this.formData);
+    },
+
+    handleLoadProvinces() {
+      this.loadProvinces(this.formData);
+    },
+
+    handleLoadCities() {
+      this.loadCities(this.formData);
+    },
+
+    handleLoadBarangays() {
+      this.loadBarangays(this.formData);
     },
 
     async onNext() {
       const isFormValid = await this.$refs.personalInfoTriageRef.validate();
 
       if (isFormValid) {
-        this.step = 2;
+        this.$emit("next", this.formData);
       } else {
-        this.$q.notify({
-          type: "warning",
-          html: true,
-          position: "top",
-          message: "Please complete form requirements.",
-        });
+        this.$q.notify({ type: "warning", message: "Please complete the form." });
       }
     },
   },

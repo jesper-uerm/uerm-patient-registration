@@ -24,9 +24,11 @@
           dense
           v-model="searchQuery"
           placeholder="Enter Name or ID"
-          @keyup.enter="handleSearch"
-          :disable="loading"
           class="bg-white"
+          :disable="loading"
+          debounce="500"
+          @update:model-value="handleSearch"
+          @keyup.enter="handleSearch"
         >
           <template v-slot:prepend>
             <q-icon name="search" class="text-grey-5" />
@@ -48,11 +50,11 @@
       <q-card-section class="col q-pa-none q-mx-lg q-mb-md">
         <q-table
           bordered
+          flat
           :rows="patientList"
           :columns="columns"
-          row-key="patient_id"
+          row-key="ID"
           :loading="loading"
-          flat
           :dense="$q.screen.lt.xl"
           :grid="$q.screen.lt.sm"
           :rows-per-page-options="[10]"
@@ -120,7 +122,7 @@
                     <q-item-label class="text-weight-bold text-blue-10">
                       {{ props.row.firstName }} {{ props.row.lastName }}
                     </q-item-label>
-                    <q-item-label caption>ID: {{ props.row.patient_id }}</q-item-label>
+                    <q-item-label caption>ID: {{ props.row.ID }}</q-item-label>
                     <q-item-label caption="">
                       Status:
                       <span v-if="props.row.forReview == 0" class="text-red">
@@ -130,7 +132,7 @@
                         Reviewed
                       </span>
                       <span v-else>
-                        {{ props.row.patient_id }}
+                        {{ props.row.ID }}
                       </span>
                     </q-item-label>
                   </q-item-section>
@@ -331,7 +333,7 @@ export default {
           field: "PATIENTNO",
           align: "center",
           sortable: true,
-          style: "width: 100px; font-weight: bold",
+          style: "width: 120px; font-weight: bold",
           format: (val) => (Array.isArray(val) ? val[0] : val ? val : "N/A"),
         },
         {
@@ -370,7 +372,7 @@ export default {
         },
         {
           name: "DATEAD",
-          label: "Date Admitted",
+          label: "Date Added",
           field: "DATEAD",
           align: "center",
           sortable: true,
@@ -406,11 +408,12 @@ export default {
     ...mapActions(useFinanceStore, ["searchPatientList"]),
 
     handleSearch() {
-      if (!this.searchQuery) {
+      const query = this.searchQuery.trim();
+      if (!query) {
         this.fetchPatientsFinance();
-        return;
+      } else {
+        this.searchPatientList(query);
       }
-      this.searchPatientList(this.searchQuery);
     },
 
     // viewPatient(row) {

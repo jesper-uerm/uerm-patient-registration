@@ -42,7 +42,9 @@ const routes = [
     meta: { requiresAuth: true, role: 'HOSPITAL FINANCE AND OPERATIONS' },
     children: [
       { path: '', name: 'finance-dashboard', component: () => import('src/components/FinancePage/FinanceDashboard.vue') },
-      { path: 'PatientList', name: 'finance-patient-list', component: () => import('src/components/FinancePage/PatientList.vue') }
+      { path: 'PatientList', name: 'finance-patient-list', component: () => import('src/components/FinancePage/PatientList.vue') },
+      { path: 'PatientListApproval', name: 'finance-patient-list-approval', component: () => import('src/components/FinancePage/PatientListApproval.vue') }
+
     ]
   },
 

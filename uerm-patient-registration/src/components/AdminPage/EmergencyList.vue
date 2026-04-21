@@ -17,11 +17,39 @@
         </div>
       </q-card-section>
 
+      <!-- <q-card-section class="col-auto q-py-md q-px-lg bg-grey-1">
+        <q-input
+          outlined
+          dense
+          v-model="searchQuery"
+          placeholder="Enter Name or ID"
+          @keyup.enter="handleSearch"
+          :disable="loading"
+          class="bg-white"
+        >
+          <template v-slot:prepend>
+            <q-icon name="search" class="text-grey-5" />
+          </template>
+          <template v-slot:after>
+            <q-btn
+              unelevated
+              color="blue-10"
+              label="Search"
+              class="q-px-lg"
+              @click="handleSearch"
+              :loading="loading"
+            />
+          </template>
+        </q-input>
+      </q-card-section> -->
+
       <q-card-section class="col-auto q-py-md q-px-lg bg-grey-1">
         <q-input
           outlined
           dense
           v-model="searchQuery"
+          debounce="500"
+          @update:model-value="handleSearch"
           placeholder="Enter Name or ID"
           @keyup.enter="handleSearch"
           :disable="loading"
@@ -117,9 +145,9 @@
                       clickable
                     >
                       <q-item-section avatar>
-                        <q-icon name="content_paste_go" color="blue-10" />
+                        <q-icon name="assignment_ind" color="blue-10" />
                       </q-item-section>
-                      <q-item-section>Subject for Admission</q-item-section>
+                      <q-item-section>Requires Admission</q-item-section>
                     </q-item>
                     <q-item
                       v-if="props.row.ISVALIDATED != 1"
@@ -148,13 +176,6 @@
                       <q-item-section>
                         <q-item-label>Add Vitals</q-item-label>
                       </q-item-section>
-                    </q-item>
-
-                    <q-item clickable @click="openCaseNumberDialog(props.row)">
-                      <q-item-section avatar>
-                        <q-icon name="autorenew" color="green-8" />
-                      </q-item-section>
-                      <q-item-section>Generate Case Number</q-item-section>
                     </q-item>
 
                     <q-item clickable @click="handlePrint(props.row)">
@@ -563,7 +584,7 @@
         </q-card-section>
 
         <q-card-section class="scroll q-px-xl" style="max-height: 65vh">
-          <q-form ref="personalInfoTriage" @submit="updateTriageRecord" class="q-pa-sm">
+          <q-form ref="personalInfoTriage" class="q-pa-sm">
             <div
               class="text-caption2 q-mb-md q-py-sm bg-grey-4 text-center text-uppercase"
             >
@@ -833,9 +854,13 @@
                   outlined
                   dense
                   v-model="formData.painScoreTriage"
-                  label="Pain Score *"
+                  label
                   :rules="[(val) => !!val || 'Required']"
-                />
+                >
+                  <template v-slot:label>
+                    Pain Score <span class="text-red">*</span>
+                  </template>
+                </q-input>
               </div>
 
               <div class="col-12 col-sm-4 col-md-4 q-mb-md">
@@ -876,7 +901,7 @@
                   outlined
                   dense
                   v-model="formData.levelTriage"
-                  :options="['1 - (Emergent)', '2 - (Urgent)', '3 - (Non-Urgent)']"
+                  :options="['Emergent', 'Urgent', 'Non-Urgent']"
                   label-slot
                   lazy-rules
                   :rules="[(val) => !!val || 'Please select triage level.']"
@@ -978,7 +1003,7 @@
                   :class="hasError ? 'bg-red-1' : 'bg-grey-1'"
                   style="border: 1px solid #dcdcdc"
                 >
-                  <SignaturePad v-model="localSignature" />
+                  <SignaturePad v-if="triageDialog" v-model="localSignature" />
                   <div
                     v-if="hasError"
                     class="text-negative text-caption q-mt-xs text-center"
@@ -997,426 +1022,14 @@
           <q-btn flat label="Cancel" v-close-popup />
 
           <q-btn
+            unelevated
+            type="button"
             color="blue-10"
-            icon-right="upload"
             style="width: 100%; height: 45px; max-width: 150px"
+            icon-right="upload"
             label="Submit"
             :loading="loading"
             @click="handleSubmitUpdate"
-          />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
-
-    <q-dialog
-      v-model="caseNumberDialog"
-      backdrop-filter="blur(4px)"
-      persistent
-      transition-show="scale"
-      transition-hide="scale"
-    >
-      <q-card
-        style="width: 1500px; max-width: 95vw; display: flex; flex-direction: column"
-        :style="{ height: $q.screen.lt.md ? '90vh' : '80vh' }"
-        class="rounded-borders"
-      >
-        <q-card-section
-          class="column text-center text-white q-py-md relative-position"
-          style="background-color: #004aad"
-        >
-          <div class="text-h6 text-bold">CASE NUMBER FORM</div>
-          <div class="text-caption text-white-7" style="line-height: 1.2">
-            Please input valid information.
-          </div>
-          <q-btn
-            icon="close"
-            flat
-            round
-            dense
-            v-close-popup
-            class="absolute-right q-ma-lg"
-          />
-        </q-card-section>
-
-        <q-card-section class="scroll q-px-xl" style="max-height: 65vh">
-          <q-form ref="casenumberForm" @submit="handleCaseNumber" class="q-pa-sm">
-            <div
-              class="text-caption2 q-mb-md q-py-sm bg-grey-4 text-center text-uppercase"
-            >
-              Patient Information:
-            </div>
-
-            <div class="row q-col-gutter-xs">
-              <div class="col-12 col-sm-3 col-md-3">
-                <q-input
-                  outlined
-                  dense
-                  v-model="formData.casefullname"
-                  label="Full Name *"
-                  :rules="[(val) => !!val || 'Required']"
-                  readonly
-                />
-              </div>
-              <div class="col-12 col-sm-3 col-md-3">
-                <q-input
-                  outlined
-                  dense
-                  v-model="formData.casepatientno"
-                  label="Patient No. *"
-                  :rules="[(val) => !!val || 'Required']"
-                  readonly
-                />
-              </div>
-              <div class="col-12 col-sm-3 col-md-3 q-mb-md">
-                <q-input
-                  outlined
-                  dense
-                  v-model="formData.caseBirthdate"
-                  label="Birthdate *"
-                  mask="date"
-                  readonly
-                >
-                  <template v-slot:append>
-                    <q-icon name="event" class="cursor-pointer">
-                      <q-popup-proxy
-                        cover
-                        transition-show="scale"
-                        transition-hide="scale"
-                      >
-                        <q-date v-model="formData.caseBirthdate">
-                          <div class="row items-center justify-end">
-                            <q-btn v-close-popup label="Close" color="primary" flat />
-                          </div>
-                        </q-date>
-                      </q-popup-proxy>
-                    </q-icon>
-                  </template>
-                </q-input>
-              </div>
-              <div class="col-12 col-sm-3 col-md-3 q-mb-md">
-                <q-input
-                  outlined
-                  dense
-                  type="number"
-                  v-model="formData.caseAge"
-                  label="Age"
-                  readonly
-                />
-              </div>
-            </div>
-
-            <div class="row q-col-gutter-xs">
-              <div class="col-12 col-sm-4 col-md-4">
-                <q-input
-                  outlined
-                  dense
-                  v-model="formData.caseSeniorId"
-                  type="number"
-                  label="Senior Citizen No."
-                  readonly
-                />
-              </div>
-              <div class="col-12 col-sm-4 col-md-4 q-mb-md">
-                <q-input
-                  outlined
-                  dense
-                  v-model="formData.casepwdId"
-                  type="number"
-                  label="PWD No."
-                  readonly
-                />
-              </div>
-              <div class="col-12 col-sm-4 col-md-4 q-mb-md">
-                <q-input
-                  outlined
-                  dense
-                  v-model="formData.casedtAdmission"
-                  label="Date of Admission *"
-                  mask="date"
-                >
-                  <template v-slot:append>
-                    <q-icon name="event" class="cursor-pointer">
-                      <q-popup-proxy
-                        cover
-                        transition-show="scale"
-                        transition-hide="scale"
-                      >
-                        <q-date v-model="formData.casedtAdmission">
-                          <div class="row items-center justify-end">
-                            <q-btn v-close-popup label="Close" color="primary" flat />
-                          </div>
-                        </q-date>
-                      </q-popup-proxy>
-                    </q-icon>
-                  </template>
-                </q-input>
-              </div>
-            </div>
-
-            <div class="row q-col-gutter-md">
-              <div class="col-12 col-sm-3 col-md-3">
-                <q-input
-                  outlined
-                  dense
-                  v-model="formData.chiefComplaintTriage"
-                  label-slot
-                  :rules="[(val) => !!val || 'Required']"
-                >
-                  <template v-slot:label>
-                    Chief Complaint <span class="text-red">*</span>
-                  </template>
-                </q-input>
-              </div>
-
-              <div class="col-12 col-sm-3 col-md-3">
-                <q-input
-                  outlined
-                  dense
-                  v-model="formData.caseadmDiagnosis"
-                  label-slot
-                  :rules="[(val) => !!val || 'Required']"
-                >
-                  <template v-slot:label>
-                    Admission Diagnosis <span class="text-red">*</span>
-                  </template>
-                </q-input>
-              </div>
-
-              <div class="col-12 col-sm-3 col-md-3">
-                <q-input outlined dense v-model="formData.casefromER" label-slot>
-                  <template v-slot:label>
-                    Admission Type <span class="text-red">*</span>
-                  </template>
-                </q-input>
-              </div>
-
-              <div class="col-12 col-sm-3 col-md-3">
-                <q-input outlined dense v-model="formData.caseserviceType" label-slot>
-                  <template v-slot:label>
-                    Service Type <span class="text-red">*</span>
-                  </template>
-                </q-input>
-              </div>
-            </div>
-
-            <div class="row q-col-gutter-md q-mb-md">
-              <div class="col-12 col-md-12">
-                <q-input outlined dense v-model="formData.casepdfRemarks" label-slot>
-                  <template v-slot:label>
-                    Pre Defined Remarks: <span class="text-red">*</span>
-                  </template>
-                </q-input>
-              </div>
-            </div>
-            <div class="row q-col-gutter-xs">
-              <div class="col-12 col-sm-3 col-md-3">
-                <q-input outlined dense v-model="formData.caseRemarks" label-slot>
-                  <template v-slot:label>
-                    Remarks: <span class="text-red">*</span>
-                  </template>
-                </q-input>
-              </div>
-              <div class="col-12 col-sm-3 col-md-3">
-                <q-input outlined dense v-model="formData.caseerPhysician" label-slot>
-                  <template v-slot:label>
-                    ER Physician <span class="text-red">*</span>
-                  </template>
-                </q-input>
-              </div>
-              <div class="col-12 col-sm-3 col-md-3">
-                <q-input outlined dense v-model="formData.caseAllergies" label-slot>
-                  <template v-slot:label>
-                    Allergies <span class="text-red">*</span>
-                  </template>
-                </q-input>
-              </div>
-              <div class="col-12 col-sm-3 col-md-3">
-                <q-input outlined dense v-model="formData.caseAdmittedBy" label-slot>
-                  <template v-slot:label>
-                    Admitted By<span class="text-red">*</span>
-                  </template>
-                </q-input>
-              </div>
-            </div>
-
-            <q-separator class="q-my-md" />
-            <div
-              class="text-caption2 q-mb-md q-py-sm bg-grey-4 text-center text-uppercase"
-            >
-              Infirmary:
-            </div>
-
-            <div class="row q-col-gutter-xs">
-              <div class="col-12 col-sm-12 col-md-6 q-mb-md">
-                <q-input outlined dense v-model="formData.caseCensusInfirmary" label-slot>
-                  <template v-slot:label>
-                    UERM Census <span class="text-red">*</span>
-                  </template>
-                </q-input>
-              </div>
-              <div class="col-12 col-sm-12 col-md-6">
-                <q-input outlined dense v-model="formData.caseDepartment" label-slot>
-                  <template v-slot:label>
-                    Department <span class="text-red">*</span>
-                  </template>
-                </q-input>
-              </div>
-            </div>
-
-            <q-separator class="q-my-md" />
-            <div
-              class="text-caption2 q-mb-md q-py-sm bg-grey-4 text-center text-uppercase"
-            >
-              Payment Plan:
-            </div>
-
-            <div class="row q-col-gutter-md">
-              <div class="col-12 col-sm-4 col-md-4 q-mb-md">
-                <q-input outlined dense v-model="formData.caseCompany" label-slot>
-                  <template v-slot:label>
-                    Company <span class="text-red">*</span>
-                  </template>
-                </q-input>
-              </div>
-              <div class="col-12 col-sm-4 col-md-4">
-                <q-input outlined dense v-model="formData.caseHmo" label-slot>
-                  <template v-slot:label> HMO <span class="text-red">*</span> </template>
-                </q-input>
-              </div>
-              <div class="col-12 col-sm-4 col-md-4">
-                <q-input outlined dense v-model="formData.caseEmployer" label-slot>
-                  <template v-slot:label>
-                    Employer <span class="text-red">*</span>
-                  </template>
-                </q-input>
-              </div>
-            </div>
-
-            <div class="row q-col-gutter-md q-mb-md">
-              <div class="col-12 col-sm-4 col-md-4">
-                <q-input outlined dense v-model="formData.caseCardNo" label-slot>
-                  <template v-slot:label>
-                    Card No <span class="text-red">*</span>
-                  </template>
-                </q-input>
-              </div>
-              <div class="col-12 col-sm-4 col-md-4">
-                <q-input outlined dense v-model="formData.casecovAmount" label-slot>
-                  <template v-slot:label>
-                    Coverage Amount <span class="text-red">*</span>
-                  </template>
-                </q-input>
-              </div>
-              <div class="col-12 col-sm-4 col-md-4">
-                <q-input outlined dense v-model="formData.caseappCode" label-slot>
-                  <template v-slot:label>
-                    App Code <span class="text-red">*</span>
-                  </template>
-                </q-input>
-              </div>
-            </div>
-
-            <div class="row q-col-gutter-md">
-              <div class="col-12 col-sm-6 col-md-6">
-                <q-input
-                  outlined
-                  dense
-                  v-model="formData.caseEffectivity"
-                  label="Effectivity *"
-                  mask="date"
-                >
-                  <template v-slot:append>
-                    <q-icon name="event" class="cursor-pointer">
-                      <q-popup-proxy
-                        cover
-                        transition-show="scale"
-                        transition-hide="scale"
-                      >
-                        <q-date v-model="formData.caseEffectivity">
-                          <div class="row items-center justify-end">
-                            <q-btn v-close-popup label="Close" color="primary" flat />
-                          </div>
-                        </q-date>
-                      </q-popup-proxy>
-                    </q-icon>
-                  </template>
-                </q-input>
-              </div>
-              <div class="col-12 col-sm-6 col-md-6">
-                <q-input outlined dense v-model="formData.casermPlan" label-slot>
-                  <template v-slot:label>
-                    Room Plan <span class="text-red">*</span>
-                  </template>
-                </q-input>
-              </div>
-              <div class="col-12 col-sm-6 col-md-6">
-                <q-input outlined dense v-model="formData.caseLoa" label-slot>
-                  <template v-slot:label>
-                    LOA No <span class="text-red">*</span>
-                  </template>
-                </q-input>
-              </div>
-              <div class="col-12 col-sm-6 col-md-6">
-                <q-input outlined dense v-model="formData.caseApprov" label-slot>
-                  <template v-slot:label>
-                    Approval No<span class="text-red">*</span>
-                  </template>
-                </q-input>
-              </div>
-            </div>
-
-            <q-separator class="q-my-md" />
-            <div
-              class="text-caption2 q-mb-md q-py-sm bg-grey-4 text-center text-uppercase"
-            >
-              Informant:
-            </div>
-
-            <div class="row q-col-gutter-md">
-              <div class="col-12 col-sm-4 col-md-4 q-mb-md">
-                <q-input outlined dense v-model="formData.caseInformantName" label-slot>
-                  <template v-slot:label>
-                    Full Name <span class="text-red">*</span>
-                  </template>
-                </q-input>
-              </div>
-              <div class="col-12 col-sm-4 col-md-4">
-                <q-input outlined dense v-model="formData.caseInfAddress" label-slot>
-                  <template v-slot:label>
-                    Home Address <span class="text-red">*</span>
-                  </template>
-                </q-input>
-              </div>
-              <div class="col-12 col-sm-4 col-md-4">
-                <q-select
-                  outlined
-                  dense
-                  v-model="formData.caseInfRelationship"
-                  :options="appOptions.relationships"
-                  label-slot
-                  :rules="[(val) => !!val || 'Required']"
-                >
-                  <template v-slot:label>
-                    Relation to Patient <span class="text-red">*</span>
-                  </template>
-                </q-select>
-              </div>
-            </div>
-          </q-form>
-        </q-card-section>
-
-        <q-separator />
-
-        <q-card-actions align="center" class="text-primary q-my-md">
-          <q-btn flat label="Cancel" v-close-popup />
-
-          <q-btn
-            color="blue-10"
-            icon-right="upload"
-            style="width: 100%; height: 45px; max-width: 150px"
-            label="Submit"
-            :loading="loading"
-            @click="handleCaseNumber"
           />
         </q-card-actions>
       </q-card>
@@ -1655,10 +1268,8 @@ export default {
       "appOptions",
     ]),
     ...mapState(useAuthStore, ["fullName"]),
-
     ...mapWritableState(useTriageStore, [
       "triageDialog",
-      "caseNumberDialog",
       "viewPatientValidationDialog",
       "selectedPatient",
     ]),
@@ -1728,7 +1339,8 @@ export default {
     },
 
     editPatient(row) {
-      this.updateTriage(row);
+      this.updateTriage(this.formData, row);
+
       if (!this.formData.dateTriage) {
         const timeStamp = Date.now();
         this.formData.dateTriage = date.formatDate(timeStamp, "YYYY/MM/DD");
@@ -1736,12 +1348,11 @@ export default {
     },
 
     async handleSubmitUpdate() {
+      if (this.loading) return;
+
       const valid = await this.$refs.personalInfoTriage.validate();
-
       const rawResult = this.localSignature;
-
       const signatureString = rawResult && rawResult.data ? rawResult.data : rawResult;
-
       const isSignatureValid = !!signatureString && signatureString.length > 50;
 
       if (!valid || !isSignatureValid) {
@@ -1753,36 +1364,7 @@ export default {
         this.$q.notify({ type: "warning", message: msg, position: "top" });
         return;
       }
-      await this.updateTriageRecord(signatureString);
-    },
-
-    openCaseNumberDialog(row) {
-      this.resetForm();
-      this.formData.patientId = row.ID;
-      this.casenumForm(row);
-
-      const timeStamp = Date.now();
-      const currentDateTime = date.formatDate(timeStamp, "YYYY/MM/DD HH:mm:ss");
-
-      if (!this.formData.dateTriage) this.formData.dateTriage = currentDateTime;
-      if (!this.formData.caseBirthdate) this.formData.caseBirthdate = currentDateTime;
-      if (!this.formData.caseEffectivity) this.formData.caseEffectivity = currentDateTime;
-      if (!this.formData.casedtAdmission) this.formData.casedtAdmission = currentDateTime;
-
-      this.caseNumberDialog = true;
-    },
-
-    async handleCaseNumber() {
-      const valid = await this.$refs.casenumberForm.validate();
-      if (!valid) {
-        this.$q.notify({
-          type: "warning",
-          message: "Please fill out the missing fields.",
-          position: "top",
-        });
-        return;
-      }
-      await this.submitCaseNumber();
+      await this.updateTriageRecord(this.formData, signatureString);
     },
 
     async handleValidatePatient(row) {
@@ -1865,6 +1447,16 @@ export default {
       if (p.SUFFIX) fullName += ` ${p.SUFFIX}`;
       return fullName;
     },
+  },
+
+  onDoctorSelected(selectedValue) {
+    const selectedDoctor = this.allDoctors.find((doc) => doc.value === selectedValue);
+
+    if (selectedDoctor) {
+      this.formData.fnDepartment = selectedDoctor.department;
+    } else {
+      this.formData.fnDepartment = "";
+    }
   },
 };
 </script>

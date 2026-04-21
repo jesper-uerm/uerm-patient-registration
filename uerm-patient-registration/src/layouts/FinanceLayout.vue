@@ -104,7 +104,7 @@
           class="q-mx-sm rounded-borders q-mb-xs"
         >
           <q-item-section avatar>
-            <q-icon name="fact_check" />
+            <q-icon name="assignment" />
           </q-item-section>
           <q-item-section>Assessment</q-item-section>
         </q-item>
@@ -112,12 +112,12 @@
         <q-item
           clickable
           v-ripple
-          to=""
+          to="/finance/PatientListApproval"
           active-class="active-link"
           class="q-mx-sm rounded-borders q-mb-xs"
         >
           <q-item-section avatar>
-            <q-icon name="assignment" />
+            <q-icon name="verified_user" />
           </q-item-section>
           <q-item-section>Approval</q-item-section>
         </q-item>

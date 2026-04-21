@@ -26,6 +26,7 @@
                 v-model="formData.fnLastAdmDatePay"
                 label="Last Admission Date"
                 stack-label
+                readonly
               />
             </div>
           </div>
@@ -37,6 +38,7 @@
               v-model="formData.fnnumAdmissionPay"
               label="Number of Admission"
               stack-label
+              readonly
             />
           </div>
         </div>

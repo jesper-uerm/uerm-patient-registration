@@ -65,7 +65,7 @@
             />
           </div>
           <div class="col-12 col-sm-3 col-md-3">
-            <q-select
+            <q-input
               outlined
               stack-label
               dense
@@ -77,6 +77,7 @@
             <q-input
               outlined
               dense
+              type="number"
               v-model="formData.fnCost"
               label="Possible Cost *"
               stack-label
@@ -104,7 +105,8 @@
             <q-input
               outlined
               dense
-              v-model="formData.frorDeposit"
+              type="number"
+              v-model="formData.fnorDeposit"
               label="Operating Room Deposit *"
               stack-label
             />
@@ -114,6 +116,7 @@
               outlined
               stack-label
               dense
+              type="number"
               v-model="formData.fnreqDeposit"
               label="Requested Deposit *"
             />
@@ -123,6 +126,7 @@
               outlined
               stack-label
               dense
+              type="number"
               v-model="formData.fntoDeposit"
               label="To Deposit *"
             />
@@ -132,6 +136,7 @@
               outlined
               stack-label
               dense
+              type="number"
               v-model="formData.fntofollowDeposit"
               label="To Follow Deposit *"
             />
@@ -164,6 +169,7 @@
               v-model="formData.fnEvaluatedBY"
               label="Evaluated By *"
               stack-label
+              readonly
             />
           </div>
           <div class="col-12 col-sm-4 col-md-4">
@@ -173,6 +179,7 @@
               v-model="formData.fnApprovedBY"
               label="Approved By *"
               stack-label
+              readonly
             />
           </div>
         </div>

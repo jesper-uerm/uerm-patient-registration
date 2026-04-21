@@ -104,7 +104,7 @@
           class="q-mx-sm rounded-borders q-mb-xs"
         >
           <q-item-section avatar>
-            <q-icon name="emergency" />
+            <q-icon name="local_hospital" />
           </q-item-section>
           <q-item-section>Emergency</q-item-section>
         </q-item>

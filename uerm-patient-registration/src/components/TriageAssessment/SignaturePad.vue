@@ -82,16 +82,11 @@ export default {
     saveSignature() {
       const { isEmpty, data } = this.$refs.signaturePad.saveSignature();
       if (isEmpty) {
-        this.$q.notify({
-          type: "warning",
-          message: "Please provide a signature first.",
-          position: "top",
-        });
+        this.$q.notify({ type: "warning", message: "Please provide a signature." });
         return;
       }
       this.signedImage = data;
       this.$emit("update:modelValue", data);
-      this.$emit("save", data);
       this.showDialog = false;
     },
   },
