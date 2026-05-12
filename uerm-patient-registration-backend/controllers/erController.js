@@ -41,7 +41,7 @@ const ErController = {
       res.status(200).json({
         message: "Triage data updated successfully",
         PATIENTNO: result.PATIENTNO,
-        ID: result.ID,
+        PATIENTREGID: result.PATIENTREGID,
       });
     } catch (error) {
       console.error("Update Triage Error:", error);
@@ -50,14 +50,14 @@ const ErController = {
   },
 
   admitErPatient: async (req, res) => {
-    const { ID } = req.body;
+    const { PATIENTREGID } = req.body;
 
-    if (!ID) {
+    if (!PATIENTREGID) {
       return res.status(400).json({ message: "Patient ID is required." });
     }
 
     try {
-      const rowsAffected = await ErModel.admitPatient(ID);
+      const rowsAffected = await ErModel.admitPatient(PATIENTREGID);
 
       if (rowsAffected === 0) {
         return res.status(404).json({ message: "Patient not found." });
@@ -81,9 +81,9 @@ const ErController = {
     }
   },
 
-  fetchErPatientsForFinance: async (req, res) => {
+  fetchPatientsForFinance: async (req, res) => {
     try {
-      const patients = await ErModel.fetchErPatientsForFinance();
+      const patients = await ErModel.fetchPatientsForFinance();
 
       res.status(200).json(patients);
     } catch (err) {
@@ -189,7 +189,7 @@ const ErController = {
       return res.status(200).json({
         message: "Case number generated and record updated successfully!",
         PATIENTNO: result.PATIENTNO,
-        ID: result.ID,
+        PATIENTREGID: result.PATIENTREGID,
         // case_no: result.case_no // You might want to return the newly generated case number here too!
       });
     } catch (error) {

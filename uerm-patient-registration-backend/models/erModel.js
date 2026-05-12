@@ -26,186 +26,167 @@ const calculateAge = (birthDateString) => {
 const ErModel = {
     
     registerTriage: async (body) => {
-        let pool;
-        let transaction;
+    let pool;
+    let transaction;
 
-        try {
-            const permParts = [
-                body.streetTriage, // Smallest unit first
-                body.barangayTriage,
-                body.cityTriage,
-                body.provinceTriage,
-                body.regionTriage
-            ];
-            
-            const formattedPermanentAddress = permParts
-                .filter(part => part && String(part).trim() !== '')
-                .join(', ');
+    try {
+        const permParts = [
+            body.streetTriage,
+            body.barangayTriage,
+            body.cityTriage,
+            body.provinceTriage,
+            body.regionTriage
+        ];
 
-            const t = {
-                // ... (keep existing mappings)
-                lastName: toStr(body.lastNameTriage),
-                firstName: toStr(body.firstNameTriage),
-                middleName: toStr(body.middleNameTriage),
-                suffix: toStr(body.suffixTriage),
-                birthdate: body.birthdateTriage || null,
-                age: calculateAge(body.birthdateTriage), 
-                gender: toStr(body.genderTriage),
-                civilStatus: toStr(body.civilStatus),
+        const formattedPermanentAddress = permParts
+            .filter(part => part && String(part).trim() !== '')
+            .join(', ');
 
-                // ADD STREET HERE
-                street: toStr(body.streetTriage), 
-                
-                barangay: toStr(body.barangayTriage),
-                city: toStr(body.cityTriage),
-                province: toStr(body.provinceTriage),
-                region: toStr(body.regionTriage),
-                permanentAddress: formattedPermanentAddress,
-                
-                // ... (keep rest of your mappings)
-                patientType: toStr(body.patientType),
-                chiefComplaint: toStr(body.chiefComplaintTriage),
-                temp: toDecimal(body.tempTriage),
-                heartRate: toInt(body.heartRateTriage),
-                oxygen: toDecimal(body.oxygenTriage),
-                respiRate: toInt(body.respiRateTriage),
-                painScore: toInt(body.painScoreTriage),
-                bp: toStr(body.bpTriage),
-                avpu: toStr(body.avpuTriage),
-                contagious: toStr(body.contagiousTriage),
-                isolation: toStr(body.isolationPrecautionTriage),
-                cpd: toStr(body.cpdTriage),
-                level: toStr(body.levelTriage),
-                remarks: toStr(body.remarksTriage),
-                checkforPresense: Array.isArray(body.checkforPresense) 
-                    ? body.checkforPresense.join(', ') 
-                    : toStr(body.checkforPresense),
-                contactPerson: toStr(body.contactPersonTriage),
-                contactAddress: toStr(body.contactPersonTriageAddress),
-                contactNumber: toStr(body.contactPersonTriageMobile),
-                seniorId: toStr(body.scidnoTriage),
-                pwdId: toStr(body.pwdTriage),
-                hmo: toStr(body.hmoName),
-                infirmary: toStr(body.infirmary),
-                personnel: toStr(body.personnelTriage),
-                dateAccomplished: body.dateTriage ? new Date(body.dateTriage) : new Date(),
-                personnelSignature: body.personnelSignature,
-                patientSignature: body.patientSignature
-            };
+        const t = {
+            patientNo: toStr(body.patientNo),
+            lastName: toStr(body.lastNameTriage),
+            firstName: toStr(body.firstNameTriage),
+            middleName: toStr(body.middleNameTriage),
+            suffix: toStr(body.suffixTriage),
+            birthdate: body.birthdateTriage || null,
+            age: calculateAge(body.birthdateTriage),
+            gender: toStr(body.genderTriage),
+            civilStatus: toStr(body.civilStatus),
+            street: toStr(body.streetTriage),
+            barangay: toStr(body.barangayTriage),
+            city: toStr(body.cityTriage),
+            province: toStr(body.provinceTriage),
+            region: toStr(body.regionTriage),
+            patientType: toStr(body.patientType),
+            infirmary: toStr(body.infirmary),
+            chiefComplaint: toStr(body.chiefComplaintTriage),
+            temp: toDecimal(body.tempTriage),
+            heartRate: toInt(body.heartRateTriage),
+            oxygen: toDecimal(body.oxygenTriage),
+            respiRate: toInt(body.respiRateTriage),
+            painScore: toInt(body.painScoreTriage),
+            bp: toStr(body.bpTriage),
+            avpu: toStr(body.avpuTriage),
+            contagious: toStr(body.contagiousTriage),
+            isolation: toStr(body.isolationPrecautionTriage),
+            cpd: toStr(body.cpdTriage),
+            level: toStr(body.levelTriage),
+            remarks: toStr(body.remarksTriage),
+            symptoms: Array.isArray(body.checkforPresense)
+                ? body.checkforPresense.join(', ')
+                : toStr(body.checkforPresense),
+            cpName: toStr(body.contactPersonTriage),
+            cpAddress: toStr(body.contactPersonTriageAddress),
+            cpMobile: toStr(body.contactPersonTriageMobile),
+            seniorId: toStr(body.scidnoTriage),
+            pwdId: toStr(body.pwdTriage),
+            hmo: toStr(body.hmoName),
+            personnel: toStr(body.personnelTriage),
+            dateAccomplished: body.dateTriage ? new Date(body.dateTriage) : new Date(),
+            patientSignature: body.patientSignature
+        };
 
-            const pool = await poolPromise; 
-            transaction = new sql.Transaction(pool);
-            await transaction.begin();
+        pool = await poolPromise;
+        transaction = new sql.Transaction(pool);
+        await transaction.begin();
 
-            const request = new sql.Request(transaction);
+        const request = new sql.Request(transaction);
 
-            // Ensure the Street input is registered
-            request.input('lastName', sql.NVarChar, t.lastName ? t.lastName.toUpperCase() : null)
-                .input('firstName', sql.NVarChar, t.firstName ? t.firstName.toUpperCase() : null)
-                .input('middleName', sql.NVarChar, t.middleName ? t.middleName.toUpperCase() : null)
-                .input('suffix', sql.NVarChar, t.suffix ? t.suffix.toUpperCase() : null)
-                .input('birthdate', sql.VarChar, t.birthdate) 
-                .input('age', sql.Int, t.age)
-                .input('gender', sql.NVarChar, t.gender ? t.gender.toUpperCase() : null)
-                .input('civilStatus', sql.NVarChar, t.civilStatus ? t.civilStatus.toUpperCase() : null)
-                
-                // ADDED THIS INPUT
-                .input('street', sql.NVarChar, t.street ? t.street.toUpperCase() : null) 
-                
-                .input('barangay', sql.NVarChar, t.barangay ? t.barangay.toUpperCase() : null)
-                .input('city', sql.NVarChar, t.city ? t.city.toUpperCase() : null)
-                .input('province', sql.NVarChar, t.province ? t.province.toUpperCase() : null)
-                .input('region', sql.NVarChar, t.region ? t.region.toUpperCase() : null)
-                .input('permAddress', sql.NVarChar, t.permanentAddress ? t.permanentAddress.toUpperCase() : null)
-                .input('infirmary', sql.NVarChar, t.infirmary ? t.infirmary.toUpperCase() : null)
-                .input('patientType', sql.NVarChar, t.patientType ? t.patientType.toUpperCase() : null)
-                .input('chiefComplaint', sql.NVarChar, t.chiefComplaint ? t.chiefComplaint.toUpperCase() : null)
-                .input('temp', sql.Decimal(5, 2), t.temp)
-                .input('heartRate', sql.Int, t.heartRate)
-                .input('oxygen', sql.Decimal(5, 2), t.oxygen)
-                .input('bp', sql.NVarChar, t.bp ? t.bp.toUpperCase() : null)
-                .input('respiRate', sql.Int, t.respiRate)
-                .input('painScore', sql.Int, t.painScore)
-                .input('avpu', sql.NVarChar, t.avpu ? t.avpu.toUpperCase() : null)
-                .input('contagious', sql.NVarChar, t.contagious ? t.contagious.toUpperCase() : null)
-                .input('isolation', sql.NVarChar, t.isolation ? t.isolation.toUpperCase() : null)
-                .input('cpd', sql.NVarChar, t.cpd ? t.cpd.toUpperCase() : null)
-                .input('level', sql.NVarChar, t.level ? t.level.toUpperCase() : null)
-                .input('remarks', sql.NVarChar, t.remarks ? t.remarks.toUpperCase() : null)
-                .input('checkforPresense', sql.NVarChar, t.checkforPresense ? t.checkforPresense.toUpperCase() : null)
-                .input('cpName', sql.NVarChar, t.contactPerson ? t.contactPerson.toUpperCase() : null)
-                .input('cpAddress', sql.NVarChar, t.contactAddress ? t.contactAddress.toUpperCase() : null)
-                .input('cpMobile', sql.NVarChar, t.contactNumber ? t.contactNumber.toUpperCase() : null)
-                .input('hmo', sql.NVarChar, t.hmo ? t.hmo.toUpperCase() : null)
-                .input('seniorId', sql.NVarChar, t.seniorId ? t.seniorId.toUpperCase() : null)
-                .input('pwdId', sql.NVarChar, t.pwdId ? t.pwdId.toUpperCase() : null)
-                .input('personnel', sql.NVarChar, t.personnel ? t.personnel.toUpperCase() : null)
-                .input('dateAccomplished', sql.Date, t.dateAccomplished);
+        request
+            .input('patientNo', sql.NVarChar, t.patientNo?.toUpperCase())
+            .input('lastName', sql.NVarChar, t.lastName?.toUpperCase())
+            .input('firstName', sql.NVarChar, t.firstName?.toUpperCase())
+            .input('middleName', sql.NVarChar, t.middleName?.toUpperCase())
+            .input('suffix', sql.NVarChar, t.suffix?.toUpperCase())
+            .input('birthdate', sql.Date, t.birthdate)
+            .input('age', sql.Int, t.age)
+            .input('gender', sql.NVarChar, t.gender?.toUpperCase())
+            .input('civilStatus', sql.NVarChar, t.civilStatus?.toUpperCase())
+            .input('street', sql.NVarChar, t.street?.toUpperCase())
+            .input('barangay', sql.NVarChar, t.barangay?.toUpperCase())
+            .input('city', sql.NVarChar, t.city?.toUpperCase())
+            .input('province', sql.NVarChar, t.province?.toUpperCase())
+            .input('region', sql.NVarChar, t.region?.toUpperCase())
+            .input('patientType', sql.NVarChar, t.patientType?.toUpperCase())
+            .input('infirmary', sql.NVarChar, t.infirmary?.toUpperCase())
+            .input('chiefComplaint', sql.NVarChar, t.chiefComplaint?.toUpperCase())
+            .input('temp', sql.Decimal(5, 2), t.temp)
+            .input('heartRate', sql.Int, t.heartRate)
+            .input('oxygen', sql.Decimal(5, 2), t.oxygen)
+            .input('bp', sql.NVarChar, t.bp?.toUpperCase())
+            .input('respiRate', sql.Int, t.respiRate)
+            .input('painScore', sql.Int, t.painScore)
+            .input('avpu', sql.NVarChar, t.avpu?.toUpperCase())
+            .input('contagious', sql.NVarChar, t.contagious?.toUpperCase())
+            .input('isolation', sql.NVarChar, t.isolation?.toUpperCase())
+            .input('cpd', sql.NVarChar, t.cpd?.toUpperCase())
+            .input('level', sql.NVarChar, t.level?.toUpperCase())
+            .input('remarks', sql.NVarChar, t.remarks?.toUpperCase())
+            .input('symptoms', sql.NVarChar, t.symptoms?.toUpperCase())
+            .input('cpName', sql.NVarChar, t.cpName?.toUpperCase())
+            .input('cpAddress', sql.NVarChar, t.cpAddress?.toUpperCase())
+            .input('cpMobile', sql.NVarChar, t.cpMobile?.toUpperCase())
+            .input('hmo', sql.NVarChar, t.hmo?.toUpperCase())
+            .input('seniorId', sql.NVarChar, t.seniorId?.toUpperCase())
+            .input('pwdId', sql.NVarChar, t.pwdId?.toUpperCase())
+            .input('personnel', sql.NVarChar, t.personnel?.toUpperCase())
+            .input('dateAccomplished', sql.Date, t.dateAccomplished);
 
-            const result = await request.query(`
-                INSERT INTO PATIENTREG (
-                    LASTNAME, FIRSTNAME, MIDDLENAME, SUFFIX, BIRTHDATE, AGE, SEX, 
-                    CIVILSTATUS, INFIRMARY,
-                    ADDRESSSTREET, ADDRESSBARANGAY, ADDRESSCITY, ADDRESSPROVINCE, ADDRESSREGION,
-                    ADDRESSPERMANENT,
-                    PATIENTTYPE, CHIEFCOMPLAINT, TEMP, HEARTRATE, OXYGEN, BP, RESPIRATE, PAINSCORE,
-                    AVPU, CONTAGIOUS, ISOLATION, CPD, LEVEL, REMARKS, SYMPTOMS,
-                    CPNAME, CPADDRESS, CPMOBILE, HMO, SENIORID, PWD,
-                    PERSONNEL, DATEACCOMPLISHED, CREATEDAT
-                )
-                OUTPUT INSERTED.ID
-                VALUES (
-                    @lastName, @firstName, @middleName, @suffix, @birthdate, @age, @gender, 
-                    @civilStatus, @infirmary,
-                    @street, @barangay, @city, @province, @region,
-                    @permAddress,
-                    @patientType, @chiefComplaint, @temp, @heartRate, @oxygen, @bp, @respiRate, @painScore,
-                    @avpu, @contagious, @isolation, @cpd, @level, @remarks, @checkforPresense,
-                    @cpName, @cpAddress, @cpMobile, @hmo, @seniorId, @pwdId,
-                    @personnel, @dateAccomplished, GETDATE()
-                )
+        const result = await request.query(`
+            INSERT INTO PATIENTREG (
+                PATIENTNO, LASTNAME, FIRSTNAME, MIDDLENAME, SUFFIX,
+                BIRTHDATE, AGE, SEX, CIVILSTATUS,
+                INFIRMARY, PATIENTTYPE,
+                ADDRESSSTREET, ADDRESSBARANGAY, ADDRESSCITY, ADDRESSPROVINCE, ADDRESSREGION,
+                CHIEFCOMPLAINT, TEMP, HEARTRATE, OXYGEN, BP, RESPIRATE, PAINSCORE,
+                AVPU, CONTAGIOUS, ISOLATION, CPD, LEVEL, REMARKS, SYMPTOMS,
+                CPNAME, CPADDRESS, CPMOBILE,
+                HMO, SENIORID, PWDID,
+                PERSONNEL, DATEACCOMPLISHED, CREATEDAT, ISRETURNING
+            )
+            OUTPUT INSERTED.PATIENTREGID
+            VALUES (
+                @patientNo, @lastName, @firstName, @middleName, @suffix,
+                @birthdate, @age, @gender, @civilStatus,
+                @infirmary, @patientType,
+                @street, @barangay, @city, @province, @region,
+                @chiefComplaint, @temp, @heartRate, @oxygen, @bp, @respiRate, @painScore,
+                @avpu, @contagious, @isolation, @cpd, @level, @remarks, @symptoms,
+                @cpName, @cpAddress, @cpMobile,
+                @hmo, @seniorId, @pwdId,
+                @personnel, @dateAccomplished, GETDATE(),
+                CASE WHEN @patientNo IS NOT NULL AND @patientNo <> '' THEN 1 ELSE 0 END
+            );
+        `);
+
+        const patientId = result.recordset[0]?.PATIENTREGID;
+        if (!patientId) throw new Error("Failed to generate Patient ID");
+
+        if (t.patientSignature) {
+            const ptRequest = new sql.Request(transaction);
+            const patientBuffer = processBase64(t.patientSignature);
+
+            ptRequest
+                .input('patientNo', sql.VarChar, t.patientNo)
+                .input('pId', sql.Int, patientId)
+                .input('signData', sql.VarBinary(sql.MAX), patientBuffer);
+
+            await ptRequest.query(`
+                INSERT INTO PATIENTREG_PTSIGNATURE (PATIENTREGID, PATIENTNO, SIGNATURE, CREATED)
+                VALUES (@pId, @patientNo, @signData, GETDATE())
             `);
-
-            const patientId = result.recordset[0]?.ID;
-            // ... (rest of the signature insertion logic remains the same)
-            if (!patientId) throw new Error("Failed to generate Patient ID");
-
-            if (t.personnelSignature) {
-                const psRequest = new sql.Request(transaction);
-                const personnelBuffer = processBase64(t.personnelSignature);
-                psRequest.input('pId', sql.Int, patientId);
-                psRequest.input('signData', sql.VarBinary(sql.MAX), personnelBuffer);
-                psRequest.input('personnel', sql.NVarChar, t.personnel);
-
-                await psRequest.query(`
-                    INSERT INTO tpSignature (patient_id, eSignature, personnel_name) 
-                    VALUES (@pId, @signData, @personnel)
-                `);
-            }
-
-            if (t.patientSignature) {
-                const ptRequest = new sql.Request(transaction);
-                const patientBuffer = processBase64(t.patientSignature);
-                ptRequest.input('pId', sql.Int, patientId);
-                ptRequest.input('signData', sql.VarBinary(sql.MAX), patientBuffer);
-
-                await ptRequest.query(`
-                    INSERT INTO PATIENTREG_PTSIGNATURE (ID, SIGNATURE, CREATED) 
-                    VALUES (@pId, @signData, GETDATE())
-                `);
-            }
-
-            await transaction.commit();
-            return patientId;
-
-        } catch (err) {
-            if (transaction) {
-                try { await transaction.rollback(); } catch (e) { console.error("Rollback failed", e); }
-            }
-            throw err; 
         }
-    },
 
+        await transaction.commit();
+        return patientId;
+
+    } catch (err) {
+        if (transaction) {
+            try { await transaction.rollback(); } catch (e) {}
+        }
+        throw err;
+    }
+},
     updateTriage: async (body) => {
         let transaction;
         try {
@@ -288,7 +269,7 @@ const ErModel = {
             request.input('dateAccomplished', sql.Date, t.dateAccomplished);
 
             const result = await request.query(`
-                IF EXISTS (SELECT 1 FROM PATIENTREG WHERE ID = @patientId)
+                IF EXISTS (SELECT 1 FROM PATIENTREG WHERE PATIENTREGID = @patientId)
                 BEGIN
                     UPDATE PATIENTREG
                     SET 
@@ -300,9 +281,9 @@ const ErModel = {
                         AVPU = @avpu, CONTAGIOUS = @contagious, ISOLATION = @isolation, CPD = @cpd,
                         LEVEL = @level, REMARKS = @remarks, SYMPTOMS = @checkforPresense,
                         PERSONNEL = @personnel, DATEACCOMPLISHED = @dateAccomplished,
-                        PATIENTTYPE = 'Emergency'
-                    OUTPUT inserted.ID, inserted.PATIENTNO
-                    WHERE ID = @patientId
+                        PATIENTTYPE = 'EMERGENCY'
+                    OUTPUT inserted.PATIENTREGID, inserted.PATIENTNO
+                    WHERE PATIENTREGID = @patientId
                 END
                 ELSE
                 BEGIN
@@ -314,7 +295,7 @@ const ErModel = {
                         AVPU, CONTAGIOUS, ISOLATION, CPD, LEVEL, REMARKS, SYMPTOMS,
                         PERSONNEL, DATEACCOMPLISHED, PATIENTTYPE
                     )
-                    OUTPUT inserted.ID, inserted.PATIENTNO
+                    OUTPUT inserted.PATIENTREGID, inserted.PATIENTNO
                     VALUES (
                         @idnoInput, 
                         @lastName, @firstName, @middleName, @suffix, @birthdate, @age, @gender,
@@ -330,7 +311,7 @@ const ErModel = {
                 throw new Error("Database Error: Operation completed but no ID returned.");
             }
 
-            const dbPatientPk = result.recordset[0].ID; 
+            const dbPatientPk = result.recordset[0].PATIENTREGID; 
             const dbPatientNo = result.recordset[0].PATIENTNO; 
 
             if (t.personnelSignature) {
@@ -348,12 +329,12 @@ const ErModel = {
                         UPDATE PATIENTREG_TPSIGNATURE 
                         SET TPSIGNATURE = @signData, 
                             NAME = @personnelName, 
-                            ID = @pId 
+                            PATIENTREGID = @pId 
                         WHERE PATIENTNO = @pNo
                     END
                     ELSE
                     BEGIN
-                        INSERT INTO PATIENTREG_TPSIGNATURE (ID, PATIENTNO, TPSIGNATURE, NAME) 
+                        INSERT INTO PATIENTREG_TPSIGNATURE (PATIENTREGID, PATIENTNO, TPSIGNATURE, NAME) 
                         VALUES (@pId, @pNo, @signData, @personnelName)
                     END
                 `);
@@ -363,7 +344,7 @@ const ErModel = {
 
             return { 
                 PATIENTNO: dbPatientNo,
-                ID: dbPatientPk
+                PATIENTREGID: dbPatientPk
             };
 
         } catch (err) {
@@ -382,13 +363,13 @@ const ErModel = {
             await transaction.begin();
 
             const hmoReq = new sql.Request(transaction);
-            hmoReq.input('hmoDesc', sql.VarChar, data.caseHmo || '');
+            hmoReq.input('hmoDesc', sql.VarChar, data.caseHmo ?? null);
             const hmoResult = await hmoReq.query(`
                 SELECT TOP 1 CODE 
                 FROM [UERMMMC]..[HMO] WITH(NOLOCK)
                 WHERE UPPER(LTRIM(RTRIM(NAME))) = UPPER(LTRIM(RTRIM(@hmoDesc)))
             `);
-            const actualHmoCode = hmoResult.recordset.length > 0 ? hmoResult.recordset[0].CODE : '';
+            const actualHmoCode = hmoResult.recordset.length > 0 ? hmoResult.recordset[0].CODE : null;
 
             const generateCaseQuery = `
                 DECLARE @tmpVal VARCHAR(8);
@@ -418,174 +399,125 @@ const ErModel = {
             const insertReq = new sql.Request(transaction);
 
             insertReq.input('caseNo', sql.VarChar, newCaseNo);
-            insertReq.input('patientNo', sql.VarChar, data.casepatientno);
-            insertReq.input('caseAge', sql.Int, data.caseAge || 0);
-            insertReq.input('casedtAdmission', sql.VarChar, data.casedtAdmission);
-            insertReq.input('casepwdId', sql.VarChar, data.casepwdId || '');
-            insertReq.input('caseSeniorId', sql.VarChar, data.caseSeniorId || '');
-            insertReq.input('chiefComplaintTriage', sql.VarChar, data.chiefComplaintTriage || '');
-            insertReq.input('caseadmDiagnosis', sql.VarChar, data.caseadmDiagnosis || '');
-            insertReq.input('casefromER', sql.VarChar, data.casefromER || '');
-            insertReq.input('caseserviceType', sql.VarChar, data.caseserviceType || '');
-            insertReq.input('caseAllergies', sql.VarChar, data.caseAllergies || '');
-            insertReq.input('caseerPhysician', sql.VarChar, data.caseerPhysician || '');
-            insertReq.input('caseCensusInfirmary', sql.VarChar, data.caseCensusInfirmary || '');
-            insertReq.input('caseDepartment', sql.VarChar, data.caseDepartment || '');
-            insertReq.input('caseAdmittedBy', sql.VarChar, data.caseAdmittedBy || '');
-            insertReq.input('casepdfRemarks', sql.VarChar, data.casepdfRemarks || '');
-            insertReq.input('caseRemarks', sql.VarChar, data.caseRemarks || '');
-            insertReq.input('COMPANY_CODE', sql.VarChar, data.caseCompany || '');
+            insertReq.input('patientNo', sql.VarChar, data.casepatientno ?? null);
+            insertReq.input('caseOrSched', sql.Int, data.caseOrSched ?? 0);
+            insertReq.input('caseDependent', sql.VarChar, typeof caseDependent !== 'undefined' ? caseDependent : null); 
+            insertReq.input('caseTransfer', sql.VarChar, data.caseTransfer ?? null);
+            insertReq.input('caseAge', sql.Int, data.caseAge ?? 0);
+            insertReq.input('casedtAdmission', sql.VarChar, data.casedtAdmission ?? null);
+            insertReq.input('casepwdId', sql.VarChar, data.casepwdId ?? null);
+            insertReq.input('caseSeniorId', sql.VarChar, data.caseSeniorId ?? null);
+            insertReq.input('casepatientCat', sql.VarChar, data.casepatientCat ?? null);
+            insertReq.input('chiefComplaintTriage', sql.VarChar, data.chiefComplaintTriage ?? null);
+            insertReq.input('caseadmDiagnosis', sql.VarChar, data.caseadmDiagnosis ?? null);
+            insertReq.input('casefromER', sql.VarChar, data.casefromER ?? null);
+            insertReq.input('caseserviceType', sql.VarChar, data.caseserviceType ?? null);
+            insertReq.input('caseAllergies', sql.VarChar, data.caseAllergies ?? null);
+            insertReq.input('caseerPhysician', sql.VarChar, data.caseerPhysician ?? null);
+            insertReq.input('caseCensusInfirmary', sql.VarChar, data.caseCensusInfirmary ?? null);
+            insertReq.input('caseDepartment', sql.VarChar, data.caseDepartment ?? null);
+            insertReq.input('caseAdmittedBy', sql.VarChar, data.caseAdmittedBy ?? null);
+            insertReq.input('casepdfRemarks', sql.VarChar, data.casepdfRemarks ?? null);
+            insertReq.input('caseRemarks', sql.VarChar, data.caseRemarks ?? null);
+            insertReq.input('COMPANY_CODE', sql.VarChar, data.caseCompany ?? null);
             insertReq.input('HMOCODE', sql.VarChar, actualHmoCode); 
-            insertReq.input('employer', sql.VarChar, data.caseEmployer || '');
-            insertReq.input('card_No', sql.VarChar, data.caseCardNo || '');
-            insertReq.input('creditlimit', sql.VarChar, data.casecovAmount || '0.00');
-            insertReq.input('approvalCode', sql.VarChar, data.caseappCode || '');
-            insertReq.input('effectivity', sql.VarChar, data.caseEffectivity || '');
-            insertReq.input('roomplan', sql.VarChar, data.casermPlan || '');
-            insertReq.input('HMO_LOA', sql.VarChar, data.caseLoa || '');
-            insertReq.input('HMO_APPROVALNO', sql.VarChar, data.caseApprov || '');
-            insertReq.input('inf_Name', sql.VarChar, data.caseInformantName || '');
-            insertReq.input('inf_Add', sql.VarChar, data.caseInfAddress || '');
-            insertReq.input('inf_Rel', sql.VarChar, data.caseInfRelationship?.value || data.caseInfRelationship || '');
+            insertReq.input('employer', sql.VarChar, data.caseEmployer ?? null);
+            insertReq.input('card_No', sql.VarChar, data.caseCardNo ?? null);
+            insertReq.input('creditlimit', sql.VarChar, data.casecovAmount ?? null);
+            insertReq.input('approvalCode', sql.VarChar, data.caseappCode ?? null);
+            insertReq.input('effectivity', sql.VarChar, data.caseEffectivity ?? null);
+            insertReq.input('roomplan', sql.VarChar, data.casermPlan ?? null);
+            insertReq.input('HMO_LOA', sql.VarChar, data.caseLoa ?? null);
+            insertReq.input('HMO_APPROVALNO', sql.VarChar, data.caseApprov ?? null);
+            insertReq.input('inf_Name', sql.VarChar, data.caseInformantName ?? null);
+            insertReq.input('inf_Add', sql.VarChar, data.caseInfAddress ?? null);
+            insertReq.input('inf_Rel', sql.VarChar, data.caseInfRelationship?.value ?? data.caseInfRelationship ?? null);
 
             const insertQuery = `
                 INSERT INTO [UERMMMC]..[CASES] (
-                    CASENO, PATIENTNO, PATIENT_CATEGORY, PATIENTTYPE, DATEAD, CC, TYPE_OF_ADMISSION, DEPTID, PHIC_CODE, DocPresentedOn, WATCHERSID, PWD_IDNo, FROM_ER
-                    , IsConfidential, INDIGENT, isPay, Charity, VIP, IsSenior, isNEWBORN_NONPATHOLOGIC, UDF_IsPWD, MEDICAL_SOCIAL_SERVICE, CATEGORY, COMPANY_CODE, HMO_CODE, EMPLOYER, CARD_NO, EFFECTIVITY, CREDITLIMIT
-                    , UDF_APPROVALCODE, ROOM_PLAN, PERSON_RES_ACCT, ADDRESS_PERSON_RES, RELTOPAT, CONTACTNOS_PERSON_RES, EMAILADD_PERSON_RES, EMPLOYER_PERSON_RES, EMPLOYERADD_PERSON_RES,EMPLOYERCONTACTNOS_PERSON_RES
-                    , UDF_PERSON_RES_ACCT2, UDF_ADDRESS_PERSON_RES2, UDF_RELTOPAT2, UDF_CONTACTNOS_PERSON_RES2, UDF_EMAILADD_PERSON_RES2, UDF_EMPLOYER_PERSON_RES2, UDF_EMPLOYERADD_PERSON_RES2, UDF_EMPLOYERCONTACTNOS_PERSON_RES2
-                    , Informant, InformantAddRESS, Informantrelation, UERM_STUD_EMPLOYEE, DEPT_CODE, UDF_REMARKS, UDF_CaseDept, ADMITTED_BY, UDF_DATEADDED, AR_ACCT, Username, DISC_CODE, DISC_CODE1, COMPANY2, HMO2, AGE, EMPADDRESS
-                    , ADMITTED_PER, MEDICAL_COORDINATOR, CERTIFICATE_NO, AGREEMENT_NO, ORIGINAL_EFFECTIVITY_DATE, REFERRINGMRMS, PATRON, CHARGETO, CLINICALIM, DISCHARGEBY, MED_CASE_NO, PREV_ADMISSION_DATE, PREV_ADMISSION_DIAGNOSIS
-                    , Refuse_Reason, Refuse_Admission, LAST_BILLING_ACCESSED_BY, FOR_PHIC_DED_REMARKS, DISPOSITION, SUSPENDEDBY, PROCESSEDBY, PROCEDUREDONEINER, NEXTSKED, FOR_PROMI_REMARKS, PLATE_NO, EMP_DEPENDENT, EMP_RELATION
-                    , MANNER_OF_ENTERING, CONDITION_OF_ADM, DISC2_REMARKS, TRACKINGNO, VERIFIEDBY, CC2, INF_DIAG, SOCIALSERVICERemarks, CREDIT_LIMIT, TYPECASE, IPDCaseNo
-                    , LAST_ROOM, ROOM_RATE, UDF_AppVersion, UDF_PreviousBal, isExcemptedFromCloseAcct, UDF_CaseLink, UDF_isChild, hmo_transloa, hmo_transapp, EmpCode, ForAdmission, ApplicationName 
+                    CASENO, PATIENTNO, PATIENT_CATEGORY, PATIENTTYPE, DATEAD, CC, TYPE_OF_ADMISSION, 
+                    DISC_CODE, DEPTID, PWD_IDNo, isPay, Charity, ISSENIOR, ISNEWBORN_NONPATHOLOGIC, UDF_ISPWD, 
+                    CATEGORY, COMPANY_CODE, HMO_CODE, EMPLOYER, CARD_NO, EFFECTIVITY, CREDITLIMIT,
+                    UDF_APPROVALCODE, ROOM_PLAN, Informant, InformantAddRESS, Informantrelation, 
+                    UERM_STUD_EMPLOYEE, UDF_REMARKS, UDF_CaseDept, ADMITTED_BY, UDF_DATEADDED, 
+                    DISC_CODE1, COMPANY2, HMO2, AGE, UDF_AppVersion, UDF_CaseLink, UDF_isChild, 
+                    hmo_transloa, hmo_transapp, ForAdmission, ApplicationName, ForORScheduled, Allergies
                 )
                 SELECT
-                    CASENO              = ISNULL(@caseNo, '') 
-                    , PATIENTNO          = @patientNo
-                    , PATIENT_CATEGORY  = @caseserviceType
+                    CASENO              = @caseNo 
+                    , PATIENTNO         = @patientNo
+                    , PATIENT_CATEGORY  = @casepatientCat
                     , PATIENTTYPE       = 'OPD'
                     , DATEAD            = @casedtAdmission
                     , CC                = @chiefComplaintTriage
                     , TYPE_OF_ADMISSION = @casefromER
-                    , DEPTID            = ''
-                    , PHIC_CODE         = ''
-                    , DocPresentedOn    = ''
-                    , WATCHERSID        = ''
+                    , DISC_CODE = CASE WHEN NULLIF(LTRIM(RTRIM(ISNULL((SELECT A.PWD_IDNo FROM [UERMMMC]..[PATIENTINFO] A WITH(NOLOCK) WHERE A.PATIENTNO = @patientNo), ''))), '') IS NOT NULL AND NULLIF(LTRIM(RTRIM(ISNULL((SELECT A.SCIDNO FROM [UERMMMC]..[PATIENTINFO] A WITH(NOLOCK) WHERE A.PATIENTNO = @patientNo), ''))), '') IS NULL THEN 'DISAB' WHEN NULLIF(LTRIM(RTRIM(ISNULL((SELECT A.SCIDNO FROM [UERMMMC]..[PATIENTINFO] A WITH(NOLOCK) WHERE A.PATIENTNO = @patientNo), ''))), '') IS NOT NULL AND NULLIF(LTRIM(RTRIM(ISNULL((SELECT A.PWD_IDNo FROM [UERMMMC]..[PATIENTINFO] A WITH(NOLOCK) WHERE A.PATIENTNO = @patientNo), ''))), '') IS NULL THEN 'SEN' ELSE '' END
+                    , DEPTID            = @caseserviceType
                     , PWD_IDNo          = @casepwdId
-                    , FROM_ER           = ''
-                    , ISCONFIDENTIAL    = ''
-                    , INDIGENT          = ''
-                    , IS_PAY            = CASE WHEN @caseserviceType = 'PAY' THEN 1 ELSE 0 END
-                    , CHARITY           = CASE WHEN @caseserviceType = 'CHA' THEN 1 ELSE 0 END
-                    , VIP               = ''
+                    , isPay             = CASE WHEN @casepatientCat = 'PAY' THEN 1 ELSE 0 END
+                    , Charity           = CASE WHEN @casepatientCat = 'CHA' THEN 1 ELSE 0 END
                     , ISSENIOR          = CASE WHEN NULLIF(LTRIM(RTRIM(ISNULL((SELECT A.SCIDNO FROM [UERMMMC]..[PATIENTINFO] A WITH(NOLOCK) WHERE A.PATIENTNO = @patientNo), ''))), '') IS NOT NULL THEN 1 ELSE 0 END
                     , ISNEWBORN_NONPATHOLOGIC = 0
                     , UDF_ISPWD         = CASE WHEN NULLIF(LTRIM(RTRIM(ISNULL((SELECT A.PWD_IDNo FROM [UERMMMC]..[PATIENTINFO] A WITH(NOLOCK) WHERE A.PATIENTNO = @patientNo), ''))), '') IS NOT NULL THEN 1 ELSE 0 END
-                    , MEDICAL_SOCIAL_SERVICE  = ''        
-                    , CATEGORY          = CASE WHEN LEFT(RIGHT(ISNULL(@caseNo, ''), 2), 1) = 'N' THEN 'NEWBORN' ELSE '' END
+                    , CATEGORY          = CASE WHEN LEFT(RIGHT(@caseNo, 2), 1) = 'N' THEN 'NEWBORN' ELSE NULL END
                     , COMPANY_CODE      = @COMPANY_CODE
-                    , HMO_CODE           = @HMOCODE
-                    , EMPLOYER          = ISNULL(@employer, '')
-                    , CARD_NO           = ISNULL(@card_No, '')
-                    , EFFECTIVITY       = CASE WHEN ISNULL(@effectivity, '') = '' THEN CONVERT(VARCHAR(20), CAST(GETDATE() AS DATETIME), 101) ELSE CONVERT(VARCHAR(20), CAST(@effectivity AS DATETIME), 101) END
-                    , CREDITLIMIT       = CAST(CASE WHEN ISNULL(@creditlimit, '') = '' THEN 0 ELSE cast(@creditlimit as decimal(18,2)) END AS DECIMAL(18,2))
-                    , UDF_APPROVALCODE  = ISNULL(@approvalCode, '')
-                    , ROOM_PLAN         = ISNULL(@roomplan, '')
-                    , PERSON_RES_ACCT   = ''
-                    , ADDRESS_PERSON_RES= ''
-                    , RELTOPAT          = ''
-                    , CONTACTNOS_PERSON_RES= ''
-                    , EMAILADD_PERSON_RES= ''
-                    , EMPLOYER_PERSON_RES= ''
-                    , EMPLOYERADD_PERSON_RES= ''
-                    , EMPLOYERCONTACTNOS_PERSON_RES= ''
-                    , UDF_PERSON_RES_ACCT2= ''
-                    , UDF_ADDRESS_PERSON_RES2= ''
-                    , UDF_RELTOPAT2     = ''
-                    , UDF_CONTACTNOS_PERSON_RES2= ''
-                    , UDF_EMAILADD_PERSON_RES2= ''
-                    , UDF_EMPLOYER_PERSON_RES2= ''
-                    , UDF_EMPLOYERADD_PERSON_RES2= ''
-                    , UDF_EMPLOYERCONTACTNOS_PERSON_RES2= ''
-                    , Informant         = ISNULL(@inf_Name, '')
-                    , InformantAddRESS  = ISNULL(@inf_Add, '')
-                    , Informantrelation = ISNULL(@inf_Rel, '')                          
+                    , HMO_CODE          = @HMOCODE
+                    , EMPLOYER          = @employer
+                    , CARD_NO           = @card_No
+                    , EFFECTIVITY       = CASE WHEN @effectivity IS NULL THEN CONVERT(VARCHAR(20), CAST(GETDATE() AS DATETIME), 101) ELSE CONVERT(VARCHAR(20), CAST(@effectivity AS DATETIME), 101) END
+                    , CREDITLIMIT       = CAST(CASE WHEN @creditlimit IS NULL THEN 0 ELSE cast(@creditlimit as decimal(18,2)) END AS DECIMAL(18,2))
+                    , UDF_APPROVALCODE  = @approvalCode
+                    , ROOM_PLAN         = @roomplan
+                    , Informant         = @inf_Name
+                    , InformantAddRESS  = @inf_Add
+                    , Informantrelation = @inf_Rel                          
                     , UERM_STUD_EMPLOYEE= @caseCensusInfirmary
-                    , DEPT_CODE         = ''
                     , UDF_REMARKS       = @caseRemarks
                     , UDF_CaseDept      = 'ER'
                     , ADMITTED_BY       = @caseAdmittedBy
                     , UDF_DATEADDED     = GETDATE()
-                    , AR_ACCT           = ''
-                    , Username          = '' 
-                    , DISC_CODE         = '' 
                     , DISC_CODE1        = 'N/A'
                     , COMPANY2          = 'N/A'
                     , HMO2              = 'N/A'
                     , AGE               = @caseAge
-                    , EMPADDRESS        = ''
-                    , ADMITTED_PER      = ''
-                    , MEDICAL_COORDINATOR= ''
-                    , CERTIFICATE_NO    = ''
-                    , AGREEMENT_NO      = ''
-                    , ORIGINAL_EFFECTIVITY_DATE= ''
-                    , REFERRINGMRMS     = ''
-                    , PATRON            = ''
-                    , CHARGETO          = ''
-                    , CLINICALIM        = ''
-                    , DISCHARGEBY       = ''
-                    , MED_CASE_NO       = ''
-                    , PREV_ADMISSION_DATE= ''
-                    , PREV_ADMISSION_DIAGNOSIS= ''
-                    , Refuse_Reason     = ''
-                    , Refuse_Admission  = ''
-                    , LAST_BILLING_ACCESSED_BY= '' 
-                    , FOR_PHIC_DED_REMARKS= ''
-                    , DISPOSITION       = ''
-                    , SUSPENDEDBY       = ''
-                    , PROCESSEDBY       = ''
-                    , PROCEDUREDONEINER = ''
-                    , NEXTSKED          = ''    
-                    , FOR_PROMI_REMARKS = ''
-                    , PLATE_NO          = ''
-                    , EMP_DEPENDENT     = ''
-                    , EMP_RELATION      = ''
-                    , MANNER_OF_ENTERING= ''
-                    , CONDITION_OF_ADM  = ''
-                    , DISC2_REMARKS     = ''
-                    , TRACKINGNO        = ''
-                    , VERIFIEDBY        = ''
-                    , CC2               = ''
-                    , INF_DIAG          = ''
-                    , SOCIALSERVICERemarks= ''
-                    , CREDIT_LIMIT      = ''
-                    , TYPECASE          = ''
-                    , IPDCaseNo         = ''
-                    , LAST_ROOM         = ''
-                    , ROOM_RATE         = ''
                     , UDF_AppVersion    = NULL
-                    , UDF_PreviousBal   = ''
-                    , isExcemptedFromCloseAcct = CASE WHEN @caseDepartment = 'ER' THEN 1 ELSE 0 END
-                    , UDF_CaseLink      = CASE WHEN LEFT(RIGHT(ISNULL(@caseNo, ''), 2), 1) = 'N' THEN LEFT(ISNULL(@caseNo,''), LEN(ISNULL(@caseNo,''))-2) END
-                    , UDF_isChild       = CASE WHEN LEFT(RIGHT(ISNULL(@caseNo, ''), 2), 1) = 'N' THEN 1 ELSE 0 END
+                    , UDF_CaseLink      = CASE WHEN LEFT(RIGHT(@caseNo, 2), 1) = 'N' THEN LEFT(@caseNo, LEN(@caseNo)-2) END
+                    , UDF_isChild       = CASE WHEN LEFT(RIGHT(@caseNo, 2), 1) = 'N' THEN 1 ELSE 0 END
                     , hmo_transloa      = @HMO_LOA
                     , hmo_transapp      = @HMO_APPROVALNO
-                    , EmpCode           = ''
                     , ForAdmission      = 1
                     , ApplicationName   = 'UERMPATIENTREG'
+                    , ForORScheduled    = @caseOrSched
+                    , Allergies         = @caseAllergies
             `;
 
             await insertReq.query(insertQuery);
 
+            const diagnosisReq = new sql.Request(transaction);
+            diagnosisReq.input('caseNo', sql.VarChar, newCaseNo);
+            diagnosisReq.input('caseadmDiagnosis', sql.VarChar, data.caseadmDiagnosis ?? null);
+
+            await diagnosisReq.query(`
+                INSERT INTO dbo.DIAGNOSIS (
+                    CASENO,
+                    ADMISSION
+                )
+                VALUES (
+                    @caseNo,
+                    @caseadmDiagnosis
+                );
+            `);
+
             const updateReq = new sql.Request(transaction);
             updateReq.input('caseNo', sql.VarChar, newCaseNo);
-            updateReq.input('patientNo', sql.VarChar, data.casepatientno);
+            updateReq.input('patientNo', sql.VarChar, data.casepatientno ?? null);
 
             await updateReq.query(`
                 UPDATE [UERMMMC]..[PATIENTREG]
-                SET CASENO = @caseNo
-                WHERE PATIENTNO = @patientNo
+                SET 
+                    CASENO = @caseNo,
+                    FORREVIEW = 1
+                WHERE PATIENTNO = @patientNo;
             `);
 
             await transaction.commit();
@@ -616,8 +548,10 @@ const ErModel = {
                 .input('pId', sql.Int, patientId)
                 .query(`
                     UPDATE PATIENTREG 
-                    SET ISADMITTED = 0 
-                    WHERE ID = @pId
+                    SET 
+                        ISFORADMISSION = 1,
+                        FORREVIEW = 0
+                    WHERE PATIENTREGID = @pId;
                 `);
 
             return result.rowsAffected[0];
@@ -662,18 +596,18 @@ const ErModel = {
                 FROM PATIENTREG PR
                 
                 LEFT JOIN UERMMMC.dbo.CASES C ON PR.PATIENTNO = C.PATIENTNO
-
+                
                 WHERE 
-                    PR.PATIENTTYPE = 'Emergency' 
-                    AND (PR.ISADMITTED IS NULL OR PR.ISADMITTED = 0)
-                    
+                    PR.PATIENTTYPE = 'EMERGENCY' 
+                    AND (PR.ISFORADMISSION IS NULL OR PR.ISFORADMISSION = 1)
                     AND (
-                        C.DISCHARGE IN ('N', 'No')       
-                        OR C.DISCHARGE IS NULL     
-                    )
-                    AND (
-                        C.DISCHARGEBY IS NULL            
-                        OR LTRIM(RTRIM(C.DISCHARGEBY)) = ''  
+                        PR.ISRETURNING = 1  
+                        OR 
+                        (
+                            (C.DISCHARGE IN ('N', 'No') OR C.DISCHARGE IS NULL)
+                            AND 
+                            (C.DISCHARGEBY IS NULL OR LTRIM(RTRIM(C.DISCHARGEBY)) = '')
+                        )
                     )
                 ORDER BY PR.CREATEDAT DESC
             `);
@@ -713,7 +647,7 @@ const ErModel = {
 
                     WHERE 
                         PR.PATIENTTYPE = 'Emergency' 
-                        AND (PR.ISADMITTED IS NULL OR PR.ISADMITTED = 0)
+                        AND (PR.ISFORADMISSION IS NULL OR PR.ISFORADMISSION = 0)
                         AND (
                             C.DISCHARGE IN ('N', 'No')       
                             OR C.DISCHARGE IS NULL     
@@ -726,7 +660,7 @@ const ErModel = {
                             PR.LASTNAME LIKE @search 
                             OR PR.MIDDLENAME LIKE @search
                             OR PR.FIRSTNAME LIKE @search
-                            OR PR.ID = @exactId
+                            OR PR.PATIENTREGID = @exactId
                             OR (PR.FIRSTNAME + ' ' + PR.LASTNAME) LIKE @search
                             OR (PR.LASTNAME + ' ' + PR.FIRSTNAME) LIKE @search
                             OR (PR.LASTNAME + ', ' + PR.FIRSTNAME) LIKE @search
@@ -744,7 +678,7 @@ const ErModel = {
 
     //populate finance form
     //dashboard
-    fetchErPatientsForFinance: async () => {
+    fetchPatientsForFinance: async () => {
         try {
             const pool = await poolPromise; 
             const result = await pool.request().query(`
@@ -756,10 +690,12 @@ const ErModel = {
                 C.PATIENTTYPE AS patientType,
                 C.CC AS chiefComplaint, 
                 C.LAST_ROOM,
+                PR.HMO AS hmo,
                 PI.SEX AS gender,
                 PI.AGE AS age, 
                 PI.UDF_PHILHEALTHNO AS philhealthNo,
                 PI.ADDRESS AS address,
+                D.ADMISSION AS admdiagnosis,
                 SS.Classification AS ssClass,
                 SS.Validity AS expiration,
                 PRC.IS_APPROVED AS is_approved,
@@ -815,8 +751,9 @@ const ErModel = {
             LEFT JOIN UERMMMC.dbo.PATIENTREG PR 
                 ON PI.PATIENTNO = PR.PATIENTNO
             LEFT JOIN UERMMMC.dbo.ROOMS R 
-                ON C.LAST_ROOM = R.ROOMNO   
-
+                ON C.LAST_ROOM = R.ROOMNO  
+            LEFT JOIN UERMMMC.dbo.DIAGNOSIS D
+                ON C.CASENO = D.CASENO 
             LEFT JOIN UERMMMC.dbo.PATIENTREG_CREDIT PRC
                 ON C.CASENO = PRC.CASENO
 
@@ -826,11 +763,13 @@ const ErModel = {
                 WHERE 
                     RTRIM(PatientNo) = RTRIM(C.PATIENTNO)
             ) SS
-            WHERE C.UDF_CaseDept = 'ER'
-                AND C.PATIENTTYPE = 'OPD'
-                AND C.ForAdmission = 1
+            WHERE 
+                -- C.UDF_CaseDept = 'ER'
+                --- AND C.PATIENTTYPE = 'OPD'
+                C.ForAdmission = 1
                 AND (PRC.FOR_APPROV = 0 OR PRC.FOR_APPROV IS NULL) 
-                -- AND C.DATEAD >= DATEADD(hour, -24, GETDATE())
+                AND C.DATEAD >= DATEADD(hour, -24, GETDATE())
+                -- AND PR.FORREVIEW = 1
                 
             ORDER BY DATEAD DESC
                 `);
@@ -992,7 +931,8 @@ const ErModel = {
                 FROM PATIENTREG
                 WHERE 
                     PATIENTTYPE = 'Emergency' 
-                    AND ISADMITTED = '0'
+                    AND ISFORADMISSION = '1'
+                    AND FORREVIEW = '0'
                 ORDER BY CREATEDAT DESC
                 
             `);
@@ -1025,12 +965,12 @@ const ErModel = {
                     FROM PATIENTREG
                     WHERE 
                         PATIENTTYPE = 'Emergency' 
-                        AND ISADMITTED = '0'
+                        AND ISFORADMISSION = '1'
                         AND (
                             LASTNAME LIKE @search 
                             OR MIDDLENAME LIKE @search
                             OR FIRSTNAME LIKE @search
-                            OR ID = @exactId
+                            OR PATIENTREGID = @exactId
                             OR (FIRSTNAME + ' ' + LASTNAME) LIKE @search
                             OR (LASTNAME + ' ' + FIRSTNAME) LIKE @search
                             OR (LASTNAME + ', ' + FIRSTNAME) LIKE @search

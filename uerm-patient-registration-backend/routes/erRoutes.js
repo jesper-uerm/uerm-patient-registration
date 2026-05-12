@@ -3,7 +3,7 @@ const router = express.Router();
 const ErController = require('../controllers/erController');
 
 router.get('/patients', ErController.fetchErPatients);
-router.get('/finance', ErController.fetchErPatientsForFinance);
+router.get('/finance', ErController.fetchPatientsForFinance);
 router.get('/financeApproval', ErController.fetchErPatientsForFinanceApproval);
 router.get('/admitted', ErController.fetchAdmitErPatient);
 router.get('/search-admitted', ErController.searchAdmittedPatients);

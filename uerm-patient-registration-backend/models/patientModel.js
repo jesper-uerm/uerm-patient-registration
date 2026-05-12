@@ -2,306 +2,315 @@ const { sql, poolPromise } = require('../config/sqlHelper');
 
 const PatientModel = {
 
-    upsertPatient: async (p) => {
+upsertPatient: async (p) => {
     let transaction;
+
     try {
         const pool = await poolPromise;
         transaction = new sql.Transaction(pool);
+
         await transaction.begin();
 
         const request = new sql.Request(transaction);
 
-        request.input('lastName', sql.NVarChar, p.lastName ? p.lastName.toUpperCase() : null);
-        request.input('firstName', sql.NVarChar, p.firstName ? p.firstName.toUpperCase() : null);
+        request.input('patientNo', sql.NVarChar, p.patientNo ? p.patientNo.toUpperCase() : null);
+        request.input('isReturning', sql.Bit, p.patientNo && p.patientNo.trim() !== '' ? 1 : 0);
+        request.input('lastName', sql.NVarChar, p.lastName ? p.lastName.toUpperCase() : '');
+        request.input('firstName', sql.NVarChar, p.firstName ? p.firstName.toUpperCase() : '');
         request.input('middleName', sql.NVarChar, p.middleName ? p.middleName.toUpperCase() : null);
         request.input('suffix', sql.NVarChar, p.suffix ? p.suffix.toUpperCase() : null);
-        request.input('birthdate', sql.NVarChar, p.birthdate);   
-        request.input('birthplace', sql.NVarChar, p.birthplace ? p.birthplace.toUpperCase() : null); 
-        request.input('age', sql.Int, p.age);
+
+        request.input('birthdate', sql.Date, p.birthdate || null);
+        request.input('age', sql.Int, p.age || null);
+        request.input('birthplace', sql.NVarChar, p.birthplace ? p.birthplace.toUpperCase() : null);
+
         request.input('gender', sql.NVarChar, p.gender ? p.gender.toUpperCase() : null);
         request.input('civilStatus', sql.NVarChar, p.civilStatus ? p.civilStatus.toUpperCase() : null);
         request.input('religion', sql.NVarChar, p.religion ? p.religion.toUpperCase() : null);
         request.input('nationality', sql.NVarChar, p.nationality ? p.nationality.toUpperCase() : null);
+
+        request.input('empCode', sql.NVarChar, p.empCode ? p.empCode.toUpperCase() : null);
+
+        request.input('philhealthId', sql.NVarChar, p.philhealthId ? p.philhealthId.toUpperCase() : null);
+        request.input('govtId', sql.NVarChar, p.govtId ? p.govtId.toUpperCase() : null);
+        request.input('seniorId', sql.NVarChar, p.seniorId ? p.seniorId.toUpperCase() : null);
+        request.input('pwdId', sql.NVarChar, p.pwdId ? p.pwdId.toUpperCase() : null);
+        request.input('pwdIdExp', sql.Date, p.pwdIdExp || null);
+
+        request.input('landline', sql.NVarChar, p.landline ? p.landline.toUpperCase() : null);
+        request.input('mobile', sql.NVarChar, p.mobile ? p.mobile.toUpperCase() : null);
+        request.input('email', sql.NVarChar, p.email ? p.email.toUpperCase() : null);
+
         request.input('occupation', sql.NVarChar, p.occupation ? p.occupation.toUpperCase() : null);
+        request.input('employer', sql.NVarChar, p.employer ? p.employer.toUpperCase() : null);
+        request.input('employerAddress', sql.NVarChar, p.employerAddress ? p.employerAddress.toUpperCase() : null);
+        request.input('employerContactNo', sql.NVarChar, p.employerContactNo ? p.employerContactNo.toUpperCase() : null);
 
         request.input('street', sql.NVarChar, p.street ? p.street.toUpperCase() : null);
         request.input('barangay', sql.NVarChar, p.barangay ? p.barangay.toUpperCase() : null);
         request.input('city', sql.NVarChar, p.city ? p.city.toUpperCase() : null);
         request.input('province', sql.NVarChar, p.province ? p.province.toUpperCase() : null);
         request.input('region', sql.NVarChar, p.region ? p.region.toUpperCase() : null);
-        request.input('permanentAddress', sql.NVarChar, p.permanentAddress ? p.permanentAddress.toUpperCase() : null);
-        request.input('landline', sql.NVarChar, p.landline ? p.landline.toUpperCase() : null);
-        request.input('mobile', sql.NVarChar, p.mobile ? p.mobile.toUpperCase() : null);
-        request.input('email', sql.NVarChar, p.email ? p.email.toUpperCase() : null);
 
-        request.input('fathersName', sql.NVarChar, p.fathersName ? p.fathersName.toUpperCase() : null);
-        request.input('fathersAddress', sql.NVarChar, p.fathersAddress ? p.fathersAddress.toUpperCase() : null);
-        request.input('fatherContactNumber', sql.NVarChar, p.fatherContactNumber ? p.fatherContactNumber.toUpperCase() : null);
-        request.input('mothersName', sql.NVarChar, p.mothersName ? p.mothersName.toUpperCase() : null);
-        request.input('mothersAddress', sql.NVarChar, p.mothersAddress ? p.mothersAddress.toUpperCase() : null);
-        request.input('motherContactNumber', sql.NVarChar, p.motherContactNumber ? p.motherContactNumber.toUpperCase() : null);
-        
+        request.input('father', sql.NVarChar, p.father ? p.father.toUpperCase() : null);
+        request.input('fatherAddress', sql.NVarChar, p.fatherAddress ? p.fatherAddress.toUpperCase() : null);
+        request.input('fatherContact', sql.NVarChar, p.fatherContact ? p.fatherContact.toUpperCase() : null);
+
+        request.input('mother', sql.NVarChar, p.mother ? p.mother.toUpperCase() : null);
+        request.input('motherAddress', sql.NVarChar, p.motherAddress ? p.motherAddress.toUpperCase() : null);
+        request.input('motherContact', sql.NVarChar, p.motherContact ? p.motherContact.toUpperCase() : null);
+
         request.input('spouseName', sql.NVarChar, p.spouseName ? p.spouseName.toUpperCase() : null);
+        request.input('spouseAddress', sql.NVarChar, p.spouseAddress ? p.spouseAddress.toUpperCase() : null);
+        request.input('spouseContact', sql.NVarChar, p.spouseContact ? p.spouseContact.toUpperCase() : null);
         request.input('spouseOccupation', sql.NVarChar, p.spouseOccupation ? p.spouseOccupation.toUpperCase() : null);
-        request.input('spouseEmployerName', sql.NVarChar, p.spouseEmployerName ? p.spouseEmployerName.toUpperCase() : null);
-        request.input('spouseEmployerAddress', sql.NVarChar, p.spouseEmployerAddress ? p.spouseEmployerAddress.toUpperCase() : null);
-        request.input('spouseEmployerContact', sql.NVarChar, p.spouseEmployerContact ? p.spouseEmployerContact.toUpperCase() : null);
-
-        request.input('ptSourceIncome', sql.NVarChar, p.ptSourceIncome ? p.ptSourceIncome.toUpperCase() : null);
-        request.input('specificSourceOfIncome', sql.NVarChar, p.specificSourceOfIncome ? p.specificSourceOfIncome.toUpperCase() : null);
-        request.input('seniorpwd', sql.NVarChar, p.seniorpwd ? p.seniorpwd.toUpperCase() : null); 
-        request.input('philhealthId', sql.NVarChar, p.philhealthId ? p.philhealthId.toUpperCase() : null);
-        request.input('sssgsis', sql.NVarChar, p.sssgsis ? p.sssgsis.toUpperCase() : null);     
-        request.input('tin', sql.NVarChar, p.tin ? p.tin.toUpperCase() : null);             
-        request.input('pwd', sql.NVarChar, p.pwd ? p.pwd.toUpperCase() : null);
-        
-        request.input('ptGrossIncome', sql.NVarChar, p.ptGrossIncome ? p.ptGrossIncome.toUpperCase() : null);
-        request.input('ptHomeOwnership', sql.NVarChar, p.ptHomeOwnership ? p.ptHomeOwnership.toUpperCase() : null);
-        request.input('ptYearsStay', sql.NVarChar, p.ptYearsStay ? p.ptYearsStay.toUpperCase() : null);
-        request.input('ptCars', sql.NVarChar, p.ptCars ? p.ptCars.toUpperCase() : null);
-        request.input('ptCarOwnership', sql.NVarChar, p.ptCarOwnership ? p.ptCarOwnership.toUpperCase() : null);
 
         request.input('cpName', sql.NVarChar, p.cpName ? p.cpName.toUpperCase() : null);
         request.input('cpRelationship', sql.NVarChar, p.cpRelationship ? p.cpRelationship.toUpperCase() : null);
-        request.input('cpLandline', sql.NVarChar, p.cpLandline ? p.cpLandline.toUpperCase() : null);
-        request.input('cpMobile', sql.NVarChar, p.cpMobile ? p.cpMobile.toUpperCase() : null);
-        request.input('cpEmail', sql.NVarChar, p.cpEmail ? p.cpEmail.toUpperCase() : null);
         request.input('cpAddress', sql.NVarChar, p.cpAddress ? p.cpAddress.toUpperCase() : null);
-        request.input('cpOccupation', sql.NVarChar, p.cpOccupation ? p.cpOccupation.toUpperCase() : null);
-        request.input('cpEmployerNumber', sql.NVarChar, p.cpEmployerNumber ? p.cpEmployerNumber.toUpperCase() : null);
-        
-        request.input('cpIncomeSource', sql.NVarChar, p.cpIncomeSource ? p.cpIncomeSource.toUpperCase() : null);
-        request.input('cpGrossIncome', sql.NVarChar, p.cpGrossIncome ? p.cpGrossIncome.toUpperCase() : null);
-        request.input('cpHomeOwnership', sql.NVarChar, p.cpHomeOwnership ? p.cpHomeOwnership.toUpperCase() : null);
-        
-        request.input('cpHomeStay', sql.NVarChar, p.cpHomeStay ? p.cpHomeStay.toUpperCase() : null); 
-        
-        request.input('cpHasCar', sql.NVarChar, p.cpHasCar ? p.cpHasCar.toUpperCase() : null);
-        request.input('cpCarOwnership', sql.NVarChar, p.cpCarOwnership ? p.cpCarOwnership.toUpperCase() : null);
-        request.input('cpNumberOfCars', sql.NVarChar, p.cpNumberOfCars ? p.cpNumberOfCars.toUpperCase() : null);
+        request.input('cpMobile', sql.NVarChar, p.cpMobile ? p.cpMobile.toUpperCase() : null);
 
-        request.input('mop', sql.NVarChar, p.mop ? p.mop.toUpperCase() : null);
-        request.input('specificmop', sql.NVarChar, p.specificmop ? p.specificmop.toUpperCase() : null);
-        request.input('creditCard', sql.NVarChar, p.creditCard ? p.creditCard.toUpperCase() : null);
-        request.input('bank', sql.NVarChar, p.bank ? p.bank.toUpperCase() : null);
-        request.input('items', sql.NVarChar, p.items ? p.items.toUpperCase() : null);
         request.input('patientType', sql.NVarChar, p.patientType ? p.patientType.toUpperCase() : null);
-        
-        request.input('hmo', sql.NVarChar, p.hmo ? p.hmo.toUpperCase() : null);
-        request.input('scidnoOutpatient', sql.NVarChar, p.scidnoOutpatient ? p.scidnoOutpatient.toUpperCase() : null);
-        request.input('philHealth', sql.NVarChar, p.philHealth ? p.philHealth.toUpperCase() : null); 
-        request.input('medicalProcedure', sql.NVarChar, p.medicalProcedure ? p.medicalProcedure.toUpperCase() : null);
-        request.input('physician', sql.NVarChar, p.physician ? p.physician.toUpperCase() : null);
 
         const patientResult = await request.query(`
-            DECLARE @ExistingID INT;
-            DECLARE @LinkedPatientNo BIGINT; -- Note: If PATIENTNO is VARCHAR(14) in your DB, you may want to change this to VARCHAR(14)!
+            INSERT INTO PATIENTREG (
+                EMPCODE,
+                PATIENTNO,
+                ISRETURNING,
+                LASTNAME,
+                FIRSTNAME,
+                MIDDLENAME,
+                SUFFIX,
+                BIRTHDATE,
+                AGE,
+                BIRTHPLACE,
+                SEX,
+                CIVILSTATUS,
+                RELIGION,
+                NATIONALITY,
+                LANDLINE,
+                MOBILE,
+                EMAIL,
+                PHILHEALTHID,
+                GOVTID,
+                SENIORID,
+                PWDID,
+                PWDIDEXP,
+                OCCUPATION,
+                EMPLOYER,
+                EMPLOYERADDRESS,
+                EMPLOYERCONTACTNO,
+                ADDRESSSTREET,
+                ADDRESSBARANGAY,
+                ADDRESSCITY,
+                ADDRESSPROVINCE,
+                ADDRESSREGION,
+                FATHER,
+                FATHERADDRESS,
+                FATHERCONTACT,
+                MOTHER,
+                MOTHERADDRESS,
+                MOTHERCONTACT,
+                SPOUSENAME,
+                SPOUSEADDRESS,
+                SPOUSECONTACT,
+                SPOUSEOCCUPATION,
+                CPNAME,
+                CPRELATIONSHIP,
+                CPADDRESS,
+                CPMOBILE,
+                PATIENTTYPE,
+                CREATEDAT
+            )
+            VALUES (
+                @empCode,
+                @patientNo,
+                @isReturning,
+                @lastName,
+                @firstName,
+                @middleName,
+                @suffix,
+                @birthdate,
+                @age,
+                @birthplace,
+                @gender,
+                @civilStatus,
+                @religion,
+                @nationality,
+                @landline,
+                @mobile,
+                @email,
+                @philhealthId,
+                @govtId,
+                @seniorId,
+                @pwdId,
+                @pwdIdExp,
+                @occupation,
+                @employer,
+                @employerAddress,
+                @employerContactNo,
+                @street,
+                @barangay,
+                @city,
+                @province,
+                @region,
+                @father,
+                @fatherAddress,
+                @fatherContact,
+                @mother,
+                @motherAddress,
+                @motherContact,
+                @spouseName,
+                @spouseAddress,
+                @spouseContact,
+                @spouseOccupation,
+                @cpName,
+                @cpRelationship,
+                @cpAddress,
+                @cpMobile,
+                @patientType,
+                GETDATE()
+            );
 
-            DECLARE @CodeReligion VARCHAR(50) = (SELECT TOP 1 CODE FROM UERMMMC.dbo.RELIGION WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(@religion))));
-            DECLARE @CodeOccupation VARCHAR(50) = (SELECT TOP 1 CODE FROM UERMMMC.dbo.OCCUPATION WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(@occupation))));
-            DECLARE @CodeNationality VARCHAR(50) = (SELECT TOP 1 CODE FROM UERMMMC.dbo.NATIONALITY WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(@nationality))));
-            DECLARE @CodeMunicipality VARCHAR(50) = (SELECT TOP 1 CODE FROM UERMMMC.dbo.MUNICIPALITY WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(@city))));
-            DECLARE @CodeBarangay VARCHAR(50) = (SELECT TOP 1 CODE FROM UERMMMC.dbo.BARANGAYS WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(@barangay))));
-            
-            DECLARE @forReview INT;
-            DECLARE @isAdmitted INT; 
-            IF LOWER(LTRIM(RTRIM(@patientType))) = 'Outpatient'
-            BEGIN
-                SET @forReview = NULL;
-                SET @isAdmitted = NULL;
-            END
-            ELSE
-            BEGIN
-                SET @forReview = 1;
-                SET @isAdmitted = 0; 
-            END
-
-            SELECT TOP 1 
-                @ExistingID = ID,
-                @LinkedPatientNo = PATIENTNO 
-                    FROM PATIENTREG 
-                    WHERE LASTNAME = @lastName 
-                    AND FIRSTNAME = @firstName 
-                    AND CAST(BIRTHDATE AS DATE) = CAST(@birthdate AS DATE)
-                    AND ISNULL(MIDDLENAME, '') = ISNULL(@middleName, '')
-                    AND ISNULL(SUFFIX, '') = ISNULL(@suffix, '');
-
-            IF @ExistingID IS NOT NULL
-            BEGIN
-                UPDATE PATIENTREG
-                SET 
-                    AGE = @age, BIRTHPLACE = @birthplace, SEX = @gender, 
-                    CIVILSTATUS = @civilStatus, RELIGION = @religion, NATIONALITY = @nationality, LANDLINE = @landline, 
-                    MOBILE = @mobile, EMAIL = @email, OCCUPATION = @occupation,
-                    ADDRESSSTREET = @street, ADDRESSBARANGAY = @barangay, ADDRESSCITY = @city, ADDRESSPROVINCE = @province, ADDRESSREGION = @region,
-                    ADDRESSPERMANENT = @permanentAddress, PTFATHERNAME = @fathersName, PTFATHERADDRESS = @fathersAddress,
-                    PTFATHERCONTACT = @fatherContactNumber, PTMOTHERMAIDENNAME = @mothersName, PTMOTHERADDRESS = @mothersAddress, PTMOTHERCONTACT = @motherContactNumber,
-                    PTSOURCEINCOME = @ptSourceIncome, SPECIFICSOURCEOFINCOME = @specificSourceOfIncome, SENIORID = @seniorpwd, PHILHEALTHID = @philhealthId,
-                    SSSGSISID = @sssgsis, TINID = @tin, PWD = @pwd, PTGROSSINCOME = @ptGrossIncome, PTHOMEOWNERSHIP = @ptHomeOwnership,
-                    PTYEARSSTAY = @ptYearsStay, SPOUSENAME = @spouseName, SPOUSEOCCUPATION = @spouseOccupation, SPOUSEEMPLOYERCONTACT = @spouseEmployerContact, PTCARS = @ptCars,
-                    PTCAROWNERSHIP = @ptCarOwnership, CPNAME = @cpName, CPRELATIONSHIP = @cpRelationship, CPLANDLINE = @cpLandline, CPMOBILE = @cpMobile, CPEMAIL = @cpEmail,
-                    CPADDRESS = @cpAddress, CPOCCUPATION = @cpOccupation, CPEMPLOYERNUMBER = @cpEmployerNumber, SPOUSEEMPLOYERNAME = @spouseEmployerName, SPOUSEEMPLOYERADDRESS = @spouseEmployerAddress,
-                    CPINCOMESOURCE = @cpIncomeSource, CPGROSSINCOME = @cpGrossIncome, CPHOMEOWNERSHIP = @cpHomeOwnership, CPHOMESTAY = @cpHomeStay,
-                    CPHASCAR = @cpHasCar, CPCAROWNERSHIP = @cpCarOwnership, CPNUMBEROFCARS = @cpNumberOfCars, MODEOFPAYMENT = @mop, SPECIFICMODEOFPAYMENT = @specificmop, CREDITCARDS = @creditCard,
-                    BANKAFFILIATIONS = @bank, ITEMSRECEIVED = @items, HMO = @hmo, SCIDNOOUTPATIENT = @scidnoOutpatient, PHILHEALTH = @philHealth, MEDICALPROCEDURE = @medicalProcedure, PHYSICIAN = @physician, 
-                    ISADMITTED = 1, 
-                    FORREVIEW = @forReview
-                WHERE ID = @ExistingID;
-
-                IF @LinkedPatientNo IS NOT NULL
-                BEGIN
-                    UPDATE UERMMMC.dbo.PATIENTINFO
-                    SET 
-                        LASTNAME = @lastName, FIRSTNAME = @firstName, MIDDLENAME = @middleName, SUFFIX = @suffix,
-                        DBIRTH = @birthdate, BPLACE = @birthplace, AGE = @age, SEX = @gender, STATUS = @civilStatus,
-                        RELIGION = @CodeReligion, NATIONALITY = @CodeNationality, OCCUPATION = @CodeOccupation,
-                        BARANGAY = @CodeBarangay, MUNICIPALITY = @CodeMunicipality,
-                        INCASE = @cpName, RELATIONSHIP = @cpRelationship, INCASEPHONENO = ISNULL(@cpLandline, @cpMobile), INCASEADD = @cpAddress,
-                        PHONENOS = @cpLandline, MOBILENO = @cpMobile,
-                        NAMEOFSPOUSE = @spouseName, SPOUSEOCCUPATION = @spouseOccupation, EMPLOYER = @spouseEmployerName, EMPLOYERADD = @spouseEmployerAddress, EMPLOYERTELNO = @spouseEmployerContact,
-                        FATHER = @fathersName, FADDRESS = @fathersAddress, FTEL = @fatherContactNumber,
-                        MOTHER = @mothersName, MADDRESS = @mothersAddress, MTEL = @motherContactNumber,
-                        SSSNO = @sssgsis, TINNO = @tin, SCIDNO = @seniorpwd, UDF_PHILHEALTHNO = @philhealthId, UDF_Module = 'UERMPATIENTREG', UDF_AppName = 'UERMPATIENTREG'
-                    WHERE PATIENTNO = @LinkedPatientNo;
-                END
-
-                SELECT @ExistingID AS ID, 'UPDATED' AS status;
-            END
-            ELSE
-            BEGIN
-                INSERT INTO PATIENTREG (
-                    LASTNAME, FIRSTNAME, MIDDLENAME, SUFFIX, BIRTHDATE, BIRTHPLACE, AGE, SEX, 
-                    CIVILSTATUS, RELIGION, NATIONALITY, LANDLINE, MOBILE, EMAIL, OCCUPATION, 
-                    ADDRESSSTREET, ADDRESSBARANGAY, ADDRESSCITY, ADDRESSPROVINCE, ADDRESSREGION,
-                    ADDRESSPERMANENT, PTFATHERNAME, PTFATHERADDRESS, 
-                    PTFATHERCONTACT, PTMOTHERMAIDENNAME, PTMOTHERADDRESS, PTMOTHERCONTACT, 
-                    PTSOURCEINCOME, SPECIFICSOURCEOFINCOME, SENIORID, PHILHEALTHID,
-                    SSSGSISID, TINID, PWD, PTGROSSINCOME, PTHOMEOWNERSHIP,
-                    PTYEARSSTAY, SPOUSENAME, SPOUSEOCCUPATION, SPOUSEEMPLOYERCONTACT, PTCARS, 
-                    PTCAROWNERSHIP, CPNAME, CPRELATIONSHIP, CPLANDLINE, CPMOBILE, CPEMAIL,
-                    CPADDRESS, CPOCCUPATION, CPEMPLOYERNUMBER, SPOUSEEMPLOYERNAME, SPOUSEEMPLOYERADDRESS,
-                    CPINCOMESOURCE, CPGROSSINCOME, CPHOMEOWNERSHIP, CPHOMESTAY,
-                    CPHASCAR, CPCAROWNERSHIP, CPNUMBEROFCARS, MODEOFPAYMENT, SPECIFICMODEOFPAYMENT, CREDITCARDS, 
-                    BANKAFFILIATIONS, ITEMSRECEIVED, PATIENTTYPE, HMO, SCIDNOOUTPATIENT, PHILHEALTH, MEDICALPROCEDURE, PHYSICIAN, ISADMITTED,
-                    FORREVIEW, 
-                    CREATEDAT
-                )
-                VALUES (
-                    @lastName, @firstName, @middleName, @suffix, @birthdate, @birthplace, @age, @gender,
-                    @civilStatus, @religion, @nationality, @landline, @mobile, @email, @occupation,
-                    @street, @barangay, @city, @province, @region,
-                    @permanentAddress, @fathersName, @fathersAddress,
-                    @fatherContactNumber, @mothersName, @mothersAddress, @motherContactNumber,
-                    @ptSourceIncome, @specificSourceOfIncome, @seniorpwd, @philhealthId,
-                    @sssgsis, @tin, @pwd, @ptGrossIncome, @ptHomeOwnership,
-                    @ptYearsStay, @spouseName, @spouseOccupation, @spouseEmployerContact, @ptCars,
-                    @ptCarOwnership, @cpName, @cpRelationship, @cpLandline, @cpMobile, @cpEmail,
-                    @cpAddress, @cpOccupation, @cpEmployerNumber, @spouseEmployerName, @spouseEmployerAddress,
-                    @cpIncomeSource, @cpGrossIncome, @cpHomeOwnership, @cpHomeStay, @cpHasCar, 
-                    @cpCarOwnership, @cpNumberOfCars, @mop, @specificmop, @creditCard, @bank, @items, @patientType, @hmo, 
-                    @scidnoOutpatient, @philHealth, @medicalProcedure, @physician, @isAdmitted, 0,
-                    GETDATE()
-                );
-
-                SELECT SCOPE_IDENTITY() AS ID, 'INSERTED' AS status;
-            END
+            SELECT SCOPE_IDENTITY() AS PATIENTREGID;
         `);
 
-        let newPatientID;
-        let actionStatus;
+        let newPatientID = null;
 
-        if (patientResult && patientResult.recordset && patientResult.recordset.length > 0) {
-            newPatientID = patientResult.recordset[0].ID; 
-            actionStatus = patientResult.recordset[0].status;
+        if (
+            patientResult &&
+            patientResult.recordset &&
+            patientResult.recordset.length > 0
+        ) {
+            newPatientID = patientResult.recordset[0].PATIENTREGID;
         }
 
         if (p.signature && newPatientID) {
-            const cleanSignature = p.signature.replace(/^data:image\/\w+;base64,/, "");
-            const finalSignatureBuffer = Buffer.from(cleanSignature, 'base64');
+
+            const cleanSignature = p.signature.replace(
+                /^data:image\/\w+;base64,/,
+                ''
+            );
+
+            const finalSignatureBuffer = Buffer.from(
+                cleanSignature,
+                'base64'
+            );
 
             const signRequest = new sql.Request(transaction);
+
             signRequest.input('pId', sql.Int, newPatientID);
-            
-            signRequest.input('patientNo', sql.VarChar(14), p.patientNo); 
-            
-            signRequest.input('signData', sql.VarBinary(sql.MAX), finalSignatureBuffer);
+            signRequest.input('patientNo', sql.VarChar(14), p.patientNo || null);
+
+            signRequest.input(
+                'signData',
+                sql.VarBinary(sql.MAX),
+                finalSignatureBuffer
+            );
 
             await signRequest.query(`
-                MERGE PATIENTREG_PTSIGNATURE AS target
-                USING (SELECT @pId AS ID, @patientNo AS PATIENTNO, @signData AS SIGNATURE) AS source
-                ON (target.ID = source.ID)
-                WHEN MATCHED THEN
-                    UPDATE SET SIGNATURE = source.SIGNATURE
-                WHEN NOT MATCHED THEN
-                    INSERT (ID, PATIENTNO, SIGNATURE) VALUES (source.ID, source.PATIENTNO, source.SIGNATURE);
+                INSERT INTO PATIENTREG_PTSIGNATURE (
+                    PATIENTREGID,
+                    PATIENTNO,
+                    SIGNATURE
+                )
+                VALUES (
+                    @pId,
+                    @patientNo,
+                    @signData
+                );
             `);
         }
 
         await transaction.commit();
-        
-        return { patientId: newPatientID, status: actionStatus };
+
+        return {
+            patientId: newPatientID,
+            status: 'INSERTED'
+        };
 
     } catch (err) {
-        if (transaction) await transaction.rollback();
-        console.error("Model Error (upsertPatient):", err);
+
+        if (transaction) {
+            await transaction.rollback();
+        }
+
+        console.error('Model Error (upsertPatient):', err);
+
         throw err;
     }
 },
 
     upsertPatientCredit: async (caseno, patientno, data, reviewedBy) => {
+        const pool = await poolPromise;
+        const transaction = new sql.Transaction(pool);
+
         try {
-            const pool = await poolPromise;
-            const request = pool.request();
+            await transaction.begin();
+
+            const request = new sql.Request(transaction);
 
             request.input('caseno', sql.VarChar, caseno);
             request.input('patientno', sql.VarChar, patientno);
             request.input('reviewedBy', sql.NVarChar, reviewedBy ? reviewedBy.toUpperCase() : null);
 
-            request.input('SSS_CARD_CLASS', sql.NVarChar, data.fnsssCard || null);
-            request.input('VISIT_TYPE_SER', sql.NVarChar, data.fnvisitTypeService || null);
-            request.input('NUM_ADMISSION_SER', sql.Int, data.fnnumAdmissionService || 0);
-            request.input('EXP_DATE', sql.Date, data.fnExpDate || null);
-            request.input('LAST_ADM_DATE_SER', sql.Date, data.fnLastAdmDateService || null);
-            request.input('COORDINATED_BY_SER', sql.NVarChar, data.fnCoordinateByService || null);
+            request.input('personRes1', sql.NVarChar, data.fnPersonRes1 || null);
+            request.input('personRes1Work', sql.NVarChar, data.fnPersonRes1Work || null);
+            request.input('personRes1Rel', sql.NVarChar, data.fnPersonRes1Rel || null);
+            request.input('personRes1Contact', sql.NVarChar, data.fnPersonRes1Contact || null);
 
-            request.input('VISIT_TYPE_PAY', sql.NVarChar, data.fnvisitTypePay || null);
-            request.input('NUM_ADMISSION_PAY', sql.Int, data.fnnumAdmissionPay || 0);
-            request.input('LAST_ADM_DATE_PAY', sql.Date, data.fnLastAdmDatePay || null);
-            request.input('COORDINATED_BY_PAY', sql.NVarChar, data.fnCoordinateByPay || null); 
+            request.input('personRes2', sql.NVarChar, data.fnPersonRes2 || null);
+            request.input('personRes2Work', sql.NVarChar, data.fnPersonRes2Work || null);
+            request.input('personRes2Rel', sql.NVarChar, data.fnPersonRes2Rel || null);
+            request.input('personRes2Contact', sql.NVarChar, data.fnPersonRes2Contact || null);
 
-            request.input('TRANS_FROM', sql.NVarChar, data.fntransFrom || null);
-            request.input('REASON_OF_TRANSFER', sql.NVarChar, data.fnrsofTransfer || null);
-            request.input('ADMISSION_STATUS', sql.NVarChar, data.fnAdmissionStatus || null);
-            request.input('REMARKS_TRANSFER', sql.NVarChar, data.fnremarksTransfer || null);
+            request.input('sssCardClass', sql.NVarChar, data.fnsssCard || null);
+            request.input('visitTypeSer', sql.NVarChar, data.fnvisitTypeService || null);
+            request.input('admissionType', sql.NVarChar, data.fnadmissionType || null);
+            request.input('endorsedToSocial', sql.Bit, data.fnendorsedToSocial ?? null);
+            request.input('numAdmissionSer', sql.Int, data.fnnumAdmissionService || 0);
+            request.input('expDate', sql.Date, data.fnExpDate || null);
+            request.input('lastAdmDateSer', sql.Date, data.fnLastAdmDateService || null);
+            request.input('coordinatedBySer', sql.NVarChar, data.fnCoordinateByService || null);
 
-            request.input('HMO', sql.NVarChar, data.fnHmo || null);
-            request.input('HMO_INITIAL_STATUS', sql.NVarChar, data.fnHmoInitialStatus || null);
-            request.input('PHIC_STATUS', sql.NVarChar, data.fnphStatus || null);
-            request.input('PHIC_NUM', sql.NVarChar, data.fnphNumber || null);
-            request.input('PHIC_REMARKS', sql.NVarChar, data.fnphRemarks || null);
-            request.input('MOP', sql.NVarChar, data.fnMop || null);
+            request.input('visitTypePay', sql.NVarChar, data.fnvisitTypePay || null);
+            request.input('numAdmissionPay', sql.Int, data.fnnumAdmissionPay || 0);
+            request.input('lastAdmDatePay', sql.Date, data.fnLastAdmDatePay || null);
+            request.input('coordinatedByPay', sql.NVarChar, data.fnCoordinateByPay || null); 
 
-            request.input('ADM_PHYSICIAN', sql.NVarChar, data.fnadmPhysician || null);
-            request.input('ATT_PHYSICIAN', sql.NVarChar, data.fnatnPhysician || null); 
-            request.input('CONTACT_PHYSICIAN', sql.NVarChar, data.fncontactatnPhysician || null);
-            request.input('DEPARTMENT', sql.NVarChar, data.fnDepartment || null);
-            request.input('ROOM_ADMISSION', sql.NVarChar, data.fnrmAdmission || null);
-            request.input('COST', sql.Decimal(18,2), data.fnCost || null);
-            request.input('LENGTH_STAY', sql.NVarChar, data.fnlengthStay || null);
-            request.input('ADM_PROCEDURE', sql.NVarChar, data.fnadmProcedure || null);
+            request.input('transFrom', sql.NVarChar, data.fntransFrom || null);
+            request.input('reasonOfTransfer', sql.NVarChar, data.fnrsofTransfer || null);
+            request.input('admissionStatus', sql.NVarChar, data.fnAdmissionStatus || null);
+            request.input('remarksTransfer', sql.NVarChar, data.fnremarksTransfer || null);
 
-            request.input('OR_DEPOSIT', sql.NVarChar, data.fnorDeposit || null);
-            request.input('REQ_DEPOSIT', sql.Decimal(18,2), data.fnreqDeposit || null);
-            request.input('TO_DEPOSIT', sql.Decimal(18,2), data.fntoDeposit || null);
-            request.input('TO_FOLLOW_DEPOSIT', sql.Decimal(18,2), data.fntofollowDeposit || null);
+            request.input('hmo', sql.NVarChar, data.fnHmo || null);
+            request.input('hmoInitialStatus', sql.NVarChar, data.fnHmoInitialStatus || null);
+            request.input('phicStatus', sql.NVarChar, data.fnphStatus || null);
+            request.input('phicNum', sql.NVarChar, data.fnphNumber || null);
+            request.input('phicRemarks', sql.NVarChar, data.fnphRemarks || null);
+            request.input('mop', sql.NVarChar, data.fnMop || null);
 
-            request.input('ADM_REMARKS', sql.NVarChar, data.fnadmRemarks || null);
-            request.input('STATUS', sql.NVarChar, data.fnStatus || null);
-            request.input('APPROVED_BY', sql.NVarChar, data.fnApprovedBY || null);
+            request.input('admPhysician', sql.NVarChar, data.fnadmPhysician || null);
+            request.input('attPhysician', sql.NVarChar, data.fnatnPhysician || null); 
+            request.input('contactPhysician', sql.NVarChar, data.fncontactatnPhysician || null);
+            request.input('department', sql.NVarChar, data.fnDepartment || null);
+            request.input('roomAdmission', sql.NVarChar, data.fnrmAdmission || null);
+            request.input('cost', sql.Decimal(18,2), data.fnCost || null);
+            request.input('lengthStay', sql.NVarChar, data.fnlengthStay || null);
+            request.input('admProcedure', sql.NVarChar, data.fnadmProcedure || null);
+
+            request.input('orDeposit', sql.NVarChar, data.fnorDeposit || null);
+            request.input('reqDeposit', sql.Decimal(18,2), data.fnreqDeposit || null);
+            request.input('toDeposit', sql.Decimal(18,2), data.fntoDeposit || null);
+            request.input('toFollowDeposit', sql.Decimal(18,2), data.fntofollowDeposit || null);
+
+            request.input('admRemarks', sql.NVarChar, data.fnadmRemarks || null);
+            request.input('status', sql.NVarChar, data.fnStatus || null);
+            request.input('approvedBy', sql.NVarChar, data.fnApprovedBY || null);
 
             await request.query(`
                 INSERT INTO PATIENTREG_CREDIT (
-                    CASENO, PATIENTNO, SSS_CARD_CLASS, VISIT_TYPE_SER, NUM_ADMISSION_SER, EXP_DATE, LAST_ADM_DATE_SER, COORDINATED_BY_SER,
+                    CASENO, PATIENTNO, SSS_CARD_CLASS, VISIT_TYPE_SER, ADMISSION_TYPE, ENDORSED_TO_SOCIAL, NUM_ADMISSION_SER, EXP_DATE, LAST_ADM_DATE_SER, COORDINATED_BY_SER,
                     VISIT_TYPE_PAY, NUM_ADMISSION_PAY, LAST_ADM_DATE_PAY, COORDINATED_BY_PAY,
                     TRANS_FROM, REASON_OF_TRANSFER, ADMISSION_STATUS, REMARKS_TRANSFER,
                     HMO, HMO_INITIAL_STATUS, PHIC_STATUS, PHIC_NUM, PHIC_REMARKS, MOP,
@@ -309,19 +318,48 @@ const PatientModel = {
                     OR_DEPOSIT, REQ_DEPOSIT, TO_DEPOSIT, TO_FOLLOW_DEPOSIT,
                     ADM_REMARKS, STATUS, APPROVED_BY, FOR_APPROV, EVALUATED_BY, CREATEDAT, UPDATEDAT
                 ) VALUES (
-                    @caseno, @patientno, @SSS_CARD_CLASS, @VISIT_TYPE_SER, @NUM_ADMISSION_SER, @EXP_DATE, @LAST_ADM_DATE_SER, @COORDINATED_BY_SER,
-                    @VISIT_TYPE_PAY, @NUM_ADMISSION_PAY, @LAST_ADM_DATE_PAY, @COORDINATED_BY_PAY,
-                    @TRANS_FROM, @REASON_OF_TRANSFER, @ADMISSION_STATUS, @REMARKS_TRANSFER,
-                    @HMO, @HMO_INITIAL_STATUS, @PHIC_STATUS, @PHIC_NUM, @PHIC_REMARKS, @MOP,
-                    @ADM_PHYSICIAN, @ATT_PHYSICIAN, @CONTACT_PHYSICIAN, @DEPARTMENT, @ROOM_ADMISSION, @COST, @LENGTH_STAY, @ADM_PROCEDURE,
-                    @OR_DEPOSIT, @REQ_DEPOSIT, @TO_DEPOSIT, @TO_FOLLOW_DEPOSIT,
-                    @ADM_REMARKS, @STATUS, @APPROVED_BY, 1, @reviewedBy, GETDATE(), GETDATE()
-                )
+                    @caseno, @patientno, @sssCardClass, @visitTypeSer, @admissionType, @endorsedToSocial, @numAdmissionSer, @expDate, @lastAdmDateSer, @coordinatedBySer,
+                    @visitTypePay, @numAdmissionPay, @lastAdmDatePay, @coordinatedByPay,
+                    @transFrom, @reasonOfTransfer, @admissionStatus, @remarksTransfer,
+                    @hmo, @hmoInitialStatus, @phicStatus, @phicNum, @phicRemarks, @mop,
+                    @admPhysician, @attPhysician, @contactPhysician, @department, @roomAdmission, @cost, @lengthStay, @admProcedure,
+                    @orDeposit, @reqDeposit, @toDeposit, @toFollowDeposit,
+                    @admRemarks, @status, @approvedBy, 1, @reviewedBy, GETDATE(), GETDATE()
+                );
+
+                UPDATE CASES
+                SET 
+                    PERSON_RES_ACCT = @personRes1,
+                    CONTACTNOS_PERSON_RES = @personRes1Contact,
+                    RELTOPAT = @personRes1Rel,
+                    EMPLOYER_PERSON_RES = @personRes1Work,
+                    
+                    UDF_PERSON_RES_ACCT2 = @personRes2,
+                    UDF_CONTACTNOS_PERSON_RES2 = @personRes2Contact,
+                    UDF_RELTOPAT2 = @personRes2Rel,
+                    UDF_EMPLOYER_PERSON_RES2 = @personRes2Work
+                WHERE 
+                    CASENO = @caseno 
+                    AND PATIENTNO = @patientno;
+
+                UPDATE PATIENTREG
+                SET 
+                    REVIEWEDBY = @reviewedBy
+                WHERE 
+                    CASENO = @caseno 
+                    AND PATIENTNO = @patientno;
             `);
 
+            await transaction.commit();
             return true;
 
         } catch (err) {
+            try {
+                await transaction.rollback();
+            } catch (rollbackErr) {
+                
+                console.error('Transaction rollback failed: ', rollbackErr);
+            }
             throw err;
         }
 },
@@ -354,12 +392,12 @@ const PatientModel = {
             LEFT JOIN UERMMMC.dbo.BARANGAYS BRGY ON PR.ADDRESSBARANGAY = BRGY.CODE
 
             LEFT JOIN UERMMMC.dbo.PATIENTREG_PTSIGNATURE PS 
-                ON (PR.ID = PS.ID OR (PR.PATIENTNO IS NOT NULL AND PR.PATIENTNO = PS.PATIENTNO))
+                ON (PR.PATIENTREGID = PS.PATIENTREGID OR (PR.PATIENTNO IS NOT NULL AND PR.PATIENTNO = PS.PATIENTNO))
                 
             LEFT JOIN UERMMMC.dbo.PATIENTREG_TPSIGNATURE TPS 
-                ON (PR.ID = TPS.ID OR (PR.PATIENTNO IS NOT NULL AND PR.PATIENTNO = TPS.PATIENTNO))
+                ON (PR.PATIENTREGID = TPS.PATIENTREGID OR (PR.PATIENTNO IS NOT NULL AND PR.PATIENTNO = TPS.PATIENTNO))
 
-            WHERE PR.ID = @patientId OR PR.PATIENTNO = @patientId
+            WHERE PR.PATIENTREGID = @patientId OR PR.PATIENTNO = @patientId
             `);
 
             if (result1.recordset.length > 0) {
@@ -436,103 +474,206 @@ const PatientModel = {
         }
 },
 
+//     linkPatientRecord: async (regID, patientNo) => {
+//         let transaction;
+//         try {
+//             const pool = await poolPromise;
+//             transaction = new sql.Transaction(pool);
+//             await transaction.begin();
+
+//             const request = new sql.Request(transaction);
+//             request.input('regID', sql.BigInt, regID);
+//             request.input('patientno', sql.BigInt, patientNo);
+
+//             await request.query(`
+//             UPDATE UERMMMC.dbo.PATIENTREG_PTSIGNATURE
+//             SET PATIENTNO = @patientno
+//             WHERE PATIENTREGID = @regID;
+
+//             UPDATE UERMMMC.dbo.PATIENTREG_TPSIGNATURE
+//             SET PATIENTNO = @patientno
+//             WHERE PATIENTREGID = @regID;
+
+//             UPDATE Target
+//             SET 
+//                 Target.PATIENTNO = @patientno,
+//                 Target.ISVALIDATED = 1,
+//                 Target.ISRETURNING = 1,
+//                 Target.LASTNAME = Source.LASTNAME,
+//                 Target.FIRSTNAME = Source.FIRSTNAME,
+//                 Target.MIDDLENAME = Source.MIDDLENAME,
+//                 Target.SUFFIX = Source.SUFFIX,
+//                 Target.SEX = Source.SEX,
+//                 Target.CIVILSTATUS = Source.STATUS,
+//                 Target.BIRTHDATE = Source.DBIRTH,
+//                 Target.BIRTHPLACE = Source.BPLACE,
+//                 Target.ADDRESSBARANGAY = B.DESCRIPTION,
+//                 Target.ADDRESSCITY = M.DESCRIPTION,
+//                 Target.RELIGION = R.DESCRIPTION,
+//                 Target.NATIONALITY = N.DESCRIPTION,
+//                 Target.OCCUPATION = O.DESCRIPTION,
+//                 Target.CPNAME = Source.INCASE,
+//                 Target.CPRELATIONSHIP = Source.RELATIONSHIP,
+//                 Target.CPADDRESS = Source.INCASEADD,
+//                 Target.CPMOBILE = COALESCE(Source.MOBILENO, Source.INCASEPHONENO),
+//                 Target.SPOUSENAME = Source.NAMEOFSPOUSE,
+//                 Target.SPOUSEOCCUPATION = Source.SPOUSEOCCUPATION,
+//                 Target.FATHER = Source.FATHER,
+//                 Target.FATHERADDRESS = Source.FADDRESS,
+//                 Target.FATHERCONTACT = Source.FTEL,
+//                 Target.MOTHER = Source.MOTHER,
+//                 Target.MOTHERADDRESS = Source.MADDRESS,
+//                 Target.MOTHERCONTACT = Source.MTEL,
+//                 Target.SENIORID = Source.SCIDNO,
+//                 Target.PHILHEALTHID = Source.UDF_PHILHEALTHNO,
+//                 Target.UPDATEDAT = GETDATE()
+
+//             FROM PATIENTREG AS Target
+//             INNER JOIN UERMMMC.dbo.PATIENTINFO AS Source
+//                 ON Source.PATIENTNO = @patientno
+//             LEFT JOIN UERMMMC.dbo.RELIGION R
+//                 ON Source.RELIGION = R.CODE
+//             LEFT JOIN UERMMMC.dbo.OCCUPATION O
+//                 ON Source.OCCUPATION = O.CODE
+//             LEFT JOIN UERMMMC.dbo.NATIONALITY N
+//                 ON Source.NATIONALITY = N.CODE
+//             LEFT JOIN UERMMMC.dbo.MUNICIPALITY M
+//                 ON Source.MUNICIPALITY = M.CODE
+//             LEFT JOIN UERMMMC.dbo.BARANGAYS B
+//                 ON Source.BARANGAY = B.CODE
+//             WHERE Target.PATIENTREGID = @regID;
+//             UPDATE HospitalTarget
+//             SET HospitalTarget.AGE = RegSource.AGE
+//             FROM UERMMMC.dbo.PATIENTINFO AS HospitalTarget
+//             INNER JOIN PATIENTREG AS RegSource
+//                 ON RegSource.PATIENTREGID = @regID
+//             WHERE HospitalTarget.PATIENTNO = @patientno;
+//             `);
+
+//             await transaction.commit();
+//             return true;
+
+//         } catch (err) {
+//             if (transaction) await transaction.rollback();
+//             throw err;
+//         }
+// },
+
     linkPatientRecord: async (regID, patientNo) => {
-        let transaction;
-        try {
-            const pool = await poolPromise;
-            transaction = new sql.Transaction(pool);
-            await transaction.begin();
+    let transaction;
 
-            const request = new sql.Request(transaction);
-            request.input('regID', sql.BigInt, regID);
-            request.input('patientno', sql.BigInt, patientNo);
+    try {
+        const pool = await poolPromise;
 
-            await request.query(`
+        transaction = new sql.Transaction(pool);
+        await transaction.begin();
+
+        const request = new sql.Request(transaction);
+
+        request.input('regID', sql.BigInt, regID);
+        request.input('patientno', sql.BigInt, patientNo);
+
+        const check = await request.query(`
+            SELECT TOP 1 PATIENTREGID
+            FROM PATIENTREG
+            WHERE PATIENTREGID = @regID
+        `);
+
+        if (!check.recordset.length) {
+            throw new Error('PatientREGID not found');
+        }
+
+        await request.query(`
             UPDATE UERMMMC.dbo.PATIENTREG_PTSIGNATURE
             SET PATIENTNO = @patientno
-            WHERE ID = @regID;
+            WHERE PATIENTREGID = @regID;
+        `);
 
+        await request.query(`
             UPDATE UERMMMC.dbo.PATIENTREG_TPSIGNATURE
             SET PATIENTNO = @patientno
-            WHERE ID = @regID;
+            WHERE PATIENTREGID = @regID;
+        `);
 
+        const updateMain = await request.query(`
             UPDATE Target
             SET 
                 Target.PATIENTNO = @patientno,
                 Target.ISVALIDATED = 1,
                 Target.ISRETURNING = 1,
-
                 Target.LASTNAME = Source.LASTNAME,
                 Target.FIRSTNAME = Source.FIRSTNAME,
                 Target.MIDDLENAME = Source.MIDDLENAME,
                 Target.SUFFIX = Source.SUFFIX,
-
+                Target.SEX = Source.SEX,
+                Target.CIVILSTATUS = Source.STATUS,
+                Target.BIRTHDATE = Source.DBIRTH,
+                Target.BIRTHPLACE = Source.BPLACE,
                 Target.ADDRESSBARANGAY = B.DESCRIPTION,
                 Target.ADDRESSCITY = M.DESCRIPTION,
                 Target.RELIGION = R.DESCRIPTION,
                 Target.NATIONALITY = N.DESCRIPTION,
                 Target.OCCUPATION = O.DESCRIPTION,
-
-                Target.SEX = Source.SEX,
-                Target.CIVILSTATUS = Source.STATUS,
-                Target.BIRTHDATE = Source.DBIRTH,
-                Target.BIRTHPLACE = Source.BPLACE,
-
                 Target.CPNAME = Source.INCASE,
                 Target.CPRELATIONSHIP = Source.RELATIONSHIP,
                 Target.CPADDRESS = Source.INCASEADD,
-                Target.CPLANDLINE = COALESCE(Source.PHONENOS, Source.INCASEPHONENO),
-                Target.CPMOBILE = Source.MOBILENO,
-
+                Target.CPMOBILE = COALESCE(Source.MOBILENO, Source.INCASEPHONENO),
                 Target.SPOUSENAME = Source.NAMEOFSPOUSE,
                 Target.SPOUSEOCCUPATION = Source.SPOUSEOCCUPATION,
-                Target.SPOUSEEMPLOYERNAME = Source.EMPLOYER,     
-                Target.SPOUSEEMPLOYERADDRESS = Source.EMPLOYERADD, 
-                Target.SPOUSEEMPLOYERCONTACT = Source.EMPLOYERTELNO,
-
-                Target.PTFATHERNAME = Source.FATHER,
-                Target.PTFATHERADDRESS = Source.FADDRESS,
-                Target.PTFATHERCONTACT = Source.FTEL,
-                Target.PTMOTHERMAIDENNAME = Source.MOTHER,
-                Target.PTMOTHERADDRESS = Source.MADDRESS,
-                Target.PTMOTHERCONTACT = Source.MTEL,
-
-                Target.SSSGSISID = Source.SSSNO,
-                Target.TINID = Source.TINNO,
+                Target.FATHER = Source.FATHER,
+                Target.FATHERADDRESS = Source.FADDRESS,
+                Target.FATHERCONTACT = Source.FTEL,
+                Target.MOTHER = Source.MOTHER,
+                Target.MOTHERADDRESS = Source.MADDRESS,
+                Target.MOTHERCONTACT = Source.MTEL,
                 Target.SENIORID = Source.SCIDNO,
-                Target.PHILHEALTHID = Source.UDF_PHILHEALTHNO
-
+                Target.PHILHEALTHID = Source.UDF_PHILHEALTHNO,
+                Target.UPDATEDAT = GETDATE()
             FROM PATIENTREG AS Target
-            
-            INNER JOIN UERMMMC.dbo.PATIENTINFO AS Source 
+            INNER JOIN UERMMMC.dbo.PATIENTINFO AS Source
                 ON Source.PATIENTNO = @patientno
-            
-            LEFT JOIN UERMMMC.dbo.RELIGION R ON Source.RELIGION = R.CODE 
-            LEFT JOIN UERMMMC.dbo.OCCUPATION O ON Source.OCCUPATION = O.CODE
-            LEFT JOIN UERMMMC.dbo.NATIONALITY N ON Source.NATIONALITY = N.CODE
-            LEFT JOIN UERMMMC.dbo.MUNICIPALITY M ON Source.MUNICIPALITY = M.CODE
-            LEFT JOIN UERMMMC.dbo.BARANGAYS B ON Source.BARANGAY = B.CODE
+            LEFT JOIN UERMMMC.dbo.RELIGION R
+                ON Source.RELIGION = R.CODE
+            LEFT JOIN UERMMMC.dbo.OCCUPATION O
+                ON Source.OCCUPATION = O.CODE
+            LEFT JOIN UERMMMC.dbo.NATIONALITY N
+                ON Source.NATIONALITY = N.CODE
+            LEFT JOIN UERMMMC.dbo.MUNICIPALITY M
+                ON Source.MUNICIPALITY = M.CODE
+            LEFT JOIN UERMMMC.dbo.BARANGAYS B
+                ON Source.BARANGAY = B.CODE
+            WHERE Target.PATIENTREGID = @regID;
+        `);
 
-            WHERE Target.ID = @regID;
-
-            UPDATE HospitalTarget
-            SET HospitalTarget.AGE = RegSource.AGE
-            FROM UERMMMC.dbo.PATIENTINFO AS HospitalTarget
-            INNER JOIN PATIENTREG AS RegSource
-                ON RegSource.ID = @regID
-            WHERE HospitalTarget.PATIENTNO = @patientno;
-            `);
-
-            await transaction.commit();
-            return true;
-
-        } catch (err) {
-            if (transaction) await transaction.rollback();
-            throw err;
+        if (updateMain.rowsAffected[0] === 0) {
+            throw new Error('Main patient record not updated');
         }
+
+        await request.query(`
+            UPDATE UERMMMC.dbo.PATIENTINFO
+            SET AGE = RegSource.AGE
+            FROM UERMMMC.dbo.PATIENTINFO
+            INNER JOIN PATIENTREG AS RegSource
+                ON RegSource.PATIENTREGID = @regID
+            WHERE PATIENTINFO.PATIENTNO = @patientno;
+        `);
+
+        await transaction.commit();
+
+        return true;
+
+    } catch (err) {
+        if (transaction) {
+            await transaction.rollback();
+        }
+
+        console.error('LINK PATIENT ERROR:', err);
+
+        throw new Error(err.message || 'Failed to link patient record');
+    }
 },
 
-transferPatientToLegacy: async (id, force) => {
+    transferPatientToLegacy: async (id, force) => {
         let transaction;
         try {
             const pool = await poolPromise;
@@ -550,7 +691,7 @@ transferPatientToLegacy: async (id, force) => {
                     SUFFIX, 
                     BIRTHDATE 
                 FROM PATIENTREG 
-                WHERE ID = @id
+                WHERE PATIENTREGID = @id
             `);
 
             if (sourceData.recordset.length === 0) {
@@ -601,69 +742,94 @@ transferPatientToLegacy: async (id, force) => {
             requestTransfer.input('id', sql.BigInt, id);
 
             await requestTransfer.query(`
-                DECLARE @generatedPATIENTNO BIGINT;
-                
-                SELECT @generatedPATIENTNO = ISNULL(MAX(CAST(PATIENTNO AS BIGINT)), 0) + 1 
-                FROM UERMMMC.dbo.PATIENTINFO;
+            DECLARE @generatedPATIENTNO BIGINT;
 
-                INSERT INTO UERMMMC.dbo.PATIENTINFO (
-                    PATIENTNO, 
-                    LASTNAME, FIRSTNAME, MIDDLENAME, SUFFIX,
-                    BARANGAY, MUNICIPALITY, ADDRESS,
-                    SEX, STATUS,
-                    RELIGION, NATIONALITY,
-                    DBIRTH, AGE, BPLACE,
-                    OCCUPATION,
-                    INCASE, RELATIONSHIP, INCASEPHONENO, INCASEADD,
-                    PHONENOS, MOBILENO,
-                    NAMEOFSPOUSE, SPOUSEOCCUPATION,
-                    EMPLOYER, EMPLOYERADD, EMPLOYERTELNO,
-                    FATHER, FADDRESS, FTEL,
-                    MOTHER, MADDRESS, MTEL,
-                    SSSNO, TINNO, SCIDNO, UDF_PHILHEALTHNO, PWD_IDNo,
-                    UDF_Module, UDF_AppName
-                )
-                SELECT 
-                    @generatedPATIENTNO, 
-                    PR.LASTNAME, PR.FIRSTNAME, PR.MIDDLENAME, PR.SUFFIX,
-                    
-                    (SELECT TOP 1 CODE FROM UERMMMC.dbo.BARANGAYS WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(PR.ADDRESSBARANGAY)))), 
-                    (SELECT TOP 1 CODE FROM UERMMMC.dbo.MUNICIPALITY WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(PR.ADDRESSCITY)))), 
-                    
-                    PR.ADDRESSPERMANENT,
-                    PR.SEX, PR.CIVILSTATUS,
-                    
-                    (SELECT TOP 1 CODE FROM UERMMMC.dbo.RELIGION WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(PR.RELIGION)))), 
-                    (SELECT TOP 1 CODE FROM UERMMMC.dbo.NATIONALITY WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(PR.NATIONALITY)))), 
-                    
-                    PR.BIRTHDATE, PR.AGE, PR.BIRTHPLACE,
-                    
-                    (SELECT TOP 1 CODE FROM UERMMMC.dbo.OCCUPATION WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(PR.OCCUPATION)))), 
-                    
-                    PR.CPNAME, PR.CPRELATIONSHIP, 
-                    ISNULL(PR.CPLANDLINE, PR.CPMOBILE), 
-                    PR.CPADDRESS,
-                    PR.CPLANDLINE, PR.CPMOBILE,
-                    PR.SPOUSENAME, PR.SPOUSEOCCUPATION,
-                    PR.SPOUSEEMPLOYERNAME, PR.SPOUSEEMPLOYERADDRESS, PR.SPOUSEEMPLOYERCONTACT, 
-                    PR.PTFATHERNAME, PR.PTFATHERADDRESS, PR.PTFATHERCONTACT,
-                    PR.PTMOTHERMAIDENNAME, PR.PTMOTHERADDRESS, PR.PTMOTHERCONTACT,
-                    PR.SSSGSISID, PR.TINID, PR.SENIORID, PR.PHILHEALTHID, PR.PWD,
-                    'UERMPATIENTREG', 'UERMPATIENTREG'
-                FROM PATIENTREG PR
-                WHERE PR.ID = @id;
+            SELECT @generatedPATIENTNO = ISNULL(MAX(CAST(PATIENTNO AS BIGINT)), 0) + 1
+            FROM UERMMMC.dbo.PATIENTINFO;
 
-                UPDATE PATIENTREG
-                SET PATIENTNO = @generatedPATIENTNO, ISVALIDATED = 1
-                WHERE ID = @id;
+            INSERT INTO UERMMMC.dbo.PATIENTINFO (
+                PATIENTNO,
+                LASTNAME, FIRSTNAME, MIDDLENAME, SUFFIX,
+                BARANGAY, MUNICIPALITY, ADDRESS,
+                SEX, STATUS, RELIGION, NATIONALITY,
+                DBIRTH, AGE, BPLACE,OCCUPATION,
+                INCASE, RELATIONSHIP, INCASEPHONENO, INCASEADD,
+                PHONENOS, MOBILENO,
+                NAMEOFSPOUSE, SPOUSEOCCUPATION,
+                EMPLOYER, EMPLOYERADD, EMPLOYERTELNO,
+                FATHER, FADDRESS, FTEL,
+                MOTHER, MADDRESS, MTEL, SCIDNO,
+                UDF_PHILHEALTHNO, PWD_IDNo,
+                UDF_Module, UDF_AppName
+            )
 
-                UPDATE UERMMMC.dbo.PATIENTREG_PTSIGNATURE
-                SET PATIENTNO = @generatedPATIENTNO
-                WHERE ID = @id;
+            SELECT
+                @generatedPATIENTNO,
+                PR.LASTNAME,
+                PR.FIRSTNAME,
+                PR.MIDDLENAME,
+                PR.SUFFIX,
 
-                UPDATE UERMMMC.dbo.PATIENTREG_TPSIGNATURE
-                SET PATIENTNO = @generatedPATIENTNO
-                WHERE ID = @id;
+                (SELECT TOP 1 CODE FROM UERMMMC.dbo.BARANGAYS
+                WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(PR.ADDRESSBARANGAY)))),
+
+                (SELECT TOP 1 CODE FROM UERMMMC.dbo.MUNICIPALITY
+                WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(PR.ADDRESSCITY)))),
+                PR.ADDRESSSTREET,
+
+                PR.SEX,
+                PR.CIVILSTATUS,
+
+                (SELECT TOP 1 CODE FROM UERMMMC.dbo.RELIGION
+                WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(PR.RELIGION)))),
+
+                (SELECT TOP 1 CODE FROM UERMMMC.dbo.NATIONALITY
+                WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(PR.NATIONALITY)))),
+
+                PR.BIRTHDATE,
+                PR.AGE,
+                PR.BIRTHPLACE,
+
+                (SELECT TOP 1 CODE FROM UERMMMC.dbo.OCCUPATION
+                WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(PR.OCCUPATION)))),
+
+                PR.CPNAME,
+                PR.CPRELATIONSHIP,
+                PR.CPMOBILE,
+                PR.CPADDRESS,
+                PR.CPMOBILE,
+                PR.CPMOBILE,
+                PR.SPOUSENAME,
+                PR.SPOUSEOCCUPATION,
+                PR.EMPLOYER,
+                PR.EMPLOYERADDRESS,
+                PR.EMPLOYERCONTACTNO,
+                PR.FATHER,
+                PR.FATHERADDRESS,
+                PR.FATHERCONTACT,
+                PR.MOTHER,
+                PR.MOTHERADDRESS,
+                PR.MOTHERCONTACT,
+                PR.SENIORID,
+                PR.PHILHEALTHID,
+                PR.PWDID,
+                'UERMPATIENTREG',
+                'UERMPATIENTREG'
+            FROM PATIENTREG PR
+            WHERE PR.PATIENTREGID = @id;
+
+            UPDATE PATIENTREG
+            SET PATIENTNO = @generatedPATIENTNO,
+                ISVALIDATED = 1
+            WHERE PATIENTREGID = @id;
+
+            UPDATE UERMMMC.dbo.PATIENTREG_PTSIGNATURE
+            SET PATIENTNO = @generatedPATIENTNO
+            WHERE PATIENTREGID = @id;
+
+            UPDATE UERMMMC.dbo.PATIENTREG_TPSIGNATURE
+            SET PATIENTNO = @generatedPATIENTNO
+            WHERE PATIENTREGID = @id;
             `);
 
             await transaction.commit();
@@ -679,7 +845,7 @@ transferPatientToLegacy: async (id, force) => {
             }
             throw err;
         }
-    },
+},
 
     searchInpatientRecords: async (searchTerm) => {
         try {
@@ -689,21 +855,15 @@ transferPatientToLegacy: async (id, force) => {
             
             let sqlQuery = `
                 SELECT TOP ${maxResults} 
-                    PATIENTNO, 
-                    (FIRSTNAME + ' ' + ISNULL(MIDDLENAME + ' ', '') + LASTNAME + ISNULL(' ' + SUFFIX, '')) AS fullName,                
-                    LASTNAME, 
-                    FIRSTNAME, 
-                    ISNULL(MIDDLENAME, '') as MIDDLENAME, 
-                    SUFFIX,
-                    FORMAT(DBIRTH, 'yyyy-MM-dd') as birthdate,
-                    AGE,
-                    SEX as gender, 
-                    STATUS,
-                    NATIONALITY,
-                    CONCAT_WS(', ', BARANGAY, MUNICIPALITY) AS addressPresent,
-                    DATE_ENCODED
-                FROM UERMMMC.dbo.PATIENTINFO
-                WHERE 1=1 
+                     *, 
+                (FIRSTNAME + ' ' + ISNULL(MIDDLENAME + ' ', '') + LASTNAME + ISNULL(' ' + SUFFIX, '')) AS fullName, 
+                ISNULL(MIDDLENAME, '') AS middleName, 
+                ISNULL(SUFFIX, '') AS suffix,
+                SEX AS gender, 
+                FORMAT(BIRTHDATE, 'yyyy-MM-dd') AS birthdateStr,
+                CONCAT_WS(', ', ADDRESSSTREET, ADDRESSBARANGAY, ADDRESSCITY, ADDRESSPROVINCE, ADDRESSREGION) AS addressPresent
+                FROM UERMMMC.dbo.PATIENTREG
+                WHERE PATIENTTYPE = 'Inpatient' AND 1=1 
             `;
 
             const isNumeric = /^\d+$/.test(searchTerm);
@@ -762,7 +922,7 @@ transferPatientToLegacy: async (id, force) => {
                     (
                         LASTNAME LIKE @search 
                         OR FIRSTNAME LIKE @search
-                        OR ID = @exactId
+                        OR PATIENTREGID = @exactId
                     )
                     AND PATIENTTYPE = 'Outpatient'
                 ORDER BY LASTNAME, FIRSTNAME
@@ -804,7 +964,7 @@ transferPatientToLegacy: async (id, force) => {
             WHERE C.UDF_CaseDept = 'ER'
                 AND C.PATIENTTYPE = 'OPD'
                 AND C.ForAdmission = 1
-                AND (PRC.FOR_APPROV = 0 OR PRC.FOR_APPROV IS NULL) -- Logic for Pending
+                AND (PRC.FOR_APPROV = 0 OR PRC.FOR_APPROV IS NULL) 
                 AND (
                     C.CASENO LIKE @searchQuery 
                     OR C.PATIENTNO LIKE @searchQuery
@@ -896,6 +1056,70 @@ transferPatientToLegacy: async (id, force) => {
     }
 },
 
+    seachReturningRecords: async (firstName, lastName, birthdate) => {
+    try {
+        const pool = await poolPromise;
+        const request = pool.request();
+
+        let query = `
+        SELECT 
+            P.*,
+
+            (P.LASTNAME + ', ' + P.FIRSTNAME 
+                + CASE 
+                    WHEN P.MIDDLENAME IS NOT NULL AND P.MIDDLENAME <> '' 
+                    THEN ' ' + P.MIDDLENAME ELSE '' 
+                END
+                + CASE 
+                    WHEN P.SUFFIX IS NOT NULL AND P.SUFFIX <> '' 
+                    THEN ' ' + P.SUFFIX ELSE '' 
+                END
+            ) AS FULLNAME,
+
+            R.DESCRIPTION AS RELIGION_DESC,
+            N.DESCRIPTION AS NATIONALITY_DESC,
+            B.DESCRIPTION AS BARANGAY_DESC,
+            M.DESCRIPTION AS MUNICIPALITY_DESC,
+            O.DESCRIPTION AS OCCUPATION_DESC
+
+        FROM PATIENTINFO P
+        LEFT JOIN RELIGION R 
+            ON P.RELIGION = R.CODE
+        LEFT JOIN NATIONALITY N 
+            ON P.NATIONALITY = N.CODE
+        LEFT JOIN BARANGAYS B 
+            ON P.BARANGAY = B.CODE
+        LEFT JOIN MUNICIPALITY M 
+            ON P.MUNICIPALITY = M.CODE
+        LEFT JOIN OCCUPATION O
+            ON P.OCCUPATION = O.CODE
+
+        WHERE 1 = 1
+        `;
+
+        if (firstName) {
+            query += ` AND FIRSTNAME LIKE @firstName`;
+            request.input("firstName", `%${firstName}%`);
+        }
+
+        if (lastName) {
+            query += ` AND LASTNAME LIKE @lastName`;
+            request.input("lastName", `%${lastName}%`);
+        }
+
+        if (birthdate) {
+            query += ` AND CAST(DBIRTH AS DATE) = @birthdate`; 
+            request.input("birthdate", birthdate);
+        }
+
+        const result = await request.query(query);
+        return result.recordset;
+
+    } catch (err) {
+        throw err;
+    }
+},
+
     fetchInpatientRecords: async () => {
         try {
             const pool = await poolPromise;
@@ -914,7 +1138,48 @@ transferPatientToLegacy: async (id, force) => {
             FROM PATIENTREG
             WHERE 
                 PATIENTTYPE = 'Inpatient'
-                OR ((ISADMITTED = 1 OR PATIENTTYPE = 'Emergency') AND REVIEWEDBY IS NOT NULL)
+            `);
+
+            return result.recordset;
+
+        } catch (err) {
+            throw err;
+        }
+},
+
+    fetchErListRecords: async () => {
+        try {
+            const pool = await poolPromise;
+            const request = pool.request();
+
+            const result = await request.query(`
+            SELECT 
+                C.*,
+                P.FIRSTNAME,
+                P.LASTNAME,
+                (P.FIRSTNAME + ' ' + ISNULL(P.MIDDLENAME + ' ', '') + P.LASTNAME + ISNULL(' ' + P.SUFFIX, '')) AS fullName,
+                P.SEX AS gender,
+                P.BIRTHDATE AS birthdate,
+                CONCAT_WS(', ', P.ADDRESSSTREET, P.ADDRESSBARANGAY, P.ADDRESSCITY, P.ADDRESSPROVINCE, P.ADDRESSREGION) AS addressPresent,
+                CASE 
+                    WHEN C.IsSenior = 1 THEN P.SENIORID 
+                    ELSE NULL 
+                END AS scid,
+                D.ADMISSION AS diagnosis,  
+                PC.PHIC_DESC AS phicDesc   
+            FROM CASES C
+            LEFT JOIN PATIENTREG P 
+                ON C.PATIENTNO = P.PATIENTNO
+            LEFT JOIN PATIENTREG_CREDIT PRC 
+                ON C.PATIENTNO = PRC.PATIENTNO
+            LEFT JOIN DIAGNOSIS D         
+                ON C.CASENO = D.CASENO    
+            LEFT JOIN PHIC_CODES PC             
+                ON C.PHIC_CODE = PC.PHIC_CODE  
+            WHERE 
+                (P.ISADMITTED = 1 OR P.PATIENTTYPE = 'EMERGENCY')
+                AND P.REVIEWEDBY IS NOT NULL
+                AND PRC.IS_APPROVED = 1;
             `);
 
             return result.recordset;
@@ -958,7 +1223,7 @@ transferPatientToLegacy: async (id, force) => {
 
             const result = await request.query(`
                 SELECT TOP 1000 
-                    ID,
+                    PATIENTREGID,
                     PATIENTNO,
                     (FIRSTNAME + ' ' + ISNULL(MIDDLENAME + ' ', '') + LASTNAME) AS fullName,                    
                     LASTNAME, 
@@ -987,7 +1252,7 @@ transferPatientToLegacy: async (id, force) => {
             const result = await request.query(`
                 SELECT SIGNATURE 
                 FROM UERMMMC.dbo.PATIENTREG_PTSIGNATURE 
-                WHERE ID = @pId
+                WHERE PATIENTREGID = @pId
             `);
 
             return result.recordset.length > 0 ? result.recordset[0] : null;
@@ -1010,7 +1275,7 @@ transferPatientToLegacy: async (id, force) => {
             await request.query(`
                 UPDATE PATIENTREG
                 SET FORREVIEW = 1 
-                WHERE ID = @patient_id
+                WHERE PATIENTREGID = @patient_id
             `);
 
             return true; 
@@ -1040,6 +1305,41 @@ transferPatientToLegacy: async (id, force) => {
         }
 },
 
+    getServices: async () => {
+        try {
+            const pool = await poolPromise;
+            const result = await pool.request().query(`
+                SELECT	CODE=T0.DEPT_CODE,
+                DESCRIPTION= T0.DEPARTMENT
+                FROM [UERMMMC]..[DEPARTMENT] T0 WITH(NOLOCK)
+                WHERE T0.DELETED = 0 
+                ORDER BY T0.DEPARTMENT
+            `);
+            return result.recordset;
+        } catch (error) {
+            throw error;
+        }
+},
+
+    getDepartment: async () => {
+        try {
+            const pool = await poolPromise;
+            const result = await pool.request().query(`
+                SELECT T0.CODE, T0.[DESCRIPTION] FROM
+                [UERMMMC]..[SECTIONS] T0 WITH(NOLOCK)
+                INNER JOIN  [UERMMMC_FINANCIALS]..[ACCOUNT_CATEGORY] T1 WITH(NOLOCK) ON T0.ACCOUNT_CATEGORY = T1.CODE
+                WHERE T0.DELETED = 0
+                GROUP BY
+                T0.CODE, T0.[DESCRIPTION] , T1.[DESCRIPTION]
+                ORDER BY
+                T0.[DESCRIPTION]
+            `);
+            return result.recordset;
+        } catch (error) {
+            throw error;
+        }
+},
+
     getHMO: async () => {
             try {
                 const pool = await poolPromise;
@@ -1058,6 +1358,24 @@ transferPatientToLegacy: async (id, force) => {
             }
 },
 
+    getRooms: async () => {
+    try {
+        const pool = await poolPromise;
+        const result = await pool.request().query(`
+            SELECT 
+                LTRIM(RTRIM(ROOMNO)) AS label, 
+                LTRIM(RTRIM(ROOMNO)) AS value,
+                RATE AS rate
+            FROM UERMMMC.dbo.ROOMS 
+            WHERE ROOMNO IS NOT NULL
+            ORDER BY ROOMNO ASC
+        `);
+        return result.recordset;
+    } catch (error) {
+        throw error;
+    }
+},
+
     getAssessmentDetailsByCaseno: async (caseno) => {
     try {
         const pool = await poolPromise;
@@ -1066,8 +1384,13 @@ transferPatientToLegacy: async (id, force) => {
         request.input('caseno', sql.VarChar, caseno);
 
         const result = await request.query(`
-            SELECT * FROM PATIENTREG_CREDIT 
-            WHERE CASENO = @caseno
+            SELECT 
+                PC.*, 
+                (PI.LASTNAME + ', ' + PI.FIRSTNAME) AS fullName
+            FROM PATIENTREG_CREDIT PC
+            LEFT JOIN PATIENTINFO PI
+                ON PC.PATIENTNO = PI.PATIENTNO
+            WHERE PC.CASENO = @caseno
         `);
 
         return result.recordset.length > 0 ? result.recordset[0] : null;

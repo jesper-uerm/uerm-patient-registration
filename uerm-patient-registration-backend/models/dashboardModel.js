@@ -7,9 +7,9 @@ const DashboardModel = {
             const pool = await poolPromise; 
             const result = await pool.request().query(`
                 SELECT 
-                    SUM(CASE WHEN ISADMITTED = 0 THEN 1 ELSE 0 END) AS forAdmission,
+                    SUM(CASE WHEN ISFORADMISSION = 1 THEN 1 ELSE 0 END) AS forAdmission,
                     SUM(CASE WHEN PATIENTTYPE = 'Outpatient' THEN 1 ELSE 0 END) AS outpatient,
-                    SUM(CASE WHEN PATIENTTYPE = 'Emergency' AND ISADMITTED IS NULL THEN 1 ELSE 0 END) AS emergency
+                    SUM(CASE WHEN PATIENTTYPE = 'Emergency' AND ISFORADMISSION IS NULL THEN 1 ELSE 0 END) AS emergency
                 FROM PATIENTREG
             `);
             return result.recordset[0];

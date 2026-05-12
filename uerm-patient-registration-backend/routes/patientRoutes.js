@@ -9,10 +9,16 @@ router.put('/details', PatientController.updateDetails);
 router.put('/approve', PatientController.approvePatient);
 router.put('/disapprove', PatientController.disapprovePatient);
 
-router.get('/inpatient', PatientController.fetchInpatient);
+router.get('/returning', PatientController.searchReturning);
+router.get('/inpatient', PatientController.fetchInpatient); 
+router.get('/for-admission', PatientController.fetchErList); 
 router.get('/outpatient', PatientController.fetchOutpatient);
 router.get('/doctors', PatientController.getDoctors);
+router.get('/service', PatientController.getServices);
+router.get('/department', PatientController.getDepartment);
 router.get('/hmo', PatientController.getHMO);
+router.get('/rooms', PatientController.getRooms);
+
 
 router.get('/search-inpatient', PatientController.searchInpatient);
 router.get('/search-outpatient', PatientController.searchOutpatient);
