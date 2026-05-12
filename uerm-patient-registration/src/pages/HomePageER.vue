@@ -37,7 +37,7 @@
         <div
           v-if="page === 1"
           key="page1"
-          :class="$q.screen.gt.xs ? 'row' : 'row'"
+          :class="$q.screen.gt.md ? 'row' : 'col'"
           class="flex-center q-gutter-xl"
         >
           <q-card
@@ -49,13 +49,13 @@
               column: !$q.screen.lt.md,
             }"
             :style="{
-              width: $q.screen.lt.sm ? '180px' : '260px',
-              height: $q.screen.lt.sm ? '120px' : '200px',
+              width: $q.screen.lt.sm ? '180px' : '290px',
+              height: $q.screen.lt.md ? '110px' : '200px',
             }"
           >
             <q-card-section class="col column flex-center full-height">
               <q-icon
-                name="assignment_return"
+                name="las la-user"
                 class="q-mb-md transition-icon card-icon"
                 :class="{
                   row: $q.screen.lt.md,
@@ -71,7 +71,7 @@
                   'text-caption': $q.screen.lt.sm,
                 }"
               >
-                RETURNING
+                Returning
               </div>
               <div
                 class="text-caption text-uppercase q-mt-sm opacity-fade"
@@ -94,13 +94,13 @@
               column: !$q.screen.lt.md,
             }"
             :style="{
-              width: $q.screen.lt.sm ? '180px' : '260px',
-              height: $q.screen.lt.sm ? '120px' : '200px',
+              width: $q.screen.lt.sm ? '180px' : '290px',
+              height: $q.screen.lt.md ? '110px' : '200px',
             }"
           >
             <q-card-section class="col column flex-center full-height">
               <q-icon
-                name="medical_services"
+                name="las la-user-plus"
                 class="q-mb-md transition-icon card-icon"
                 :class="{
                   row: $q.screen.lt.md,
@@ -116,7 +116,7 @@
                   'text-caption': $q.screen.lt.sm,
                 }"
               >
-                Triage Form
+                New Patient
               </div>
               <div
                 class="text-caption text-uppercase q-mt-sm opacity-fade"
@@ -132,8 +132,12 @@
         </div>
       </transition>
     </div>
-    <ReturningPatient ref="ReturningPatientFormDialog" />
-    <TriageAssessment ref="TraigeAssessmentFormDialog" />
+    <ReturningPatient
+      ref="ReturningPatientFormDialog"
+      module="ER"
+      @open-triage="handleOpenTriage"
+    />
+    <TriageAssessment ref="TriageAssessmentFormDialog" />
   </div>
 </template>
 
@@ -164,6 +168,10 @@ export default {
 
     personalInfoTriage() {
       this.openTriage();
+    },
+
+    handleOpenTriage(patient) {
+      this.$refs.TriageAssessmentFormDialog.show(patient);
     },
   },
 };

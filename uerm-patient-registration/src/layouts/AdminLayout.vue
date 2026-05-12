@@ -91,9 +91,22 @@
           class="q-mx-sm rounded-borders q-mb-xs"
         >
           <q-item-section avatar>
-            <q-icon name="dashboard" />
+            <q-icon name="las la-stream" />
           </q-item-section>
           <q-item-section>Dashboard</q-item-section>
+        </q-item>
+
+        <q-item
+          clickable
+          v-ripple
+          to="/admitting/FromErList"
+          active-class="active-link"
+          class="q-mx-sm rounded-borders q-mb-xs"
+        >
+          <q-item-section avatar>
+            <q-icon name="las la-ambulance" />
+          </q-item-section>
+          <q-item-section>From ER</q-item-section>
         </q-item>
 
         <q-item
@@ -104,9 +117,9 @@
           class="q-mx-sm rounded-borders q-mb-xs"
         >
           <q-item-section avatar>
-            <q-icon name="bed" />
+            <q-icon name="las la-bed" />
           </q-item-section>
-          <q-item-section>Inpatients</q-item-section>
+          <q-item-section>Inpatient</q-item-section>
         </q-item>
 
         <q-item
@@ -117,9 +130,9 @@
           class="q-mx-sm rounded-borders q-mb-xs"
         >
           <q-item-section avatar>
-            <q-icon name="accessibility_new" />
+            <q-icon name="las la-stethoscope" />
           </q-item-section>
-          <q-item-section>Outpatients</q-item-section>
+          <q-item-section>Outpatient</q-item-section>
         </q-item>
 
         <q-separator spaced class="q-mx-md" />

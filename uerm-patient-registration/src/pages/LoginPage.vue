@@ -101,7 +101,10 @@
 
 <script>
 import axios from "axios";
+import { QSpinnerIos } from "quasar";
 import { useAuthStore } from "src/stores/authStore";
+
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default {
   name: "HospitalLoginPage",
@@ -119,39 +122,71 @@ export default {
       loading: false,
     };
   },
+
   computed: {
     currentYear() {
       return new Date().getFullYear();
     },
   },
+
   methods: {
     async onSubmit() {
+      if (this.loading) return;
+
       this.loading = true;
+
       try {
-        const response = await axios.post("http://10.107.0.2:3000/api/auth/login", {
-          EmployeeCode: this.EmployeeCode,
-          WebPassword: this.WebPassword,
-        });
+        const { data } = await this.loginRequest();
 
-        this.authStore.saveLoginData(response.data.user);
+        this.handleLoginSuccess(data);
 
-        const targetPath = response.data.redirectPath;
+        await this.showLoginLoading();
 
-        this.$q.notify({
-          type: "positive",
-          message: `Welcome, ${this.authStore.firstName}`,
-        });
-
-        this.$router.push(targetPath);
+        this.$router.push(data.redirectPath);
       } catch (error) {
-        console.error("Login Error:", error);
-        this.$q.notify({
-          type: "negative",
-          message: error.response?.data?.message || "Login failed",
-        });
+        this.handleLoginError(error);
       } finally {
         this.loading = false;
       }
+    },
+
+    loginRequest() {
+      return axios.post("http://10.107.0.2:3000/api/auth/login", {
+        EmployeeCode: this.EmployeeCode,
+        WebPassword: this.WebPassword,
+      });
+    },
+
+    handleLoginSuccess(data) {
+      this.authStore.saveLoginData(data.user);
+    },
+
+    async showLoginLoading() {
+      this.$q.loading.show({
+        spinner: QSpinnerIos,
+        message: "AUTHENTICATING ...",
+        color: "red",
+      });
+
+      try {
+        await delay(1500);
+      } finally {
+        this.$q.loading.hide();
+      }
+
+      this.$q.notify({
+        type: "positive",
+        message: `Welcome, ${this.authStore.firstName}`,
+      });
+    },
+
+    handleLoginError(error) {
+      console.error("Login Error:", error);
+
+      this.$q.notify({
+        type: "negative",
+        message: error?.response?.data?.message || "Login failed",
+      });
     },
   },
 };

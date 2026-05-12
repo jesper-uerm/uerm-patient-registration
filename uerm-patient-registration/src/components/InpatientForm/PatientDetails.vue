@@ -2,6 +2,9 @@
   <q-form ref="patientDetails" @submit="onNext">
     <div class="text-subtitle1 text-bold q-mb-md">Patient Information:</div>
     <div class="row q-col-gutter-xs">
+      <q-input v-show="false" outlined dense v-model="formData.personalInfo.patientNo">
+      </q-input>
+
       <div class="col-12 col-sm-3 col-md-3">
         <q-input
           outlined
@@ -84,7 +87,6 @@
           v-model="formData.personalInfo.age"
           label="Age"
           readonly
-          bg-color="grey-2"
         />
       </div>
       <div class="col-12 col-sm-4 col-md-4 q-mb-md">
@@ -149,64 +151,74 @@
         />
       </div>
     </div>
-    <div class="row q-col-gutter-xs">
-      <div class="col-12 col-sm-4 col-md-4 q-mb-md">
+
+    <div class="row q-col-gutter-md">
+      <div class="col-12 col-sm-4 col-md-4">
         <q-input
           outlined
           dense
-          v-model="formData.personalInfo.landline"
-          label="Landline No."
-          mask="(##) ####-####"
-          unmasked-value
-        >
-          <template v-slot:append>
-            <q-icon name="phone" />
-          </template>
-        </q-input>
+          v-model="formData.personalInfo.empCode"
+          label="Employee Code"
+        />
       </div>
       <div class="col-12 col-sm-4 col-md-4">
         <q-input
           outlined
           dense
-          v-model="formData.personalInfo.mobile"
-          label-slot
-          mask="####-###-####"
-          unmasked-value
-          :rules="[
-            (val) => !!val || 'Please input mobile number',
-            (val) => val.length === 11 || 'Must be 11 digits',
-          ]"
-        >
-          <template v-slot:label> Mobile No. <span class="text-red">*</span> </template>
-
-          <template v-slot:append>
-            <q-icon name="smartphone" />
-          </template>
-        </q-input>
+          v-model="formData.govtIds.philhealth"
+          type="number"
+          label="PhilHealth No."
+        />
       </div>
-      <div class="col-12 col-sm-4 col-md-4 q-mb-md">
+      <div class="col-12 col-sm-4 col-md-4">
+        <q-input outlined dense v-model="formData.govtIds.govId" label="Government ID" />
+      </div>
+      <div class="col-12 col-sm-4 col-md-4">
         <q-input
           outlined
           dense
-          type="email"
-          v-model="formData.personalInfo.email"
-          label="Email Address"
+          v-model="formData.govtIds.seniorId"
+          type="number"
+          label="Senior Citizen ID No."
+        />
+      </div>
+      <div class="col-12 col-sm-4 col-md-4">
+        <q-input
+          outlined
+          dense
+          v-model="formData.govtIds.pwdId"
+          type="number"
+          label="PWD No."
+        />
+      </div>
+      <div class="col-12 col-sm-4 col-md-4">
+        <q-input
+          outlined
+          dense
+          type="date"
+          v-model="formData.govtIds.pwdIdExp"
+          label="PWD No. Expiry"
         />
       </div>
     </div>
-    <div class="row q-col-gutter-md q-mb-md">
+
+    <q-separator class="q-my-md" />
+
+    <div class="row q-col-gutter-sm">
+      <div class="text-subtitle2">Contact Information:</div>
       <div class="col-12 col-md-12">
         <q-input
           outlined
           dense
-          v-model="formData.personalInfo.occupation"
-          type="textarea"
-          rows="1"
-          label="Occupation"
-        />
+          v-model="formData.personalInfo.streetName"
+          label-slot
+          :rules="[(val) => !!val || 'Field is required']"
+        >
+          <template v-slot:label>
+            House No. / Street Name <span class="text-red">*</span>
+          </template>
+        </q-input>
       </div>
-    </div>
-    <div class="row q-col-gutter-xs">
       <div class="col-12 col-sm-3 col-md-3">
         <q-select
           v-model="formData.personalInfo.selectedRegion"
@@ -276,105 +288,46 @@
           <template v-slot:label> Barangay <span class="text-red">*</span> </template>
         </q-select>
       </div>
-      <div class="col-12 col-md-12">
+    </div>
+
+    <div class="row q-col-gutter-xs">
+      <div class="col-12 col-sm-4 col-md-4">
         <q-input
           outlined
           dense
-          v-model="formData.personalInfo.streetName"
-          label-slot
-          :rules="[(val) => !!val || 'Field is required']"
+          v-model="formData.personalInfo.landline"
+          label="Landline No."
+          type="number"
         >
-          <template v-slot:label>
-            House No. / Street Name <span class="text-red">*</span>
+          <template v-slot:append>
+            <q-icon name="phone" />
           </template>
         </q-input>
       </div>
-    </div>
-    <div class="row q-col-gutter-md">
-      <div class="col-12 col-md-12">
-        <q-input
-          outlined
-          dense
-          v-model="formData.personalInfo.permanentAddress"
-          type="textarea"
-          rows="1"
-          label="Permanent Home Address"
-        />
-        <q-checkbox
-          v-model="formData.toggles.sameAsPresent"
-          label="Same as Present Address"
-          class="q-mt-sm text-grey-8 text-caption"
-          @update:model-value="updatePermanentAddress"
-        />
-      </div>
-    </div>
-    <q-separator class="q-my-md" />
-    <div class="row q-col-gutter-md">
       <div class="col-12 col-sm-4 col-md-4">
         <q-input
           outlined
           dense
-          v-model="formData.personalInfo.fathersName"
-          label="Father's Full Name *"
-        />
+          v-model="formData.personalInfo.mobile"
+          type="number"
+          label="Mobile No."
+        >
+          <template v-slot:append>
+            <q-icon name="smartphone" />
+          </template>
+        </q-input>
       </div>
       <div class="col-12 col-sm-4 col-md-4">
         <q-input
           outlined
           dense
-          v-model="formData.personalInfo.fathersAddress"
-          type="textarea"
-          rows="1"
-          label="Complete Address"
-        />
-      </div>
-      <div class="col-12 col-sm-4 col-md-4 q-mb-md">
-        <q-input
-          outlined
-          dense
-          v-model="formData.personalInfo.fatherContactNumber"
-          label="Contact No:"
-          mask="####-###-####"
-          unmasked-value
+          type="email"
+          v-model="formData.personalInfo.email"
+          label="Email Address"
         />
       </div>
     </div>
-    <div class="row q-col-gutter-md">
-      <div class="col-12 col-sm-4 col-md-4">
-        <q-input
-          outlined
-          dense
-          v-model="formData.personalInfo.mothersName"
-          label="Mother's Maiden Name *"
-        />
-      </div>
-      <div class="col-12 col-sm-4 col-md-4">
-        <q-input
-          outlined
-          dense
-          v-model="formData.personalInfo.mothersAddress"
-          type="textarea"
-          rows="1"
-          label="Complete Address"
-        />
-        <q-checkbox
-          v-model="formData.toggles.sameAsFather"
-          label="Same as Father's Address"
-          class="q-mt-sm text-grey-8 text-caption"
-          @update:model-value="updateMotherAddress"
-        />
-      </div>
-      <div class="col-12 col-sm-4 col-md-4">
-        <q-input
-          outlined
-          dense
-          v-model="formData.personalInfo.motherContactNumber"
-          label="Contact No:"
-          mask="####-###-####"
-          unmasked-value
-        />
-      </div>
-    </div>
+
     <q-stepper-navigation class="text-center" :class="$q.screen.lt.sm ? '' : 'q-mt-xs'">
       <q-btn
         color="blue-10"
@@ -390,8 +343,18 @@
 <script>
 import { mapWritableState, mapActions } from "pinia";
 import { useInpatientStore } from "src/stores/inpatientStore";
+import { date } from "quasar";
 
 export default {
+  name: "PatientDetailsInpatient",
+
+  props: {
+    prefillPatient: {
+      type: Object,
+      default: () => null,
+    },
+  },
+
   data() {
     return {
       civilStatusOptions: ["Single", "Married", "Widowed", "Separated", "Divorced"],
@@ -403,12 +366,113 @@ export default {
     ...mapWritableState(useInpatientStore, ["formData"]),
   },
 
+  // watch: {
+  //   "formData.personalInfo.birthdate": function (newVal) {
+  //     this.calculateAge(newVal);
+  //   },
+
+  //   prefillPatient: {
+  //     immediate: true,
+  //     handler(patient) {
+  //       if (patient) {
+  //         this.formData.personalInfo.patientNo = patient.PATIENTNO || "";
+  //         this.formData.personalInfo.lastName = patient.LASTNAME || "";
+  //         this.formData.personalInfo.firstName = patient.FIRSTNAME || "";
+  //         this.formData.personalInfo.middleName = patient.MIDDLENAME || "";
+  //         this.formData.personalInfo.suffix = patient.SUFFIX || "";
+  //         this.formData.personalInfo.streetName = patient.ADDRESS || "";
+  //         this.formData.personalInfo.birthdate = patient.DBIRTH
+  //           ? date.formatDate(patient.DBIRTH, "YYYY/MM/DD")
+  //           : "";
+  //         this.formData.personalInfo.birthplace = patient.BPLACE || "";
+
+  //         this.formData.personalInfo.gender = patient.SEX || "";
+  //         this.formData.personalInfo.civilStatus = patient.STATUS || "";
+  //         this.formData.personalInfo.religion = patient.RELIGION_DESC || "";
+  //         this.formData.personalInfo.nationality = patient.NATIONALITY_DESC || "";
+  //         this.formData.govtIds.philhealth = patient.UDF_PHILHEALTHNO || "";
+  //         this.formData.govtIds.govId = patient.GOVID || "";
+  //         this.formData.govtIds.seniorId = patient.SCIDNO || "";
+  //         this.formData.govtIds.pwdId = patient.PWD_IDNo || "";
+  //         this.formData.personalInfo.empCode = patient.EmpNo || "";
+  //         this.formData.personalInfo.mobile = patient.MOBILENO || "";
+  //         this.formData.personalInfo.email = patient.EMAILADD || "";
+  //         this.formData.personalInfo.selectedCity = patient.MUNICIPALITY_DESC || null;
+  //         this.formData.personalInfo.selectedBarangay = patient.BARANGAY_DESC || null;
+  //       } else {
+  //         this.formData.personalInfo = {
+  //           patientNo: "",
+  //           lastName: "",
+  //           firstName: "",
+  //           middleName: "",
+  //           suffix: "",
+  //           birthdate: "",
+  //           age: "",
+  //           birthplace: "",
+  //           gender: "",
+  //           civilStatus: "",
+  //           religion: "",
+  //           nationality: "",
+  //           empCode: "",
+  //           streetName: "",
+  //           mobile: "",
+  //           landline: "",
+  //           email: "",
+  //           selectedRegion: null,
+  //           selectedProvince: null,
+  //           selectedCity: null,
+  //           selectedBarangay: null,
+  //         };
+
+  //         this.formData.govtIds = {
+  //           philhealth: "",
+  //           govId: "",
+  //           seniorId: "",
+  //           pwdId: "",
+  //           pwdIdExp: "",
+  //         };
+  //       }
+  //     },
+  //   },
+  // },
+
   watch: {
     "formData.personalInfo.birthdate": function (newVal) {
       this.calculateAge(newVal);
     },
-  },
+    prefillPatient: {
+      immediate: true,
+      handler(patient) {
+        if (patient && Object.keys(patient).length > 0) {
+          this.formData.personalInfo.patientNo = patient.PATIENTNO || "";
+          this.formData.personalInfo.lastName = patient.LASTNAME || "";
+          this.formData.personalInfo.firstName = patient.FIRSTNAME || "";
+          this.formData.personalInfo.middleName = patient.MIDDLENAME || "";
+          this.formData.personalInfo.suffix = patient.SUFFIX || "";
+          this.formData.personalInfo.streetName = patient.ADDRESS || "";
+          this.formData.personalInfo.birthdate = patient.DBIRTH
+            ? date.formatDate(patient.DBIRTH, "YYYY/MM/DD")
+            : "";
+          this.formData.personalInfo.birthplace = patient.BPLACE || "";
 
+          this.formData.personalInfo.gender = patient.SEX || "";
+          this.formData.personalInfo.civilStatus = patient.STATUS || "";
+          this.formData.personalInfo.religion = patient.RELIGION_DESC || "";
+          this.formData.personalInfo.nationality = patient.NATIONALITY_DESC || "";
+          this.formData.govtIds.philhealth = patient.UDF_PHILHEALTHNO || "";
+          this.formData.govtIds.govId = patient.GOVID || "";
+          this.formData.govtIds.seniorId = patient.SCIDNO || "";
+          this.formData.govtIds.pwdId = patient.PWD_IDNo || "";
+          this.formData.personalInfo.empCode = patient.EmpNo || "";
+          this.formData.personalInfo.mobile = patient.MOBILENO || "";
+          this.formData.personalInfo.email = patient.EMAILADD || "";
+
+          this.formData.personalInfo.selectedCity = patient.MUNICIPALITY_DESC || null;
+          this.formData.personalInfo.selectedBarangay = patient.BARANGAY_DESC || null;
+        }
+      },
+    },
+  },
   mounted() {
     this.loadRegions();
   },
@@ -441,14 +505,6 @@ export default {
         this.formData.personalInfo.permanentAddress = parts.filter(Boolean).join(", ");
       } else {
         this.formData.personalInfo.permanentAddress = "";
-      }
-    },
-
-    updateMotherAddress() {
-      if (this.formData.toggles.sameAsFather) {
-        this.formData.personalInfo.mothersAddress = this.formData.personalInfo.fathersAddress;
-      } else {
-        this.formData.personalInfo.mothersAddress = "";
       }
     },
 

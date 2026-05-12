@@ -33,9 +33,53 @@
         <div
           v-if="page === 1"
           key="page1"
-          :class="$q.screen.gt.xs ? 'row' : 'row'"
-          class="flex-center q-gutter-xl"
+          :class="$q.screen.gt.md ? 'row' : 'col'"
+          class="flex-center q-gutter-lg"
         >
+          <q-card
+            class="cursor-pointer hover-card animate-card delay-1"
+            @click="openReturningPatientForm"
+            v-ripple
+            :class="{
+              row: $q.screen.lt.md,
+              column: !$q.screen.lt.md,
+            }"
+            :style="{
+              width: $q.screen.lt.sm ? '180px' : '290px',
+              height: $q.screen.lt.md ? '110px' : '200px',
+            }"
+          >
+            <q-card-section class="col column flex-center full-height">
+              <q-icon
+                name="las la-user"
+                class="q-mb-md transition-icon card-icon"
+                :class="{
+                  row: $q.screen.lt.md,
+                  column: !$q.screen.lt.md,
+                }"
+                :size="$q.screen.lt.sm ? '40px' : '70px'"
+                :style="{ marginBottom: $q.screen.lt.sm ? '3px' : '' }"
+              />
+              <div
+                class="text-h5 text-weight-bold text-uppercase"
+                :class="{
+                  'text-h5': !$q.screen.lt.sm,
+                  'text-caption': $q.screen.lt.sm,
+                }"
+              >
+                Returning
+              </div>
+              <div
+                class="text-caption text-uppercase q-mt-sm opacity-fade"
+                :style="{
+                  fontSize: $q.screen.lt.sm ? '10px' : '',
+                  lineHeight: $q.screen.lt.sm ? '0.2' : '',
+                }"
+              >
+                Update Patient Record
+              </div>
+            </q-card-section>
+          </q-card>
           <q-card
             class="cursor-pointer hover-card animate-card delay-1"
             @click="openInpatientForm"
@@ -45,13 +89,13 @@
               column: !$q.screen.lt.md,
             }"
             :style="{
-              width: $q.screen.lt.sm ? '180px' : '260px',
-              height: $q.screen.lt.sm ? '120px' : '200px',
+              width: $q.screen.lt.sm ? '180px' : '290px',
+              height: $q.screen.lt.md ? '120px' : '200px',
             }"
           >
             <q-card-section class="col column flex-center full-height">
               <q-icon
-                name="airline_seat_flat"
+                name="las la-procedures"
                 class="q-mb-md transition-icon card-icon"
                 :class="{
                   'q-mb-md': !$q.screen.lt.md,
@@ -90,13 +134,13 @@
               column: !$q.screen.lt.md,
             }"
             :style="{
-              width: $q.screen.lt.sm ? '180px' : '260px',
-              height: $q.screen.lt.sm ? '120px' : '200px',
+              width: $q.screen.lt.sm ? '180px' : '290px',
+              height: $q.screen.lt.md ? '120px' : '200px',
             }"
           >
             <q-card-section class="col column flex-center full-height">
               <q-icon
-                name="directions_walk"
+                name="las la-stethoscope"
                 class="q-mb-md transition-icon card-icon"
                 :class="{
                   'q-mb-md': !$q.screen.lt.md,
@@ -128,7 +172,12 @@
         </div>
       </transition>
     </div>
-
+    <ReturningPatient
+      ref="ReturningPatientFormDialog"
+      module="MAIN"
+      @open-inpatient="handleOpenInpatient"
+      @open-outpatient="handleOpenOutpatient"
+    />
     <RegistrationForm ref="registrationFormDialog" />
     <RegistrationFormOutpatient ref="OutpatientregistrationFormDialog" />
   </div>
@@ -137,12 +186,14 @@
 <script>
 import RegistrationForm from "pages/RegistrationForm.vue";
 import RegistrationFormOutpatient from "./RegistrationFormOutpatient.vue";
+import ReturningPatient from "./ReturningPatient.vue";
 
 export default {
   name: "HomePage",
   components: {
     RegistrationForm,
     RegistrationFormOutpatient,
+    ReturningPatient,
   },
   data() {
     return {
@@ -150,11 +201,22 @@ export default {
     };
   },
   methods: {
+    openReturningPatientForm() {
+      this.$refs.ReturningPatientFormDialog?.show();
+    },
     openInpatientForm() {
       this.$refs.registrationFormDialog?.show();
     },
     openOutpatientForm() {
       this.$refs.OutpatientregistrationFormDialog?.show();
+    },
+
+    handleOpenInpatient(patient) {
+      this.$refs.registrationFormDialog?.show(patient);
+    },
+
+    handleOpenOutpatient(patient) {
+      this.$refs.OutpatientregistrationFormDialog?.show(patient);
     },
   },
 };

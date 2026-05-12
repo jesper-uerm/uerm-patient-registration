@@ -99,6 +99,7 @@ import SignaturePad from "src/components/InpatientForm/SignaturePad.vue";
 
 export default {
   name: "PatientConsentTriage",
+  emits: ["prev", "submit"],
   components: { SignaturePad },
 
   data() {

@@ -1,6 +1,6 @@
 <template>
   <q-card-section>
-    <q-form ref="patientSourceOfIncome" @submit="onNext">
+    <q-form ref="patientSourceOfIncome" @submit="onNext" @validation-error="onError">
       <div class="row q-col-gutter-lg q-mx-md">
         <div class="col-12">
           <div class="text-caption2 q-mb-md q-py-sm bg-grey-4 text-center text-uppercase">
@@ -13,7 +13,7 @@
                 dense
                 type="datetime-local"
                 v-model="formData.fnDateTime"
-                label="Date/Time *"
+                label="Date/Time"
                 stack-label
                 readonly
               />
@@ -78,9 +78,13 @@
                 outlined
                 dense
                 v-model="formData.fnDiagnosis"
-                label="Admitting Diagnosis *"
+                label-slot
                 stack-label
-              />
+              >
+                <template v-slot:label>
+                  Admitting Diagnosis<span class="text-red">*</span>
+                </template>
+              </q-input>
             </div>
             <div class="col-12 col-sm-4 col-md-4 q-mb-md">
               <q-input
@@ -111,18 +115,28 @@
                 outlined
                 dense
                 v-model="formData.fnPersonRes1"
-                label="Person Responsible 1*"
                 stack-label
-              />
+                label-slot
+                lazy-rules
+                :rules="requiredRule"
+              >
+                <template v-slot:label>
+                  Person Responsible 1 <span class="text-red">*</span>
+                </template>
+              </q-input>
             </div>
             <div class="col-12 col-sm-3 col-md-3">
               <q-input
                 outlined
                 dense
                 v-model="formData.fnPersonRes1Work"
-                label="Work"
                 stack-label
-              />
+                label-slot
+                lazy-rules
+                :rules="requiredRule"
+              >
+                <template v-slot:label> Work <span class="text-red">*</span> </template>
+              </q-input>
             </div>
             <div class="col-12 col-sm-3 col-md-3">
               <q-select
@@ -132,6 +146,8 @@
                 :options="appOptions.relationships"
                 label-slot
                 stack-label
+                lazy-rules
+                :rules="requiredRule"
               >
                 <template v-slot:label>
                   Relation to Patient <span class="text-red">*</span>
@@ -143,9 +159,16 @@
                 outlined
                 dense
                 v-model="formData.fnPersonRes1Contact"
-                label="Contact No."
+                type="number"
                 stack-label
-              />
+                label-slot
+                lazy-rules
+                :rules="requiredRule"
+              >
+                <template v-slot:label>
+                  Contact No. <span class="text-red">*</span>
+                </template>
+              </q-input>
             </div>
           </div>
           <div class="row q-col-gutter-xs">
@@ -154,18 +177,28 @@
                 outlined
                 dense
                 v-model="formData.fnPersonRes2"
-                label="Person Responsible 2*"
+                label-slot
                 stack-label
-              />
+                lazy-rules
+                :rules="requiredRule"
+              >
+                <template v-slot:label>
+                  Person Responsible 2 <span class="text-red">*</span>
+                </template>
+              </q-input>
             </div>
             <div class="col-12 col-sm-3 col-md-3">
               <q-input
                 outlined
                 dense
                 v-model="formData.fnPersonRes2Work"
-                label="Work"
+                label-slot
                 stack-label
-              />
+                lazy-rules
+                :rules="requiredRule"
+              >
+                <template v-slot:label> Work <span class="text-red">*</span> </template>
+              </q-input>
             </div>
             <div class="col-12 col-sm-3 col-md-3">
               <q-select
@@ -175,6 +208,8 @@
                 :options="appOptions.relationships"
                 label-slot
                 stack-label
+                lazy-rules
+                :rules="requiredRule"
               >
                 <template v-slot:label>
                   Relation to Patient <span class="text-red">*</span>
@@ -186,9 +221,16 @@
                 outlined
                 dense
                 v-model="formData.fnPersonRes2Contact"
-                label="Contact No."
+                type="number"
+                label-slot
                 stack-label
-              />
+                lazy-rules
+                :rules="requiredRule"
+              >
+                <template v-slot:label>
+                  Contact No.<span class="text-red">*</span>
+                </template>
+              </q-input>
             </div>
           </div>
 
@@ -259,7 +301,7 @@
                 dense
                 v-model="formData.fnadmissionType"
                 :options="admissionTypeOptions"
-                label="Emergency Admission/Index *"
+                label="Emergency Admission/Index "
                 stack-label
                 hide-bottom-space
               />
@@ -267,11 +309,17 @@
           </div>
           <div class="row q-col-gutter-xs">
             <div class="col-12 col-sm-6 col-md-6 q-mb-md">
-              <q-input
+              <q-select
                 outlined
                 dense
                 v-model="formData.fnendorsedToSocial"
+                :options="[
+                  { label: 'Yes', value: true },
+                  { label: 'No', value: false },
+                ]"
                 label="Endorsed to Social Service For SS Card"
+                emit-value
+                map-options
                 stack-label
               />
             </div>
@@ -318,6 +366,12 @@ import { useFinanceStore } from "src/stores/financeStore";
 export default {
   emits: ["next"],
 
+  data() {
+    return {
+      requiredRule: [(val) => !!val || "Required"],
+    };
+  },
+
   computed: {
     ...mapState(useFinanceStore, [
       "allDoctors",
@@ -336,21 +390,16 @@ export default {
   methods: {
     ...mapActions(useFinanceStore, ["fetchDoctors"]),
 
-    async validate() {
-      return await this.$refs.patientSourceOfIncome.validate();
+    onNext() {
+      this.$emit("next");
     },
 
-    async onNext() {
-      const isValid = await this.validate();
-      if (!isValid) {
-        this.$q.notify({
-          type: "warning",
-          message: "Please fill all required fields.",
-          position: "top",
-        });
-        return;
-      }
-      this.$emit("next");
+    onError() {
+      this.$q.notify({
+        type: "warning",
+        message: "Please fill all required fields.",
+        position: "top",
+      });
     },
   },
 };

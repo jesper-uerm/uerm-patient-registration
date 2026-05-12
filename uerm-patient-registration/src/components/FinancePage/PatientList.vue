@@ -51,14 +51,12 @@
         <q-table
           bordered
           flat
+          class="clean-table fit"
+          row-key="PATIENTREGID"
           :rows="patientList"
           :columns="columns"
-          row-key="ID"
           :loading="loading"
-          :dense="$q.screen.lt.xl"
-          :grid="$q.screen.lt.sm"
           :rows-per-page-options="[10]"
-          class="clean-table fit"
           header-class="bg-grey-1 text-grey-8 text-weight-bold text-uppercase"
           @row-click="(evt, row) => $refs.financialStatementRef.openFinancialDialog(row)"
         >
@@ -93,24 +91,6 @@
             </q-td>
           </template>
 
-          <template v-slot:body-cell-DATEAD="props">
-            <q-td :props="props">
-              <q-chip outline square color="blue-8" size="sm" class="text-weight-bold">
-                {{ props.value }}
-              </q-chip>
-            </q-td>
-          </template>
-
-          <template v-slot:body-cell-actions="props">
-            <q-td :props="props" class="text-center" @click.stop>
-              <q-btn flat round color="grey-7" icon="more_vert">
-                <q-menu cover auto-close>
-                  <q-list style="min-width: 150px"> </q-list>
-                </q-menu>
-              </q-btn>
-            </q-td>
-          </template>
-
           <template v-slot:item="props">
             <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
               <q-card flat bordered class="q-pa-sm">
@@ -122,7 +102,7 @@
                     <q-item-label class="text-weight-bold text-blue-10">
                       {{ props.row.firstName }} {{ props.row.lastName }}
                     </q-item-label>
-                    <q-item-label caption>ID: {{ props.row.ID }}</q-item-label>
+                    <q-item-label caption>ID: {{ props.row.PATIENTREGID }}</q-item-label>
                     <q-item-label caption="">
                       Status:
                       <span v-if="props.row.forReview == 0" class="text-red">
@@ -132,7 +112,7 @@
                         Reviewed
                       </span>
                       <span v-else>
-                        {{ props.row.ID }}
+                        {{ props.row.PATIENTREGID }}
                       </span>
                     </q-item-label>
                   </q-item-section>
@@ -181,133 +161,6 @@
         </q-table>
       </q-card-section>
     </q-card>
-
-    <!-- <q-dialog v-model="viewDialog" transition-show="scale" transition-hide="scale">
-      <q-card style="width: 700px; max-width: 80vw" class="rounded-borders">
-        <q-card-section class="bg-gradient-primary text-white q-pa-md">
-          <div class="row items-center text-center justify-center justify-between">
-            <div class="row items-center text-uppercase">
-              <div class="text-subtitle2 text-weight-bold header-title">
-                Patient Profile
-              </div>
-            </div>
-
-            <q-btn
-              icon="close"
-              flat
-              round
-              dense
-              v-close-popup
-              class="text-white opacity-70"
-              aria-label="Close"
-            />
-          </div>
-        </q-card-section>
-
-        <q-separator />
-
-        <q-card-section class="q-pa-lg scroll" style="max-height: 60vh">
-          <div class="text-subtitle2 text-grey-8 text-uppercase q-mb-sm">
-            Personal Information
-          </div>
-
-          <q-list bordered separator class="rounded-borders">
-            <q-item class="items-center">
-              <q-item-section avatar>
-                <q-icon name="person" color="grey-6" />
-              </q-item-section>
-
-              <q-item-section>
-                <q-item-label caption>Full Name</q-item-label>
-
-                <q-item-label class="text-body2 text-weight-medium">
-                  {{ selectedPatient.lastName }}, {{ selectedPatient.firstName }}
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-
-            <q-item class="items-center">
-              <q-item-section avatar>
-                <q-icon
-                  :name="selectedPatient.gender === 'Male' ? 'male' : 'female'"
-                  color="grey-6"
-                />
-              </q-item-section>
-
-              <q-item-section>
-                <q-item-label caption>Gender</q-item-label>
-
-                <q-item-label class="text-body2">
-                  {{ selectedPatient.gender }}
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-
-            <q-item class="items-center">
-              <q-item-section avatar>
-                <q-icon name="cake" color="grey-6" />
-              </q-item-section>
-
-              <q-item-section>
-                <q-item-label caption>Birthdate</q-item-label>
-
-                <q-item-label class="text-body2">
-                  {{ formatDate(selectedPatient.birthdate) }}
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
-
-          <div class="text-subtitle2 text-grey-8 text-uppercase q-mt-lg q-mb-sm">
-            Contact Information
-          </div>
-
-          <q-list bordered separator class="rounded-borders">
-            <q-item class="items-center">
-              <q-item-section avatar>
-                <q-icon name="place" color="grey-6" />
-              </q-item-section>
-
-              <q-item-section>
-                <q-item-label caption>Present Address</q-item-label>
-
-                <q-item-label class="text-body2">
-                  {{ selectedPatient.addressPresent || "N/A" }}
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-
-            <q-item class="items-center">
-              <q-item-section avatar>
-                <q-icon name="phone" color="grey-6" />
-              </q-item-section>
-
-              <q-item-section>
-                <q-item-label caption>Mobile Number</q-item-label>
-
-                <q-item-label class="text-body2">
-                  {{ selectedPatient.mobile || "N/A" }}
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-card-section>
-
-        <q-separator />
-
-        <q-card-actions align="center" class="q-pa-md bg-grey-1">
-          <q-btn
-            unelevated
-            label="Update Patient Finance"
-            color="blue-10"
-            @click="updateFinanceStatement(selectedPatient)"
-            :disable="!!selectedPatient?.reviewedBy"
-          >
-            <q-tooltip v-if="selectedPatient?.reviewedBy"> Already Reviewed </q-tooltip>
-          </q-btn>
-        </q-card-actions>
-      </q-card>
-    </q-dialog> -->
 
     <financial-statement ref="financialStatementRef" />
   </q-page>
@@ -379,13 +232,6 @@ export default {
           format: (val) => (val ? date.formatDate(val, "MMM D, YYYY h:mm A") : "-"),
           style: "width: 180px",
         },
-        {
-          name: "actions",
-          label: "Actions",
-          field: "actions",
-          align: "center",
-          style: "width: 120px",
-        },
       ],
     };
   },
@@ -415,17 +261,6 @@ export default {
         this.searchPatientList(query);
       }
     },
-
-    // viewPatient(row) {
-    //   this.selectedPatient = row;
-    //   this.viewDialog = true;
-    // },
-
-    // updateFinanceStatement(row) {
-    //   this.selectedPatient = row;
-    //   this.$refs.financialStatementRef.openFinancialDialog(row);
-    //   this.viewDialog = false;
-    // },
 
     formatDate(val) {
       if (!val) return "-";

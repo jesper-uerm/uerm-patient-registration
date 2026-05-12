@@ -15,6 +15,7 @@
                 <q-spinner v-if="loading" color="white" size="0.8em" />
                 <span v-else>{{ inpatientCount }}</span>
               </div>
+
               <div
                 class="text-subtitle2"
                 :class="{
@@ -22,9 +23,10 @@
                   'text-caption': $q.screen.lt.md,
                 }"
               >
-                Admitted
+                ADMISSION
               </div>
             </q-card-section>
+
             <q-card-section class="col-auto flex flex-center">
               <q-icon
                 name="groups"
@@ -35,6 +37,7 @@
           </q-card-section>
         </q-card>
       </div>
+
       <div class="col-4 col-md-4">
         <q-card class="text-white bg-blue-9">
           <q-card-section horizontal>
@@ -49,6 +52,7 @@
                 <q-spinner v-if="loading" color="white" size="0.8em" />
                 <span v-else>{{ outpatientCount }}</span>
               </div>
+
               <div
                 class="text-subtitle2"
                 :class="{
@@ -59,6 +63,7 @@
                 OPD
               </div>
             </q-card-section>
+
             <q-card-section class="col-auto flex flex-center">
               <q-icon
                 name="groups"
@@ -69,6 +74,7 @@
           </q-card-section>
         </q-card>
       </div>
+
       <div class="col-4 col-md-4">
         <q-card class="text-white bg-blue-9">
           <q-card-section horizontal>
@@ -83,6 +89,7 @@
                 <q-spinner v-if="loading" color="white" size="0.8em" />
                 <span v-else>{{ erpatientCount }}</span>
               </div>
+
               <div
                 class="text-subtitle2"
                 :class="{
@@ -93,6 +100,7 @@
                 ER
               </div>
             </q-card-section>
+
             <q-card-section class="col-auto flex flex-center">
               <q-icon
                 name="groups"
@@ -107,22 +115,31 @@
 
     <div class="row q-col-gutter-md q-mb-md">
       <div class="col-12 col-md-7">
-        <q-card class="fit">
-          <q-card-section>
-            <div class="text-h7 text-weight-bold text-center text-uppercase">
+        <q-card
+          class="fit no-shadow bg-white"
+          style="border: 1px solid #e0e0e0; border-radius: 8px"
+        >
+          <q-card-section
+            class="bg-grey-3 q-py-sm"
+            style="border-bottom: 1px solid #e0e0e0"
+          >
+            <div
+              class="text-subtitle2 text-weight-bold text-center text-uppercase text-blue-grey-9"
+            >
               Monthly Registration Trends
             </div>
           </q-card-section>
+
           <q-card-section>
             <div class="row justify-center">
-              <div class="col-12 col-md-12 text-grey">
+              <div class="col-12 text-grey">
                 <apexchart
                   width="100%"
                   height="350"
                   type="line"
                   :options="chartOptions"
                   :series="series"
-                ></apexchart>
+                />
               </div>
             </div>
           </q-card-section>
@@ -130,88 +147,89 @@
       </div>
 
       <div class="col-12 col-md-5">
-        <q-card class="fit">
-          <q-card-section>
-            <div class="text-h7 text-weight-bold text-center text-uppercase">
+        <q-card
+          class="fit no-shadow bg-white"
+          style="border: 1px solid #e0e0e0; border-radius: 8px"
+        >
+          <q-card-section
+            class="bg-grey-3 q-py-sm"
+            style="border-bottom: 1px solid #e0e0e0"
+          >
+            <div
+              class="text-subtitle2 text-weight-bold text-center text-uppercase text-blue-grey-9"
+            >
               By Patient Type
             </div>
           </q-card-section>
+
           <q-card-section>
             <div class="row justify-center">
-              <div class="col-12 col-md-12 text-grey">
+              <div class="col-12 text-grey">
                 <apexchart
                   width="100%"
                   height="320"
-                  type="pie"
+                  type="donut"
                   :options="chartOptionsPie"
                   :series="seriesPie"
-                ></apexchart>
+                />
               </div>
             </div>
           </q-card-section>
         </q-card>
       </div>
     </div>
-    <q-card class="no-shadow" style="border: 1px solid #f0f0f0">
-      <q-card-section class="row items-center q-pb-none q-mb-md">
-        <div class="text-h7 text-weight-bold text-center text-uppercase">
+
+    <q-card
+      class="no-shadow bg-white"
+      style="border: 1px solid #e0e0e0; border-radius: 8px"
+    >
+      <q-card-section
+        class="row items-center bg-grey-3 q-py-sm"
+        style="border-bottom: 1px solid #e0e0e0"
+      >
+        <div
+          class="text-subtitle2 text-center text-weight-bold text-uppercase text-blue-grey-9"
+        >
           Real-time Admissions
         </div>
+
         <q-space />
-        <q-btn
-          icon="file_download"
-          flat
-          round
-          dense
-          color="grey-7"
-          tooltip="Export CSV"
-        />
       </q-card-section>
 
-      <q-card-section class="q-pa-none">
+      <q-card-section>
         <q-table
           :rows="patientList"
           :columns="columns"
-          row-key="patient_id"
+          row-key="PATIENTNO"
           :loading="loading"
           flat
-          :rows-per-page-options="[5, 10]"
+          bordered
           class="clean-table"
-          header-class="bg-grey-1 text-grey-8 text-weight-bold text-uppercase"
+          table-header-class="bg-blue-9 text-white text-weight-bold text-uppercase"
         >
-          <template v-slot:body-cell-patient_id="props">
-            <q-td :props="props">
-              <span class="text-grey-8">#{{ props.value }}</span>
-            </q-td>
-          </template>
-
           <template v-slot:body-cell-fullName="props">
             <q-td :props="props">
-              <div class="text-weight-medium">{{ props.value }}</div>
+              <div class="text-weight-medium text-uppercase">
+                {{ props.value }}
+              </div>
             </q-td>
           </template>
 
           <template v-slot:body-cell-type="props">
             <q-td :props="props">
               <q-badge
-                rounded
-                class="q-px-sm q-py-xs"
+                class="text-weight-bold text-uppercase q-py-sm flex flex-center"
+                style="width: 95px"
                 :color="
-                  props.row.patientType === 'Emergency' || props.row.patientType === 'ER'
-                    ? 'red-1'
-                    : props.row.patientType === 'Inpatient'
-                    ? 'green-1'
-                    : 'blue-1'
+                  props.value === 'EMERGENCY'
+                    ? 'red'
+                    : props.value === 'INPATIENT'
+                    ? 'green'
+                    : 'blue'
                 "
-                :text-color="
-                  props.row.patientType === 'Emergency' || props.row.patientType === 'ER'
-                    ? 'red-9'
-                    : props.row.patientType === 'Inpatient'
-                    ? 'green-9'
-                    : 'blue-9'
-                "
-                :label="props.row.patientType"
-              />
+              >
+                {{ props.value }}
+              </q-badge>
             </q-td>
           </template>
         </q-table>
@@ -236,12 +254,12 @@ export default {
 
       columns: [
         {
-          name: "patient_id",
-          label: "Patient ID",
-          field: "patient_id",
+          name: "PATIENTNO",
+          label: "PATIENTNO",
+          field: "PATIENTNO",
           align: "center",
           sortable: true,
-          style: "width: 100px",
+          format: (val) => val || "N/A",
         },
         {
           name: "fullName",
@@ -253,12 +271,12 @@ export default {
         {
           name: "type",
           label: "Type",
-          field: "patientType",
+          field: "PATIENTTYPE",
           align: "center",
         },
         {
           name: "createdAt",
-          label: "Date",
+          label: "Date Added",
           field: "createdAt",
           align: "center",
           format: (val) => (val ? date.formatDate(val, "MMM D, YYYY") : "-"),
@@ -346,11 +364,11 @@ export default {
       try {
         const response = await axios.get("http://10.107.0.2:3000/api/patients/");
         this.patientList = response.data;
-        const inpatients = this.patientList.filter((p) => p.patientType === "Inpatient");
+        const inpatients = this.patientList.filter((p) => p.PATIENTTYPE === "INPATIENT");
         const outpatients = this.patientList.filter(
-          (p) => p.patientType === "Outpatient"
+          (p) => p.PATIENTTYPE === "OUTPATIENT"
         );
-        const erpatients = this.patientList.filter((p) => p.patientType === "Emergency");
+        const erpatients = this.patientList.filter((p) => p.PATIENTTYPE === "EMERGENCY");
 
         this.inpatientCount = inpatients.length;
         this.outpatientCount = outpatients.length;

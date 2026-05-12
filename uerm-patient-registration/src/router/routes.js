@@ -20,6 +20,7 @@ const routes = [
     meta: { requiresAuth: true, role: 'ADMITTING SECTION' },
     children: [
       { path: '', name: 'admin-dashboard', component: () => import('src/components/AdminPage/AdminDashboard.vue') },
+      { path: 'FromERList', name: 'from-er-list', component: () => import('src/components/AdminPage/FromErList.vue') },
       { path: 'InpatientList', name: 'in-patient-list', component: () => import('src/components/AdminPage/InpatientList.vue') },
       { path: 'OutpatientList', name: 'out-patient-list', component: () => import('src/components/AdminPage/OutpatientList.vue') }
     ]

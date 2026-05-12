@@ -19,7 +19,7 @@
         </div>
         <q-btn
           icon="close"
-          flat
+          flatF
           round
           dense
           v-close-popup
@@ -197,8 +197,8 @@ export default {
 
       columns: [
         {
-          name: "patient_id",
-          label: "Patient ID",
+          name: "PATIENTNO",
+          label: "PATIENTNO",
           field: "PATIENTNO",
           align: "center",
           sortable: true,

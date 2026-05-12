@@ -36,7 +36,7 @@ export const useFinanceStore = defineStore("finance", {
     statusOptions: ['Endorsed to Admitting', 'Disapproved Admission-Transferred Out', 'Refused to be Admitted', 'Assessment Only', 'Unfinished Transaction'],
 
     appOptions: {
-      relationships: ['Parent', 'Spouse', 'Sibling', 'Child', 'Guardian', 'Other'],
+      relationships: ['Parent', 'Spouse', 'Fiance', 'Sibling', 'Child', 'Guardian', ' Cousin', 'Niece', 'Other'],
     },
 
     currentPatient: null,
@@ -170,6 +170,7 @@ export const useFinanceStore = defineStore("finance", {
       }
     },
 
+    //populate form
     setCurrentPatient(patientData) {
       this.currentPatient = patientData;
 
@@ -189,6 +190,8 @@ export const useFinanceStore = defineStore("finance", {
         fnAge: patientData.age || '',
         fnGender: (patientData.gender || '').toUpperCase(),
         fnAddress: (patientData.address || '').trim(),
+        fnDiagnosis: (patientData.admdiagnosis || '').toUpperCase(),
+        fnHmo: (patientData.hmo || '').toUpperCase(),
 
         fnsssCard: patientData.ssClass || '',
 

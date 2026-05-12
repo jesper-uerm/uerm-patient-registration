@@ -3,32 +3,28 @@
     <div class="text-subtitle1 text-bold q-mb-md">
       Person to notify in case of emergency:
     </div>
-    <div class="row q-col-gutter-xs">
-      <div class="col-12 col-md-6 col-sm-6">
+
+    <div class="row q-col-gutter-sm">
+      <div class="col-12 col-md-4 col-sm-4">
         <q-input
           outlined
           dense
           label-slot
-          v-model="contact.contactPersonOutpatient"
+          v-model="formData.contactPersonOutpatient.contactPersonOutpatient"
           lazy-rules
           :rules="[(val) => !!val || 'Please input valid name']"
         >
           <template v-slot:label> Full Name <span class="text-red">*</span> </template>
         </q-input>
       </div>
-      <div class="col-12 col-md-6 col-sm-6">
+
+      <div class="col-12 col-md-4 col-sm-4">
         <q-input
           outlined
           dense
           label-slot
-          v-model="contact.contactPersonNumberOutpatient"
-          mask="####-###-####"
-          unmasked-value
-          lazy-rules
-          :rules="[
-            (val) => !!val || 'Please input mobile number',
-            (val) => val.length === 11 || 'Must be 11 digits',
-          ]"
+          v-model="formData.contactPersonOutpatient.contactPersonNumberOutpatient"
+          type="number"
         >
           <template v-slot:label> Mobile No. <span class="text-red">*</span> </template>
 
@@ -37,26 +33,13 @@
           </template>
         </q-input>
       </div>
-      <div class="col-12 col-md-6 col-sm-6 q-mb-md">
-        <q-input
-          outlined
-          dense
-          v-model="contact.contactPersonLandlineOutpatient"
-          label="Landline No."
-          mask="(##) ####-####"
-          unmasked-value
-        >
-          <template v-slot:append>
-            <q-icon name="phone" />
-          </template>
-        </q-input>
-      </div>
-      <div class="col-12 col-md-6 col-sm-6">
+
+      <div class="col-12 col-md-4 col-sm-4">
         <q-select
           outlined
           dense
           label-slot
-          v-model="contact.contactPersonRelationshipOutpatient"
+          v-model="formData.contactPersonOutpatient.contactPersonRelationship"
           :options="relationshipOptions"
           lazy-rules
           :rules="[(val) => !!val || 'Please select relationship']"
@@ -69,13 +52,14 @@
         <div class="col-12 col-md-12">
           <q-separator class="q-my-sm" />
           <div class="text-subtitle1 text-bold q-mb-md">Medical Details:</div>
+
           <div class="row q-col-gutter-md">
             <div class="col-12 col-sm-6 col-md-6">
               <q-input
                 outlined
                 dense
                 label-slot
-                v-model="contact.outpatientProcedure"
+                v-model="formData.contactPersonOutpatient.outpatientProcedure"
                 :rules="[(val) => !!val || 'Procedure is required']"
               >
                 <template v-slot:label>
@@ -84,12 +68,12 @@
               </q-input>
             </div>
 
-            <div class="col-12 col-sm-6 col-md-6">
+            <div class="col-12 col-md-6 col-sm-6">
               <q-input
                 outlined
                 dense
                 label-slot
-                v-model="contact.outpatientPhysician"
+                v-model="formData.contactPersonOutpatient.outpatientPhysician"
                 :rules="[(val) => !!val || 'Physician is required']"
               >
                 <template v-slot:label>
@@ -98,10 +82,10 @@
               </q-input>
             </div>
           </div>
-          <q-separator class="q-my-md" />
         </div>
       </div>
     </div>
+
     <q-stepper-navigation class="text-center q-gutter-md">
       <q-btn
         unelevated
@@ -112,6 +96,7 @@
         style="width: 120px"
         :class="$q.screen.lt.sm ? 'order-last' : 'q-px-md'"
       />
+
       <q-btn
         style="width: 120px"
         color="blue-10"
@@ -130,19 +115,44 @@ import { useOutpatientStore } from "src/stores/outpatientStore";
 
 export default {
   name: "ContactPersonOutpatient",
+
+  props: {
+    prefillPatient: {
+      type: Object,
+      default: () => null,
+    },
+  },
+
   emits: ["next", "prev"],
 
   data() {
     return {
       relationshipOptions: ["Spouse", "Parent", "Sibling", "Child", "Guardian", "Other"],
       hasError: false,
+      selectedPatient: null,
     };
   },
 
   computed: {
     ...mapWritableState(useOutpatientStore, ["formData"]),
-    contact() {
-      return this.formData.contactPersonOutpatient;
+  },
+
+  watch: {
+    prefillPatient: {
+      immediate: true,
+
+      handler(patient) {
+        if (patient) {
+          this.formData.contactPersonOutpatient.contactPersonOutpatient =
+            patient.INCASE || "";
+
+          this.formData.contactPersonOutpatient.contactPersonNumberOutpatient =
+            patient.INCASEPHONENO || "";
+
+          this.formData.contactPersonOutpatient.contactPersonRelationship =
+            patient.RELATIONSHIP || "";
+        }
+      },
     },
   },
 
@@ -161,6 +171,7 @@ export default {
           message: "Please fill all required fields.",
           position: "top",
         });
+
         return;
       }
 

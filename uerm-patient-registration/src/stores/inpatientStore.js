@@ -9,7 +9,8 @@ const PATIENT_API_URL = "http://10.107.0.2:3000/api/patients";
 export const useInpatientStore = defineStore("inpatient", {
   state: () => ({
     patientList: [],
-    loading: false,
+    patientListfromER: [],
+    allRooms: [],
     searchQuery: "",
     hasSearched: false,
 
@@ -57,7 +58,9 @@ export const useInpatientStore = defineStore("inpatient", {
     },
 
     formData: {
-      personalInfo: {
+        personalInfo: {
+        empCode: "",
+        patientNo: "",
         lastName: "",
         firstName: "",
         middleName: "",
@@ -70,6 +73,9 @@ export const useInpatientStore = defineStore("inpatient", {
         mobile: "",
         email: "",
         occupation: "",
+        employer: "",
+        employerAddress: "",
+        employerContactNo: "",
         birthdate: "",
         birthplace: "",
         nationality: "",
@@ -78,7 +84,6 @@ export const useInpatientStore = defineStore("inpatient", {
         selectedCity: null,
         selectedBarangay: null,
         streetName: "",
-        permanentAddress: "",
         fathersName: "",
         fathersAddress: "",
         fatherContactNumber: "",
@@ -88,91 +93,106 @@ export const useInpatientStore = defineStore("inpatient", {
       },
 
       contactDetails: {
-        seniorpwd: "",
-        philhealth: "",
-        sssgsis: "",
-        tin: "",
-        others: "",
         spouseName: "",
+        spouseAddress: "",
+        spouseContact: "",
         spouseOccupation: "",
-        spouseEmployerContact: "",
-        spouseEmployerName: "",
-        spouseEmployerAddress: "",
         contactPersonInpatient: "",
         contactPersonInpatientRelationship: null,
-        contactPersonInpatientLandline: "",
-        contactPersonInpatientMobile: "",
-        contactPersonInpatientEmail: "",
         contactPersonInpatientAddress: "",
-        contactPersonInpatientOccupation: "",
-        contactPersonInpatientEmployerNumber: "",
-      },
-
-      patientConsent: {
-        mop: "",
-        specificmop: "",
-        creditCard: "",
-        bank: "",
-        items: [],
+        contactPersonInpatientMobile: "",
       },
 
       signature: null,
 
-    addressOptions: {
-      regions: [],
-      provinces: [],
-      cities: [],
-      barangays: []
-    },
+      addressOptions: {
+        regions: [],
+        provinces: [],
+        cities: [],
+        barangays: []
+      },
 
-    addressLoading: {
-      regions: false,
-      provinces: false,
-      cities: false,
-      barangays: false
-    },
+      addressLoading: {
+        regions: false,
+        provinces: false,
+        cities: false,
+        barangays: false
+      },
 
-    toggles: {
-      sameAsPresent: false,
-      sameAsFather: false
-    },
+      toggles: {
+        sameAsFather: false,
+      },
 
-    govtIds: {
-      seniorId: '',
-      philhealth: '',
-      sss: '',
-      tin: '',
-      pwd: ''
-    },
-
-    socioEconomic: {
-        sourceOfIncome: '',
-        monthlyIncome: '',
-        isCarOwner: '',
-        carOwnership: null,
-        numberOfCars: '',
-        guardianName: '',
-        guardianRelation: '',
-        guardianContact: '',
+      govtIds: {
+        philhealth: "",
+        govId: "",
+        seniorId: "",
+        pwdId: "",
+        pwdIdExp: "",
       },
 
       consent: {
-        itemsReceived: [],
         signature: null,
       },
+
+      cPatientno: "",
+      cFullname: "",
+      cBirthdate: "",
+      cAge: "",
+      cSeniorNo: "",
+      cPwdNo: "",
+      cPatientType: "",
+      cAdmissionDate: "",
+      cDateDisc: "",
+      CRoom: "",
+      CRoomRate: "",
+      cChiefComplaint: "",
+      cAdmissionDiag: "",
+      cAdmissionType: "",
+      cServiceType: "",
+      cPhic: "",
+      cCaseType: "",
+      cDoc: "",
+      cWatcherID: "",
+      cRemarks: "",
+      cAllergies: "",
+      cAdmittedBy: "",
+      cMotherCaseno: "",
+
+      cTypeClass: "",
+      cValidity: "",
+      cClassifiedBy: "",
+
+      cCompany: "",
+      cHMO: "",
+      cEmployer: "",
+      cCardNo: "",
+      cCoverageAmount: "",
+      cAppCode: "",
+      cEffectivity: "",
+      cRoomPlan: "",
+      cLoaNo: "",
+      cApprovalNo: "",
+
+      cErPatient: false,
+      cConfidential: false,
+      cIndigent: false,
+      cVIP: false,
+      cPay: false,
+      cCharity: false,
+      cPatho: false,
+      cOrSched: false,
+      cEmpDependent: false,
+      cNewborn: false,
+      cWalkin: false,
     },
   }),
 
   actions: {
 
-  openForm(patientData = null) {
+  openForm() {
     this.step = 1;
       this.regFormdialogVisible = true;
-      if (patientData) {
-        this.populateForm(patientData);
-      } else {
-        this.resetForm();
-      }
   },
 
   resetForm() {
@@ -194,81 +214,22 @@ export const useInpatientStore = defineStore("inpatient", {
     this.formData.signature = null;
   },
 
-  populateForm(data) {
-    this.formData.personalInfo = {
-      ...this.formData.personalInfo,
-      lastName: data.lastName || "",
-      firstName: data.firstName || "",
-      middleName: data.middleName || "",
-      suffix: data.suffix || "",
-      age: data.age || "",
-      birthdate: (data.birthdateStr || data.birthdate || "")
-                  .toString()
-                  .trim()
-                  .substring(0, 10)
-                  .replace(/-/g, '/'),
-      civilStatus: data.civilStatus || null,
-      religion: data.religion || null,
-      birthplace: data.birthplace || "",
-      nationality: data.nationality || "",
-      occupation: data.occupation || "",
-      landline: data.landline || "",
-      mobile: data.mobile || "",
-      email: data.email || "",
-      selectedRegion: data.addressRegion || "",
-      selectedProvince: data.addressProvince || "",
-      selectedCity: data.addressCity || "",
-      selectedBarangay: data.addressBarangay || "",
-      streetName: data.addressStreet || "",
-      fathersName: data.ptFatherName || "",
-      fathersAddress: data.ptFatherAddress || "",
-      fatherContactNumber: data.ptFatherContact || "",
-      mothersName: data.ptMotherMaidenName || "",
-      mothersAddress: data.ptMotherAddress || "",
-      motherContactNumber: data.ptMotherContact || "",
-    };
-
-    this.formData.contactDetails = {
-      ...this.formData.contactDetails,
-      seniorpwd: data.seniorId || data.seniorpwd || "",
-      philhealth: data.philhealthId || data.philhealth || "",
-      sssgsis: data.sssgsisId || data.sssgsis || "",
-      tin: data.tinID || data.tin || "",
-      spouseName: data.spouseName || "",
-      spouseOccupation: data.spouseOccupation || "",
-      spouseEmployerName: data.spouseEmployerName || "",
-      spouseEmployerContact: data.spouseEmployerContact || "",
-      spouseEmployerAddress: data.spouseEmployerAddress || "",
-      contactPersonInpatient: data.cpName || "",
-      contactPersonInpatientRelationship: data.cpRelationship || null,
-      contactPersonInpatientMobile: data.cpMobile || "",
-      contactPersonInpatientLandline: data.cpLandline || "",
-      contactPersonInpatientEmail: data.cpEmail || "",
-      contactPersonInpatientAddress: data.cpAddress || "",
-    };
-
-    if (data.mop) {
-      this.formData.patientConsent.mop = data.mop;
-    }
-  },
-
   async registerPatient() {
   if (this.submitting) return;
 
   this.submitting = true;
   Loading.show({ message: "Submitting Registration..." });
 
-  const finalData = {
-    ...this.formData.personalInfo,
-    ...this.formData.contactDetails,
-    ...this.formData.consent,
+const finalData = {
+  ...this.formData.personalInfo,
+  ...this.formData.contactDetails,
+  ...this.formData.govtIds,
+  ...this.formData.consent,
 
-    signature: this.formData.consent?.signature,
+  signature: this.formData.consent?.signature,
 
-    patientType: "Inpatient",
-  };
-
-  console.log("Sending to Backend:", finalData);
+  patientType: "INPATIENT",
+};
 
   try {
     await axios.post(`${PATIENT_API_URL}/register`, finalData);
@@ -276,12 +237,13 @@ export const useInpatientStore = defineStore("inpatient", {
           type: "positive",
           message: "Registration Successful!",
           position: "top",
-          timeout: 4000,
+          timeout: 500,
         });
 
         setTimeout(() => {
           this.regFormdialogVisible = false;
-        }, 1500);
+          window.location.reload();
+        }, 500);
 
         return true;
       } catch (error) {
@@ -414,6 +376,25 @@ export const useInpatientStore = defineStore("inpatient", {
     }
   },
 
+  //fetch from er
+    async fetchFromErList() {
+    this.loading = true;
+    try {
+      const response = await axios.get(`${PATIENT_API_URL}/for-admission`);
+      this.patientListfromER = response.data;
+      this.hasSearched = false;
+    } catch (error) {
+      console.error(error);
+      Notify.create({
+        type: "negative",
+        message: "Failed to load Inpatients List",
+        position: "top",
+      });
+    } finally {
+      this.loading = false;
+    }
+  },
+
   async searchPatients(query) {
     if (!query || query.length < 2) return;
 
@@ -448,20 +429,21 @@ export const useInpatientStore = defineStore("inpatient", {
     }
   },
 
-  async sendDataInformation(patient, isForce = false) {
+    async sendDataInformation(patient, isForce = false) {
     this.loading = true;
     try {
       await axios.post(`${PATIENT_API_URL}/send-data`, {
-        patient_id: patient.patient_id || patient.patientId,
+        PATIENTREGID: patient.PATIENTREGID || patient.patientId,
         force: isForce,
       });
 
-      Notify.create({ type: "positive", message: "Data sent successfully." });
+      Notify.create({ type: "positive", message: "Data sent successfully.", position: "top" });
+      this.viewPatientValidationDialog = false;
       await this.fetchInitialData();
       return true;
     } catch (error) {
       if (error.response && error.response.status === 409 && !isForce) {
-        this.handleLinkingConflict(error.response.data, patient.patient_id);
+        this.handleLinkingConflict(error.response.data, patient.PATIENTREGID);
         throw error;
       } else {
         console.error(error);
@@ -473,50 +455,44 @@ export const useInpatientStore = defineStore("inpatient", {
     }
   },
 
-  handleLinkingConflict(data, originalPatientId) {
+    handleLinkingConflict(data, originalPatientId) {
     this.pendingLinkData = { originalId: originalPatientId };
     this.duplicateList = Array.isArray(data) ? data : [data];
     this.selectedDuplicate = null;
     this.showDuplicateDialog = true;
   },
 
-  async linkExistingPatient() {
-    if (!this.selectedDuplicate || !this.pendingLinkData) return;
+    async linkExistingPatient(patientId, existingPatientNo) {
+      this.loading = true
+      try {
+        const res = await axios.post(`${PATIENT_API_URL}/link`, {
+          PATIENTREGID: patientId,
+          patientno: existingPatientNo,
+        })
 
-    this.loading = true;
-    try {
-      await axios.post(`${PATIENT_API_URL}/link`, {
-        patient_id: this.pendingLinkData.originalId,
-        patientno: this.selectedDuplicate.existingPatientNo,
-      });
+        this.fetchInitialData()
+        return res.data
 
-      Notify.create({ type: "positive", message: "Linked successfully!" });
-      this.showDuplicateDialog = false;
-      await this.fetchInitialData();
-      return true;
-    } catch (error) {
-      Notify.create({ type: "negative", message: "Failed to link records." });
-      throw error;
-    } finally {
-      this.loading = false;
-    }
-  },
+      } finally {
+        this.loading = false
+      }
+    },
 
-  async ignoreDuplicate() {
+    async ignoreDuplicate() {
     if (!this.pendingLinkData) return;
 
     this.showDuplicateDialog = false;
     await this.sendDataInformation(
-      { patient_id: this.pendingLinkData.originalId },
+      { PATIENTREGID: this.pendingLinkData.originalId },
       true
     );
   },
 
-  async sendToCredit(patientId) {
+    async sendToCredit(patientId) {
     if (!patientId) return;
 
     try {
-      const payload = { patient_id: patientId };
+      const payload = { PATIENTREGID: patientId };
       console.log("Sending Payload:", payload);
 
       await axios.post(`${PATIENT_API_URL}/send-to-credit`, payload);
@@ -557,5 +533,60 @@ export const useInpatientStore = defineStore("inpatient", {
       this.loading = false;
     }
   },
+
+  //populate form admitting from er
+  setCurrentPatient(patientData) {
+    this.currentPatient = patientData;
+
+    Object.assign(this.formData, {
+      cPatientno: (patientData.PATIENTNO || '').trim().toUpperCase(),
+      cFullname: (patientData.fullName || '').trim().toUpperCase(),
+      cBirthdate: (patientData.birthdate || '').trim().toUpperCase(),
+      cAge: (patientData.AGE || '').trim().toUpperCase(),
+      cSeniorNo: (patientData.scid || '').trim().toUpperCase(),
+      cPwdNo: (patientData. PWD_IDNo || '').trim().toUpperCase(),
+      cPatientType: (patientData.PATIENTTYPE || '').trim().toUpperCase(),
+      cAdmissionDate: (patientData.DATEAD || '').trim().toUpperCase(),
+      cChiefComplaint: (patientData.CC || '').trim().toUpperCase(),
+      cAdmissionDiag: (patientData.diagnosis || '').trim().toUpperCase(),
+      cAdmissionType: (patientData.TYPE_OF_ADMISSION || '').trim().toUpperCase(),
+      // cServiceType: (patientData.cServiceType || '').trim().toUpperCase(),
+      cPhic: (patientData.phicDesc || '').trim().toUpperCase(),
+      cCaseType: (patientData.TYPECASE || '').trim().toUpperCase(),
+
+
+
+    });
+  },
+
+  //for submission admitting from er
+  async updatePatientDetails() {
+    if (!this.currentPatient?.CASENO || !this.currentPatient?.PATIENTNO) {
+      throw new Error("No patient selected for update.");
+    }
+    this.submitting = true;
+  },
+
+    async fetchRooms() {
+      if (this.allRooms?.length > 0) return;
+
+      try {
+        const response = await axios.get(`${PATIENT_API_URL}/rooms`);
+
+        if (Array.isArray(response.data)) {
+          this.allRooms = response.data.map(room => ({
+            label: (room.label || '').toUpperCase(),
+            value: room.value,
+            rate: room.rate
+          }));
+        } else {
+          this.allRooms = [];
+        }
+      } catch (error) {
+        console.error('API Error fetching rooms:', error);
+        this.allRooms = [];
+      }
+    },
+
 },
 });

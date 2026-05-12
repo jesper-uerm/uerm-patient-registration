@@ -103,74 +103,57 @@ export function printInpatientInformation() {
         margin: [0, 0, 0, 0]
       });
 
-      const lastname = patient.lastName || 'Unknown';
-      const firstname = [patient.firstName, patient.suffix].filter(Boolean).join(' ') || 'Unknown';
-      const middlename = patient.middleName || '-';
-      const age = patient.age ? patient.age.toString() : '-';
-      const sex = patient.gender || patient.sex || '-';
-      const civilStatus = patient.civilStatus || '-';
-      const religion = patient.RELIGION_NAME || patient.religion || '-';
-      const landline = patient.landline || '-';
-      const mobile = patient.mobile || '-';
-      const email = patient.email || '-';
+      const lastname = patient.LASTNAME || 'Unknown';
+      const firstname = [patient.FIRSTNAME, patient.suffix].filter(Boolean).join(' ') || 'Unknown';
+      const middlename = patient.MIDDLENAME || '-';
+      const age = patient.AGE ? patient.AGE.toString() : '-';
+      const sex = patient.SEX || patient.SEX || '-';
+      const civilStatus = patient.CIVILSTATUS || '-';
+      const religion = patient.RELIGION_NAME || patient.RELIGION || '-';
+      const landline = patient.LANDLINE || '-';
+      const mobile = patient.MOBILE || '-';
+      const email = patient.EMAIL || '-';
 
-      const birthdate = patient.birthdate ? new Date(patient.birthdate).toLocaleDateString('en-US', {month: 'long', day: 'numeric', year: 'numeric'}) : '-';
-      const birthplace = patient.birthplace || '-';
-      const nationality = patient.NATIONALITY_NAME || patient.nationality || '-';
+      const birthdate = patient.BIRTHDATE ? new Date(patient.BIRTHDATE).toLocaleDateString('en-US', {month: 'long', day: 'numeric', year: 'numeric'}) : '-';
+      const birthplace = patient.BIRTHPLACE || '-';
+      const nationality = patient.NATIONALITY_NAME || patient.NATIONALITY || '-';
       const presentAddress = [
-              patient.addressStreet,
-              patient.BARANGAY_NAME || patient.addressBarangay,
-              patient.MUNICIPALITY_NAME || patient.addressCity,
-              patient.addressProvince,
-              patient.addressRegion
+              patient.ADDRESSSTREET,
+              patient.BARANGAY_NAME || patient.ADDRESSBARANGAY,
+              patient.MUNICIPALITY_NAME || patient.ADDRESSCITY,
+              patient.ADDRESSPROVINCE,
+              patient.ADDRESSREGION
           ]
           .filter(part => part && part.trim() !== '')
           .join(', ') || '-';
-      const permanentAddress = patient.addressPermanent || '-';
+      const spousename = patient.SPOUSENAME || '-';
+      const spouseoccupation = patient.SPOUSEOCCUPATION || '-';
+      const spousecontact = patient.SPOUSECONTACT || '-';
 
-      const spousename = patient.spouseName || '-';
-      const spouseoccupation = patient.spouseOccupation || '-';
-      const spouseemployercontact = patient.spouseEmployerContact || '-';
+      const fathersname = patient.FATHER || '-';
+      const fathersaddress = patient.FATHERADDRESS || '-';
+      const fathercontactnumber = patient.FATHERCONTACT || '-';
 
-      const fathersname = patient.ptFatherName || '-';
-      const fathersaddress = patient.ptFatherAddress || '-';
-      const fathercontactnumber = patient.ptFatherContact || '-';
+      const mothersname = patient.MOTHER || '-';
+      const mothersaddress = patient.MOTHERADDRESS || '-';
+      const mothercontactnumber = patient.MOTHERCONTACT || '-';
 
-      const mothersname = patient.ptMotherMaidenName || '-';
-      const mothersaddress = patient.ptMotherAddress || '-';
-      const mothercontactnumber = patient.ptMotherContact || '-';
+      const occupation = patient.OCCUPATION || '-';
+      const employer = patient.EMPLOYER || '-';
+      const employerAddress = patient.EMPLOYERADDRESS
+      const employerContact = patient.EMPLOYERCONTACTNO || '-';
 
-      const ptsourceofincome = patient.ptSourceIncome || patient.specificSourceOfIncome || '-';
-      const ptgrossincome = patient.ptGrossIncome ? patient.ptGrossIncome.replace(/"/g, '') : '-';
-      const ptHomeOwnership = patient.ptHomeOwnership ? patient.ptHomeOwnership.replace(/"/g, '') : '-';
 
-      const ptYearsStay = patient.ptYearsStay ? patient.ptYearsStay.replace(/"/g, '') : '-';
-      const ptCarOwnership = patient.ptCarOwnership || '-';
-      const ptNumberOfCars = patient.ptNumberOfCars || '-';
-
-      const cpName = patient.cpName || '-';
-      const cpRelationship = patient.cpRelationship || '-';
-      const cpLandline = patient.cpLandline || '-';
-      const cpMobile = patient.cpMobile || '-';
-      const cpAddress = patient.cpAddress || '-';
-      const cpOccupation = patient.cpOccupation || '-';
-      const cpEmail = patient.cpEmail || '-';
-      const cpIncomeSource = patient.cpIncomeSource || '-';
-      const cpEmployerName = patient.cpEmployerName || '-';
-      const cpEmployerAddress = patient.cpEmployerAddress || '-';
-      const cpEmployerNumber = patient.cpEmployerNumber || '-';
-
-      const cpGrossIncome = patient.cpGrossIncome ? patient.cpGrossIncome.replace(/"/g, '') : '-';
-      const cpHomeOwnership = patient.cpHomeOwnership ? patient.cpHomeOwnership.replace(/"/g, '') : '-';
-      const cpHomeStay = patient.ptYearsStay ? patient.cpHomeStay.replace(/"/g, '') : '-';
-      const cpCarOwnership = patient.cpCarOwnership || '-';
-      const cpNumberOfCars = patient.cpNumberOfCars || '-';
+      const cpName = patient.CPNAME || '-';
+      const cpRelationship = patient.CPRELATIONSHIP || '-';
+      const cpMobile = patient.CPMOBILE || '-';
+      const cpAddress = patient.CPADDRESS || '-';
 
       const signatureElement = signatureData
-        ? { image: signatureData, width: 100, alignment: 'center', margin: [0, 0, 0, 2] }
+        ? { image: signatureData, width: 150, alignment: 'center', margin: [0, 0, 0, -5] }
         : { text: '(Signature Not Available)', fontSize: 9, italics: true, color: '#999', alignment: 'center', margin: [0, 0, 0, 10] };
 
-      const createdAt = patient.createdAt ? new Date(patient.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : new Date().toLocaleDateString();
+      const createdAt = patient.CREATEDAT ? new Date(patient.CREATEDAT).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : new Date().toLocaleDateString();
 
       const docDefinition = {
         pageMargins: [30, 30, 30, 30],
@@ -207,50 +190,47 @@ export function printInpatientInformation() {
                 [createCell('Sex', sex), createCell('Civil Status', civilStatus), createCell('Religion', religion), createCell('Nationality', nationality)],
                 [createCell('Birthdate', birthdate), createCell('Birthplace', birthplace), createCell('Landline', landline), createCell('Mobile', mobile)],
                 [{ ...createCell('Email Address', email), colSpan: 4 }, {}, {}, {}],
-                [{ ...createCell('Present Address', presentAddress), colSpan: 2 }, {}, { ...createCell('Permanent Address', permanentAddress), colSpan: 2 }, {}],
+                [{ ...createCell('Present Address', presentAddress), colSpan: 4 }, {}, {}, {}],
               ]
             }
           },
           { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 0.5, lineColor: '#888888' }] },
           {
-            margin: [0, 10, 0, 0],
+            margin: [0, 20, 0, 0],
             table: {
               widths: ['30%', '40%', '30%'],
               body: [
                 [{ text: 'FAMILY BACKGROUND', style: 'sectionHeader', fillColor: '#eeeeee', margin: [0, 0, 0, 0], alignment: 'center', colSpan: 3 }, {}, {}],
-                [createCell('Spouse\'s Name', spousename), createCell('Occupation', spouseoccupation), createCell('Immediate Contact No.', spouseemployercontact)],
-                [createCell('Father\'s Name', fathersname), createCell('Father\'s Address', fathersaddress), createCell('Contact No.', fathercontactnumber)],
-                [createCell('Mother\'s Name', mothersname), createCell('Mother\'s Address', mothersaddress), createCell('Contact No.', mothercontactnumber)]
+                [createCell('Spouse\'s Name', spousename), createCell('Occupation', spouseoccupation), createCell('ontact No.', spousecontact)],
+                [createCell('Father\'s Name', fathersname), createCell('Address', fathersaddress), createCell('Contact No.', fathercontactnumber)],
+                [createCell('Mother\'s Name', mothersname), createCell('Address', mothersaddress), createCell('Contact No.', mothercontactnumber)]
               ]
             }
           },
           {
-            margin: [0, 10, 0, 0],
+            margin: [0, 20, 0, 0],
             table: {
               widths: ['25%', '25%', '25%', '25%'],
               body: [
                 [{ text: 'FINANCIAL BACKGROUND', style: 'sectionHeader', fillColor: '#eeeeee', margin: [0, 0, 0, 0], alignment: 'center', colSpan: 4 }, {}, {}, {}],
-                [createCell('Source of Income', ptsourceofincome), createCell('Gross Income', ptgrossincome), createCell('Home Ownership', ptHomeOwnership), createCell('Years of Stay', ptYearsStay)],
-                [{ ...createCell('Car Ownership', ptCarOwnership), colSpan: 2 }, {}, { ...createCell('No. of Cars Owned', ptNumberOfCars), colSpan: 2 }, {}],
+                [createCell('Occupation', occupation), createCell('Employer', employer), createCell('Employer Address', employerAddress), createCell('Employer Contact No.', employerContact)],
               ]
             }
           },
           {
-            margin: [0, 10, 0, 0],
+            margin: [0, 20, 0, 0],
             table: {
               widths: ['25%', '25%', '25%', '25%'],
               body: [
-                [{ text: 'PERSONS / PARTIES RESPONSIBLE FOR THE ACCOUNT OTHER THAN THE PATIENT', style: 'sectionHeader', fillColor: '#eeeeee', margin: [0, 0, 0, 0], alignment: 'center', colSpan: 4 }, {}, {}, {}],
-                [createCell('Full Name', cpName), createCell('Relationship', cpRelationship), createCell('Landline No.', cpLandline), createCell('Mobile No.', cpMobile)],
-                [{ ...createCell('Complete Address', cpAddress ), colSpan: 2 }, {}, { ...createCell('Occupation', cpOccupation), colSpan: 1 }, { ...createCell('Email Address', cpEmail ), colSpan: 1 }],
-                [{ ...createCell('Source of Income', cpIncomeSource ), colSpan: 1 }, { ...createCell('Employer Name', cpEmployerName ), colSpan: 1 }, { ...createCell('Employer Address', cpEmployerAddress ), colSpan: 1 }, { ...createCell('Employer/Business Contact No.', cpEmployerNumber), colSpan: 1 }],
-                [{ ...createCell('Gross Income', cpGrossIncome), colSpan: 1 }, { ...createCell('Home Ownership', cpHomeOwnership), colSpan: 2 }, {}, { ...createCell('Years of Stay', cpHomeStay), colSpan: 1 }],
-                [{ ...createCell('Car Ownership', cpCarOwnership), colSpan: 2 }, {}, { ...createCell('No. of Cars Owned', cpNumberOfCars), colSpan: 2 }, {}],
+                [{ text: 'CONTACT PERSON IN CASE OF EMERGENCY', style: 'sectionHeader', fillColor: '#eeeeee', margin: [0, 0, 0, 0], alignment: 'center', colSpan: 4 }, {}, {}, {}],
+                [createCell('Name', cpName), createCell('Mobile No.', cpMobile), createCell('Relationship', cpRelationship), {}],
+                [{ ...createCell('Address', cpAddress), colSpan: 4 }, {}, {}, {}],
+
               ]
             }
           },
           {
-            margin: [0, 10, 0, 0],
+            margin: [0, 20, 0, 0],
             columns: [
               { width: '*', text: '' },
               {

@@ -87,7 +87,7 @@
         <q-table
           :rows="patientList"
           :columns="columns"
-          row-key="ID"
+          row-key="PATIENTREGID"
           :loading="loading"
           flat
           bordered

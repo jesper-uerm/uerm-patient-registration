@@ -154,9 +154,9 @@
 
       <q-card-section>
         <q-table
-          :rows="patientList"
+          :rows="patientListDashboard"
           :columns="columns"
-          row-key="patient_id"
+          row-key="PATIENTREGID"
           :loading="loading"
           flat
           bordered
@@ -212,25 +212,16 @@ export default defineComponent({
 
   data() {
     return {
-      // columns: [
-      //   {
-      //     name: "fullName",
-      //     label: "Name",
-      //     field: "fullName",
-      //     align: "center",
-      //     sortable: true,
-      //   },
-      //   { name: "type", label: "Type", field: "patientType", align: "center" },
-      //   {
-      //     name: "CREATEDAT",
-      //     label: "Date",
-      //     field: "CREATEDAT",
-      //     align: "center",
-      //     format: (val) => (val ? date.formatDate(val, "MMM D, YYYY") : "-"),
-      //   },
-      // ],
-
       columns: [
+        {
+          name: "patientNo",
+          label: "Patient No.",
+          field: "PATIENTNO",
+          align: "center",
+          sortable: true,
+          format: (val) => val || "N/A",
+        },
+
         {
           name: "fullName",
           label: "Full Name",
@@ -238,13 +229,7 @@ export default defineComponent({
           align: "center",
           sortable: true,
         },
-        {
-          name: "patientNo",
-          label: "Patient No.",
-          field: "PATIENTNO",
-          align: "center",
-          sortable: true,
-        },
+
         {
           name: "paymentType",
           label: "Payment Type",
@@ -255,12 +240,6 @@ export default defineComponent({
           name: "priority",
           label: "Priority",
           field: "priority",
-          align: "center",
-        },
-        {
-          name: "waitTime",
-          label: "Wait Time",
-          field: "waitTime",
           align: "center",
         },
       ],
@@ -287,7 +266,7 @@ export default defineComponent({
 
   computed: {
     ...mapState(useTriageStore, [
-      "patientList",
+      "patientListDashboard",
       "loading",
       "forAdmissionCount",
       "erpatientCount",

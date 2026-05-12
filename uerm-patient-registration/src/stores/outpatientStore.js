@@ -43,7 +43,6 @@ export const useOutpatientStore = defineStore("outpatient", {
         scidnoOutpatient: "",
         landlineOutpatient: "",
         mobileOutpatient: "",
-        outpatientPhilHealth: [],
         selectedRegionOutpatient: null,
         selectedProvinceOutpatient: null,
         selectedCityOutpatient: null,
@@ -53,7 +52,6 @@ export const useOutpatientStore = defineStore("outpatient", {
       },
       contactPersonOutpatient: {
       contactPersonOutpatient: "",
-      contactPersonLandlineOutpatient: "",
       contactPersonNumberOutpatient: "",
       contactPersonRelationship: null,
       outpatientProcedure: "",
@@ -120,7 +118,7 @@ export const useOutpatientStore = defineStore("outpatient", {
       this.loading = true;
       try {
         await axios.post(`${PATIENT_API_URL}/send-data`, {
-          patient_id: patient.patient_id || patient.patientId,
+          PATIENTREGID: patient.PATIENTREGID || patient.patientId,
           force: isForce,
         });
 
@@ -129,7 +127,7 @@ export const useOutpatientStore = defineStore("outpatient", {
         return true;
       } catch (error) {
         if (error.response && error.response.status === 409 && !isForce) {
-          this.handleLinkingConflict(error.response.data, patient.patient_id);
+          this.handleLinkingConflict(error.response.data, patient.PATIENTREGID);
           throw error;
         } else {
           console.error(error);
@@ -154,7 +152,7 @@ export const useOutpatientStore = defineStore("outpatient", {
       this.loading = true;
       try {
         await axios.post(`${PATIENT_API_URL}/link`, {
-          patient_id: this.pendingLinkData.originalId,
+          PATIENTREGID: this.pendingLinkData.originalId,
           patientno: this.selectedDuplicate.existingPatientNo,
         });
 
@@ -174,13 +172,13 @@ export const useOutpatientStore = defineStore("outpatient", {
       if (!this.pendingLinkData) return;
 
       this.showDuplicateDialog = false;
-      await this.sendDataInformation({ patient_id: this.pendingLinkData.originalId }, true);
+      await this.sendDataInformation({ PATIENTREGID: this.pendingLinkData.originalId }, true);
     },
 
     async sendToCredit(patientId) {
       if (!patientId) return;
       try {
-        await axios.post(`${PATIENT_API_URL}/send-to-credit`, { patient_id: patientId });
+        await axios.post(`${PATIENT_API_URL}/send-to-credit`, { PATIENTREGID: patientId });
         Notify.create({
           type: "positive",
           message: "Successfully sent to Credit for review.",
@@ -223,29 +221,29 @@ export const useOutpatientStore = defineStore("outpatient", {
       this.formData.personalInfoOutpatient.ageOutpatient = age;
     },
 
-    updatePermanentAddress() {
-      if (this.sameAsPresent) {
-        const info = this.formData.personalInfoOutpatient;
+    // updatePermanentAddress() {
+    //   if (this.sameAsPresent) {
+    //     const info = this.formData.personalInfoOutpatient;
 
-        const parts = [
-          info.streetNameOutpatient,
-          info.selectedBarangayOutpatient?.name,
-          info.selectedCityOutpatient?.name,
-          info.selectedProvinceOutpatient?.name,
-          info.selectedRegionOutpatient?.name
-        ].filter(Boolean);
+    //     const parts = [
+    //       info.streetNameOutpatient,
+    //       info.selectedBarangayOutpatient?.name,
+    //       info.selectedCityOutpatient?.name,
+    //       info.selectedProvinceOutpatient?.name,
+    //       info.selectedRegionOutpatient?.name
+    //     ].filter(Boolean);
 
-        this.formData.personalInfoOutpatient.permanentAddressOutpatient = parts.join(', ');
-      }
-    },
+    //     this.formData.personalInfoOutpatient.permanentAddressOutpatient = parts.join(', ');
+    //   }
+    // },
 
-    setSameAsPresent(value) {
-      this.sameAsPresent = value;
-      if (value) {
-        this.updatePermanentAddress();
-      } else {
-        this.formData.personalInfoOutpatient.permanentAddressOutpatient = "";
-      }
-    }
+    // setSameAsPresent(value) {
+    //   this.sameAsPresent = value;
+    //   if (value) {
+    //     this.updatePermanentAddress();
+    //   } else {
+    //     this.formData.personalInfoOutpatient.permanentAddressOutpatient = "";
+    //   }
+    // }
   },
 });

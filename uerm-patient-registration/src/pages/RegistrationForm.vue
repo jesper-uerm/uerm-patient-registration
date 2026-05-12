@@ -48,6 +48,7 @@
               :religionOptions="religionOptions"
               :sameAsPresent="formData.toggles.sameAsPresent"
               :sameAsFather="formData.toggles.sameAsFather"
+              :prefill-patient="selectedPatient"
               @update:form="(val) => (formData.personalInfo = val)"
               @next="step = 2"
             />
@@ -60,6 +61,7 @@
               :ownershipOptions="ownershipOptions"
               :sourceIncomeOptions="sourceIncomeOptions"
               :relationshipOptions="relationshipOptions"
+              :prefill-patient="selectedPatient"
               @update:form="(val) => (formData.contactDetails = val)"
               @next="step = 3"
               @prev="step = 1"
@@ -67,7 +69,7 @@
           </q-step>
 
           <q-step :name="3" title="Patient Consent" icon="security" :done="step > 3">
-            <mode-of-payment
+            <patient-consent
               ref="patientConsent"
               :form="formData.patientConsent"
               :mopOptions="mopOptions"
@@ -92,14 +94,20 @@ import { useInpatientStore } from "src/stores/inpatientStore";
 
 import ContactDetails from "src/components/InpatientForm/ContactDetails.vue";
 import PatientDetails from "src/components/InpatientForm/PatientDetails.vue";
-import ModeOfPayment from "src/components/InpatientForm/PatientConsent.vue";
+import PatientConsent from "src/components/InpatientForm/PatientConsent.vue";
 
 export default defineComponent({
   name: "RegistrationForm",
   components: {
     PatientDetails,
     ContactDetails,
-    ModeOfPayment,
+    PatientConsent,
+  },
+
+  data() {
+    return {
+      selectedPatient: null,
+    };
   },
 
   computed: {
@@ -121,8 +129,12 @@ export default defineComponent({
   methods: {
     ...mapActions(useInpatientStore, ["openForm", "registerPatient"]),
 
-    show() {
-      this.openForm();
+    show(patient) {
+      this.selectedPatient = patient || null;
+
+      this.openForm(patient);
+
+      this.selectedPatient = patient || null;
     },
 
     openFormDialog(patientData) {

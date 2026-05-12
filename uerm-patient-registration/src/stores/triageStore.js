@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 import { Notify, Loading, date } from 'quasar'
+import { useAuthStore } from "src/stores/authStore";
 
 const DASHBOARD_API_URL = 'http://10.107.0.2:3000/api/dashboard'
 const API_URL = 'http://10.107.0.2:3000/api/er'
@@ -15,7 +16,7 @@ export const useTriageStore = defineStore('triage', {
     lineSeries: [],
     lineCategories: [],
 
-    TriageAssessmentFormDialog: true,
+    TriageAssessmentFormDialog: false,
     triageDialog: false,
     caseNumberDialog: false,
     viewPatientValidationDialog: false,
@@ -31,6 +32,9 @@ export const useTriageStore = defineStore('triage', {
     },
 
     patientList: [],
+    patientListDashboard:[],
+    serviceType: [],
+    department:[],
     hmo: [],
     searchQuery: '',
     hasSearched: false,
@@ -40,6 +44,7 @@ export const useTriageStore = defineStore('triage', {
     },
   }),
   actions: {
+
     async fetchHmo() {
       if (this.hmo?.length > 0) return
 
@@ -58,33 +63,6 @@ export const useTriageStore = defineStore('triage', {
         this.hmo = []
       }
     },
-
-    // async fetchDashboardData() {
-    //   this.loading = true
-    //   try {
-    //     const [pieRes, lineRes, statsRes, listRes] = await Promise.all([
-    //       axios.get(`${DASHBOARD_API_URL}/pie-chart`),
-    //       axios.get(`${DASHBOARD_API_URL}/line-chart`),
-    //       axios.get(`${DASHBOARD_API_URL}/stats`),
-    //       axios.get(`${API_URL}/patients`),
-    //     ])
-
-    //     this.pieSeries = pieRes.data.series
-    //     this.pieLabels = pieRes.data.labels
-    //     this.lineSeries = lineRes.data.series
-    //     this.lineCategories = lineRes.data.categories
-
-    //     this.forAdmissionCount = statsRes.data.forAdmission
-    //     this.outpatientCount = statsRes.data.outpatient
-    //     this.erpatientCount = statsRes.data.emergency
-
-    //     this.patientList = listRes.data
-    //   } catch (error) {
-    //     console.error('Dashboard Fetch Error:', error)
-    //   } finally {
-    //     this.loading = false
-    //   }
-    // },
 
     async fetchDashboardDataER() {
       this.loading = true
@@ -108,7 +86,7 @@ export const useTriageStore = defineStore('triage', {
         this.outpatientCount = statsRes.data.outpatient
         this.erpatientCount = statsRes.data.emergency
 
-        this.patientList = listRes.data
+        this.patientListDashboard = listRes.data
       } catch (error) {
         console.error('Dashboard Fetch Error:', error)
       } finally {
@@ -160,6 +138,50 @@ export const useTriageStore = defineStore('triage', {
         })
       } finally {
         this.loading = false
+      }
+    },
+
+    async fetchServiceType() {
+      if (this.serviceType?.length > 0) return;
+
+      try {
+        const response = await axios.get(`${PATIENT_API_URL}/service`);
+
+        if (Array.isArray(response.data)) {
+        this.serviceType = response.data
+          .filter(ser => ser.DESCRIPTION && ser.CODE)
+          .map(ser => ({
+            label: ser.DESCRIPTION.toUpperCase(),
+            value: ser.CODE
+          }));
+        } else {
+          this.serviceType = [];
+        }
+      } catch (error) {
+        console.error('API Error fetching services:', error);
+        this.serviceType = [];
+      }
+    },
+
+    async fetchDepartment() {
+      if (this.department?.length > 0) return;
+
+      try {
+        const response = await axios.get(`${PATIENT_API_URL}/department`);
+
+        if (Array.isArray(response.data)) {
+        this.department = response.data
+          .filter(ser => ser.DESCRIPTION && ser.CODE)
+          .map(ser => ({
+            label: ser.DESCRIPTION.toUpperCase(),
+            value: ser.CODE
+          }));
+        } else {
+          this.department = [];
+        }
+      } catch (error) {
+        console.error('API Error fetching department:', error);
+        this.department = [];
       }
     },
 
@@ -331,8 +353,7 @@ export const useTriageStore = defineStore('triage', {
       this.hasError = false
     },
 
-    openDialog(payload) {
-      this.resetForm(payload)
+    openDialog() {
       this.step = 1
       this.TriageAssessmentFormDialog = true
     },
@@ -340,7 +361,7 @@ export const useTriageStore = defineStore('triage', {
     updateTriage(payload, row) {
       this.resetForm(payload)
 
-      payload.patientId = row.ID
+      payload.patientId = row.PATIENTREGID
       payload.patientNo = row.PATIENTNO
       payload.lastNameTriage = row.LASTNAME
       payload.firstNameTriage = row.FIRSTNAME
@@ -357,6 +378,8 @@ export const useTriageStore = defineStore('triage', {
     },
 
     casenumForm(payload, row) {
+      const authStore = useAuthStore()
+
       const midInitial = row.MIDDLENAME ? ` ${row.MIDDLENAME.charAt(0)}.` : ''
       const suffix = row.SUFFIX ? ` ${row.SUFFIX}` : ''
       payload.casefullname = `${row.LASTNAME}, ${row.FIRSTNAME}${midInitial}${suffix}`
@@ -376,6 +399,7 @@ export const useTriageStore = defineStore('triage', {
 
       payload.chiefComplaintTriage = row.CHIEFCOMPLAINT || ''
       payload.caseRemarks = row.REMARKS || ''
+      payload.caseAdmittedBy = authStore.fullName || ''
       payload.caseCensusInfirmary = row.INFIRMARY || ''
       payload.caseDepartment = row.DEPARTMENT || ''
       payload.caseHmo = row.HMO || ''
@@ -418,12 +442,12 @@ export const useTriageStore = defineStore('triage', {
           type: 'positive',
           message: 'Registration Successful!',
           position: 'top',
-          timeout: 2000,
+          timeout: 500,
         })
-
+        setTimeout(() => {
+          window.location.reload()
+        }, 500)
         this.TriageAssessmentFormDialog = false
-        await this.fetchPatients()
-        this.resetForm()
       } catch (error) {
         console.error('Submission Error:', error)
         const errorMsg = error.response?.data?.message || 'Server Error: Could not save.'
@@ -504,10 +528,10 @@ export const useTriageStore = defineStore('triage', {
     async admitPatient(patient) {
       Loading.show({ message: 'Updating status...' })
       try {
-        await axios.put(`${API_URL}/admit`, { ID: patient.ID })
+        await axios.put(`${API_URL}/admit`, { PATIENTREGID: patient.PATIENTREGID })
         Notify.create({
           type: 'positive',
-          message: 'Patient sent successfully!',
+          message: 'Patient updated successfully!',
           position: 'top',
         })
         await this.fetchPatients()
@@ -523,7 +547,7 @@ export const useTriageStore = defineStore('triage', {
       this.loading = true
       try {
         await axios.post(`${PATIENT_API_URL}/send-data`, {
-          ID: patient.ID,
+          PATIENTREGID: patient.PATIENTREGID,
           force: isForce,
         })
         Notify.create({ type: 'positive', message: 'Data sent successfully.' })
@@ -546,7 +570,7 @@ export const useTriageStore = defineStore('triage', {
       this.loading = true
       try {
         await axios.post(`${PATIENT_API_URL}/link`, {
-          ID: patientId,
+          PATIENTREGID: patientId,
           patientno: existingPatientNo,
         })
         Notify.create({ type: 'positive', message: 'Linked successfully!' })

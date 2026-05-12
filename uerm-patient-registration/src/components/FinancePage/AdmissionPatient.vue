@@ -1,5 +1,5 @@
 <template>
-  <q-form ref="admission" @submit="onSubmit">
+  <q-form ref="admission" @submit="onSubmit" @validation-error="onError">
     <div class="row q-col-gutter-lg q-mx-lg">
       <div class="col-12">
         <div class="text-caption2 q-mb-md q-py-sm bg-grey-4 text-center text-uppercase">
@@ -14,10 +14,15 @@
               :options="allDoctors || []"
               emit-value
               map-options
-              label="Admitting Physician *"
+              label-slot
               stack-label
+              lazy-rules
+              :rules="requiredRule"
               @update:model-value="onDoctorSelected"
             >
+              <template v-slot:label>
+                Admitting Physician<span class="text-red">*</span>
+              </template>
               <template v-slot:no-option>
                 <q-item>
                   <q-item-section class="text-grey"> No doctors found </q-item-section>
@@ -30,7 +35,7 @@
               outlined
               dense
               v-model="formData.fnDepartment"
-              label="Department *"
+              label="Department"
               stack-label
               readonly
             />
@@ -44,9 +49,14 @@
               :options="allDoctors || []"
               emit-value
               map-options
-              label="Attending Physician *"
+              label-slot
+              lazy-rules
+              :rules="requiredRule"
               @update:model-value="onAttendingDoctorSelected"
             >
+              <template v-slot:label>
+                Admitting Physician<span class="text-red">*</span>
+              </template>
               <template v-slot:no-option>
                 <q-item>
                   <q-item-section class="text-grey"> No doctors found </q-item-section>
@@ -60,7 +70,7 @@
               stack-label
               dense
               v-model="formData.fncontactatnPhysician"
-              label="Contact No. *"
+              label="Contact No."
               readonly
             />
           </div>
@@ -70,8 +80,14 @@
               stack-label
               dense
               v-model="formData.fnrmAdmission"
-              label="Room Admission *"
-            />
+              label-slot
+              lazy-rules
+              :rules="requiredRule"
+            >
+              <template v-slot:label>
+                Room Admission<span class="text-red">*</span>
+              </template>
+            </q-input>
           </div>
           <div class="col-12 col-sm-3 col-md-3">
             <q-input
@@ -79,18 +95,31 @@
               dense
               type="number"
               v-model="formData.fnCost"
-              label="Possible Cost *"
+              label-slot
               stack-label
-            />
+              prefix="₱"
+              lazy-rules
+              :rules="requiredRule"
+            >
+              <template v-slot:label>
+                Possible Cost<span class="text-red">*</span>
+              </template>
+            </q-input>
           </div>
           <div class="col-12 col-sm-3 col-md-3">
             <q-input
               outlined
               dense
               v-model="formData.fnlengthStay"
-              label="Possible Length Of Stay *"
+              label-slot
               stack-label
-            />
+              lazy-rules
+              :rules="requiredRule"
+            >
+              <template v-slot:label>
+                Possible Length Of Stay<span class="text-red">*</span>
+              </template>
+            </q-input>
           </div>
           <div class="col-12 col-sm-3 col-md-3">
             <q-input
@@ -98,8 +127,12 @@
               stack-label
               dense
               v-model="formData.fnadmProcedure"
-              label="Procedure *"
-            />
+              label-slot
+              lazy-rules
+              :rules="requiredRule"
+            >
+              <template v-slot:label> Procedure<span class="text-red">*</span> </template>
+            </q-input>
           </div>
           <div class="col-12 col-sm-3 col-md-3">
             <q-input
@@ -107,9 +140,16 @@
               dense
               type="number"
               v-model="formData.fnorDeposit"
-              label="Operating Room Deposit *"
+              label-slot
               stack-label
-            />
+              prefix="₱"
+              lazy-rules
+              :rules="requiredRule"
+            >
+              <template v-slot:label>
+                Operating Room Deposit<span class="text-red">*</span>
+              </template>
+            </q-input>
           </div>
           <div class="col-12 col-sm-3 col-md-3">
             <q-input
@@ -118,8 +158,15 @@
               dense
               type="number"
               v-model="formData.fnreqDeposit"
-              label="Requested Deposit *"
-            />
+              label-slot
+              prefix="₱"
+              lazy-rules
+              :rules="requiredRule"
+            >
+              <template v-slot:label>
+                Requested Deposit<span class="text-red">*</span>
+              </template>
+            </q-input>
           </div>
           <div class="col-12 col-sm-3 col-md-3">
             <q-input
@@ -128,8 +175,15 @@
               dense
               type="number"
               v-model="formData.fntoDeposit"
-              label="To Deposit *"
-            />
+              label-slot
+              prefix="₱"
+              lazy-rules
+              :rules="requiredRule"
+            >
+              <template v-slot:label>
+                To Deposit<span class="text-red">*</span>
+              </template>
+            </q-input>
           </div>
           <div class="col-12 col-sm-3 col-md-3">
             <q-input
@@ -138,8 +192,15 @@
               dense
               type="number"
               v-model="formData.fntofollowDeposit"
-              label="To Follow Deposit *"
-            />
+              label-slot
+              prefix="₱"
+              lazy-rules
+              :rules="requiredRule"
+            >
+              <template v-slot:label>
+                To Follow Deposit<span class="text-red">*</span>
+              </template>
+            </q-input>
           </div>
           <div class="col-12">
             <q-input
@@ -149,38 +210,42 @@
               stack-label
               dense
               v-model="formData.fnadmRemarks"
-              label="Remarks*"
-            />
+              label-slot
+              lazy-rules
+              :rules="requiredRule"
+            >
+              <template v-slot:label> Remarks<span class="text-red">*</span> </template>
+            </q-input>
           </div>
-          <div class="col-12 col-sm-4 col-md-4">
+          <div class="col-12 col-sm-6 col-md-6">
             <q-select
               outlined
               dense
               v-model="formData.fnStatus"
-              label="Status *"
               stack-label
+              label-slot
               :options="statusOptions"
-            />
+              lazy-rules
+              :rules="requiredRule"
+            >
+              <template v-slot:label> Status<span class="text-red">*</span> </template>
+            </q-select>
           </div>
-          <div class="col-12 col-sm-4 col-md-4">
+          <div class="col-12 col-sm-6 col-md-6">
             <q-input
               outlined
               dense
               v-model="formData.fnEvaluatedBY"
-              label="Evaluated By *"
               stack-label
+              label-slot
               readonly
-            />
-          </div>
-          <div class="col-12 col-sm-4 col-md-4">
-            <q-input
-              outlined
-              dense
-              v-model="formData.fnApprovedBY"
-              label="Approved By *"
-              stack-label
-              readonly
-            />
+              lazy-rules
+              :rules="requiredRule"
+            >
+              <template v-slot:label>
+                Evaluated By<span class="text-red">*</span>
+              </template>
+            </q-input>
           </div>
         </div>
       </div>
@@ -216,6 +281,12 @@ export default {
   name: "ForAdmission",
   emits: ["prev", "submit"],
 
+  data() {
+    return {
+      requiredRule: [(val) => !!val || "Required"],
+    };
+  },
+
   computed: {
     ...mapState(useFinanceStore, ["statusOptions", "allDoctors"]),
     ...mapWritableState(useFinanceStore, ["formData"]),
@@ -248,21 +319,16 @@ export default {
       }
     },
 
-    async validate() {
-      return await this.$refs.admission.validate();
+    onSubmit() {
+      this.$emit("submit");
     },
 
-    async onSubmit() {
-      const isValid = await this.validate();
-      if (!isValid) {
-        this.$q.notify({
-          type: "warning",
-          message: "Please fill all required HMO fields.",
-          position: "top",
-        });
-        return;
-      }
-      this.$emit("submit");
+    onError() {
+      this.$q.notify({
+        type: "warning",
+        message: "Please fill all required admission fields.",
+        position: "top",
+      });
     },
 
     onBack() {

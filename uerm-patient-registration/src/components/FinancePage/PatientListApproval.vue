@@ -87,13 +87,6 @@
             </q-td>
           </template>
 
-          <template v-slot:body-cell-DATEAD="props">
-            <q-td :props="props">
-              <q-chip outline square color="blue-8" size="sm" class="text-weight-bold">
-                {{ props.value }}
-              </q-chip>
-            </q-td>
-          </template>
           <template v-slot:item="props">
             <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
               <q-card flat bordered class="q-pa-sm">
@@ -164,11 +157,13 @@
 
     <q-dialog
       v-model="detailsDialog"
-      maximized
-      ransition-show="scale"
+      backdrop-filter="blur(4px)"
+      transition-show="scale"
       transition-hide="scale"
     >
-      <q-card>
+      <q-card
+        style="width: 1500px; max-width: 95vw; display: flex; flex-direction: column"
+      >
         <q-card-section
           class="column text-center text-white q-py-md relative-position"
           style="background-color: #004aad; flex: 0 0 auto"
@@ -199,7 +194,16 @@
               </div>
               <q-separator />
             </div>
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-4">
+              <q-input
+                outlined
+                dense
+                readonly
+                label="Full Name"
+                v-model="patientDetails.fullName"
+              />
+            </div>
+            <div class="col-12 col-md-4">
               <q-input
                 outlined
                 dense
@@ -208,7 +212,7 @@
                 v-model="patientDetails.CASENO"
               />
             </div>
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-4">
               <q-input
                 outlined
                 dense
@@ -603,12 +607,13 @@
 
         <q-separator />
 
-        <q-card-actions align="center" class="q-gutter-md q-pa-xl">
+        <q-card-actions align="center" class="q-py-lg q-px-xl q-gutter-xs">
           <q-btn
             unelevated
             icon="cancel"
             label="Disapprove"
             color="red-7"
+            class="q-px-xl q-py-md text-weight-bold"
             @click="handleDisapprove(patientDetails)"
             :disable="
               detailsLoading || !patientDetails || patientDetails.IS_APPROVED !== null
@@ -620,6 +625,7 @@
             icon="check_circle"
             label="Approve"
             color="green-7"
+            class="q-px-xl q-py-sm text-weight-bold"
             @click="handleApprove(patientDetails)"
             :disable="
               detailsLoading || !patientDetails || patientDetails.IS_APPROVED !== null
@@ -684,7 +690,14 @@ export default {
           classes: "text-grey-7",
           style: "width: 120px",
         },
-
+        {
+          name: "status",
+          label: "Status",
+          field: "IS_APPROVED",
+          align: "center",
+          sortable: true,
+          style: "width: 120px",
+        },
         {
           name: "DATEAD",
           label: "Date Added",
@@ -693,15 +706,6 @@ export default {
           sortable: true,
           format: (val) => (val ? date.formatDate(val, "MMM D, YYYY h:mm A") : "-"),
           style: "width: 180px",
-        },
-
-        {
-          name: "status",
-          label: "Status",
-          field: "IS_APPROVED",
-          align: "center",
-          sortable: true,
-          style: "width: 120px",
         },
       ],
     };

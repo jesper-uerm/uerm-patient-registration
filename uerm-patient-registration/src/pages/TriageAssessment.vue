@@ -42,7 +42,10 @@
           :contracted="$q.screen.lt.sm"
         >
           <q-step :name="1" title="Personal Info" icon="person" :done="step > 1">
-            <patient-details-triage @next="handleStepOneSuccess" />
+            <patient-details-triage
+              :prefill-patient="selectedPatient"
+              @next="handleStepOneSuccess"
+            />
           </q-step>
 
           <q-step :name="2" title="Patient Consent" icon="verified_user" :done="step > 2">
@@ -71,6 +74,7 @@ export default {
   data() {
     return {
       localDetailsData: {},
+      selectedPatient: null,
     };
   },
 
@@ -85,7 +89,9 @@ export default {
   methods: {
     ...mapActions(useTriageStore, ["submitRegistration", "openDialog"]),
 
-    show() {
+    show(patient) {
+      this.step = 1;
+      this.selectedPatient = patient || null;
       this.openDialog();
     },
 
@@ -101,8 +107,6 @@ export default {
         ...this.localDetailsData,
         ...triageStore.formData,
       };
-
-      console.log("ACTUAL Signature in Store:", triageStore.formData.patientSignature);
       await this.submitRegistration(payload);
     },
   },

@@ -1,7 +1,7 @@
 <template>
   <q-form ref="personalInfoTriageRef" @submit.prevent="onNext">
     <div class="text-subtitle2 text-bold q-mb-md">Patient Information:</div>
-
+    <q-input v-show="false" outlined dense v-model="formData.patientNo"> </q-input>
     <div class="row" :class="$q.screen.lt.sm ? 'q-col-gutter-xs' : 'q-col-gutter-sm'">
       <div class="col-12 col-sm-3">
         <q-input
@@ -264,50 +264,42 @@ import { date } from "quasar";
 export default {
   name: "PatientDetailsTriage",
 
+  props: {
+    prefillPatient: {
+      type: Object,
+      default: () => null,
+    },
+  },
+
+  emits: ["next"],
+
   data() {
     return {
       formData: {
-        patientId: null,
-        patientNo: null,
         lastNameTriage: "",
         firstNameTriage: "",
         middleNameTriage: "",
         suffixTriage: "",
         birthdateTriage: "",
-        ageTriage: "",
         genderTriage: "",
-        contactPersonTriage: "",
-        contactPersonTriageAddress: "",
-        contactPersonTriageMobile: "",
-        scidnoTriage: "",
-        infirmary: "N/A",
-        hmoName: "",
         civilStatus: "",
-        chiefComplaintTriage: "",
-        tempTriage: "",
-        heartRateTriage: "",
-        oxygenTriage: "",
-        bpTriage: "",
-        respiRateTriage: "",
-        painScoreTriage: "",
-        avpuTriage: "",
-        contagiousTriage: "",
-        isolationPrecautionTriage: "",
-        cpdTriage: "",
-        levelTriage: "",
-        checkforPresense: [],
-        remarksTriage: "",
-        personnelTriage: "",
-        dateTriage: "",
-        patientSignature: null,
-        personnelSignature: null,
+        scidnoTriage: "",
+        pwdTriage: "",
+        hmoName: "",
+        infirmary: "N/A",
+        streetName: "",
         selectedRegion: null,
         selectedProvince: null,
         selectedCity: null,
         selectedBarangay: null,
-        streetName: "",
 
-        addressOptions: { regions: [], provinces: [], cities: [], barangays: [] },
+        addressOptions: {
+          regions: [],
+          provinces: [],
+          cities: [],
+          barangays: [],
+        },
+
         addressLoading: {
           regions: false,
           provinces: false,
@@ -358,6 +350,43 @@ export default {
       if (!newVal) {
         this.formData.scidnoTriage = "";
       }
+    },
+    prefillPatient: {
+      immediate: true,
+      handler(newPatient) {
+        if (newPatient) {
+          this.formData.patientNo = newPatient.PATIENTNO || "";
+          this.formData.firstNameTriage = newPatient.FIRSTNAME || "";
+          this.formData.lastNameTriage = newPatient.LASTNAME || "";
+          this.formData.middleNameTriage = newPatient.MIDDLENAME || "";
+          this.formData.suffixTriage = newPatient.SUFFIX || "";
+          this.formData.streetName = newPatient.ADDRESS || "";
+          this.formData.birthdateTriage = newPatient.DBIRTH
+            ? date.formatDate(newPatient.DBIRTH, "YYYY/MM/DD")
+            : "";
+          this.formData.genderTriage = newPatient.SEX || "";
+          this.formData.civilStatus = newPatient.STATUS || "";
+          this.formData.scidnoTriage = newPatient.SCIDNO || "";
+        } else {
+          this.formData.patientNo = "";
+          this.formData.lastNameTriage = "";
+          this.formData.firstNameTriage = "";
+          this.formData.middleNameTriage = "";
+          this.formData.suffixTriage = "";
+          this.formData.birthdateTriage = "";
+          this.formData.genderTriage = "";
+          this.formData.civilStatus = "";
+          this.formData.scidnoTriage = "";
+          this.formData.pwdTriage = "";
+          this.formData.hmoName = "";
+          this.formData.infirmary = "N/A";
+          this.formData.streetName = "";
+          this.formData.selectedRegion = null;
+          this.formData.selectedProvince = null;
+          this.formData.selectedCity = null;
+          this.formData.selectedBarangay = null;
+        }
+      },
     },
   },
 

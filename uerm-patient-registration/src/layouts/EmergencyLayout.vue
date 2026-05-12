@@ -91,7 +91,7 @@
           class="q-mx-sm rounded-borders q-mb-xs"
         >
           <q-item-section avatar>
-            <q-icon name="dashboard" />
+            <q-icon name="las la-stream" />
           </q-item-section>
           <q-item-section>Dashboard</q-item-section>
         </q-item>
@@ -104,7 +104,7 @@
           class="q-mx-sm rounded-borders q-mb-xs"
         >
           <q-item-section avatar>
-            <q-icon name="local_hospital" />
+            <q-icon name="las la-first-aid" />
           </q-item-section>
           <q-item-section>Emergency</q-item-section>
         </q-item>
@@ -117,7 +117,7 @@
           class="q-mx-sm rounded-borders q-mb-xs"
         >
           <q-item-section avatar>
-            <q-icon name="bed" />
+            <q-icon name="las la-procedures" />
           </q-item-section>
           <q-item-section>For Admission</q-item-section>
         </q-item>

@@ -45,6 +45,7 @@
               :form="formData.personalInfoOutpatient"
               :civilStatusOptions="civilStatusOptions"
               :religionOptions="religionOptions"
+              :prefill-patient="selectedPatient"
               @update:form="(val) => (formData.personalInfoOutpatient = val)"
               @next="step = 2"
             />
@@ -55,6 +56,7 @@
               ref="contactPersonRef"
               :form="formData.contactPersonOutpatient"
               :relationshipOptions="relationshipOptions"
+              :prefill-patient="selectedPatient"
               @update:form="(val) => (formData.contactPersonOutpatient = val)"
               @update:signature="(val) => (formData.signatureOutpatient = val)"
               @prev="step = 1"
@@ -93,12 +95,14 @@ export default {
     ContactPerson,
     PatientConsent,
   },
+
   data() {
     return {
       OutpatientregistrationFormDialog: false,
       civilStatusOptions: ["Single", "Married", "Widowed", "Separated", "Divorced"],
       religionOptions: ["Roman Catholic", "Christian", "Islam", "Others"],
       relationshipOptions: ["Spouse", "Parent", "Sibling", "Child", "Co-Maker"],
+      selectedPatient: null,
     };
   },
 
@@ -107,9 +111,10 @@ export default {
   },
 
   methods: {
-    show() {
+    show(patient) {
       this.step = 1;
       this.OutpatientregistrationFormDialog = true;
+      this.selectedPatient = patient || null;
     },
 
     async validateFinalStep() {
@@ -145,7 +150,7 @@ export default {
         ...this.formData.personalInfoOutpatient,
         ...this.formData.contactPersonOutpatient,
         signatureOutpatient: this.formData.signatureOutpatient,
-        patientType: "Outpatient",
+        patientType: "OUTPATIENT",
       };
 
       try {
@@ -159,7 +164,8 @@ export default {
 
         setTimeout(() => {
           this.OutpatientregistrationFormDialog = false;
-        }, 1500);
+          window.location.reload();
+        }, 500);
       } catch (error) {
         console.error(error);
         const errorMsg = error.response?.data?.message || "Server Error: Could not save.";

@@ -17,32 +17,6 @@
         </div>
       </q-card-section>
 
-      <!-- <q-card-section class="col-auto q-py-md q-px-lg bg-grey-1">
-        <q-input
-          outlined
-          dense
-          v-model="searchQuery"
-          placeholder="Enter Name or ID"
-          @keyup.enter="handleSearch"
-          :disable="loading"
-          class="bg-white"
-        >
-          <template v-slot:prepend>
-            <q-icon name="search" class="text-grey-5" />
-          </template>
-          <template v-slot:after>
-            <q-btn
-              unelevated
-              color="blue-10"
-              label="Search"
-              class="q-px-lg"
-              @click="handleSearch"
-              :loading="loading"
-            />
-          </template>
-        </q-input>
-      </q-card-section> -->
-
       <q-card-section class="col-auto q-py-md q-px-lg bg-grey-1">
         <q-input
           outlined
@@ -76,11 +50,9 @@
           bordered
           :rows="patientList"
           :columns="columns"
-          row-key="ID"
+          row-key="PATIENTREGID"
           :loading="loading"
           flat
-          :dense="$q.screen.lt.xl"
-          :grid="$q.screen.lt.sm"
           :rows-per-page-options="[10]"
           class="clean-table fit"
           header-class="bg-grey-1 text-grey-8 text-weight-bold text-uppercase"
@@ -104,10 +76,17 @@
             </q-td>
           </template>
 
-          <template v-slot:body-cell-ISADMITTED="props">
+          <template v-slot:body-cell-ISFORADMISSION="props">
             <q-td :props="props">
               <q-badge
-                v-if="props.value == 0"
+                v-if="props.row.REVIEWEDBY !== null && props.row.REVIEWEDBY !== ''"
+                color="orange-6"
+                label="For Approval Credit and Finance"
+                outline
+              />
+
+              <q-badge
+                v-else-if="props.value == 1"
                 color="blue-6"
                 label="For Admission"
                 outline
@@ -138,72 +117,54 @@
             <q-td :props="props" class="text-center" @click.stop>
               <q-btn flat round color="grey-7" icon="more_vert">
                 <q-menu cover auto-close>
-                  <q-list style="min-width: 150px">
+                  <q-list style="min-width: 170px">
                     <q-item
-                      v-if="props.row.ISADMITTED === null && props.row.ISVALIDATED"
-                      @click="handleAdmit(props.row)"
                       clickable
+                      :disable="
+                        props.row.ISFORADMISSION !== null && props.row.ISVALIDATED
+                      "
+                      @click="handleAdmit(props.row)"
                     >
                       <q-item-section avatar>
-                        <q-icon name="assignment_ind" color="blue-10" />
+                        <q-icon name="las la-bed" color="blue-10" />
                       </q-item-section>
-                      <q-item-section>Requires Admission</q-item-section>
+                      <q-item-section>Admit Patient</q-item-section>
                     </q-item>
+
                     <q-item
-                      v-if="props.row.ISVALIDATED != 1"
                       clickable
+                      :disable="props.row.ISVALIDATED == 1 || props.row.PATIENTNO != null"
                       @click="validatePatient(props.row)"
                     >
                       <q-item-section avatar>
-                        <q-icon name="check" color="blue-10" />
+                        <q-icon name="las la-clipboard-check" color="blue-10" />
                       </q-item-section>
-
-                      <q-item-section>
-                        <q-item-label>Validate</q-item-label>
-                      </q-item-section>
+                      <q-item-section>Validate</q-item-section>
                     </q-item>
 
-                    <q-separator />
                     <q-item
-                      v-if="!props.row.PERSONNEL"
                       clickable
+                      :disable="props.row.PERSONNEL !== null"
                       @click="editPatient(props.row)"
                     >
                       <q-item-section avatar>
-                        <q-icon name="add_circle" color="green-8" />
+                        <q-icon name="las la-heartbeat" color="red-8" />
                       </q-item-section>
-
-                      <q-item-section>
-                        <q-item-label>Add Vitals</q-item-label>
-                      </q-item-section>
+                      <q-item-section>Add Vitals</q-item-section>
                     </q-item>
 
                     <q-item clickable @click="handlePrint(props.row)">
                       <q-item-section avatar>
-                        <q-icon name="print" color="green-8" />
+                        <q-icon name="las la-file-download" color="green-8" />
                       </q-item-section>
-                      <q-item-section>Triage Form</q-item-section>
-                    </q-item>
-
-                    <q-item clickable @click="handlePrintTreatment(props.row)">
-                      <q-item-section avatar>
-                        <q-icon name="print" color="green-8" />
-                      </q-item-section>
-                      <q-item-section>Treatment Sheet</q-item-section>
-                    </q-item>
-
-                    <q-item clickable @click="handlePrintConsent(props.row)">
-                      <q-item-section avatar>
-                        <q-icon name="download" color="green-8" />
-                      </q-item-section>
-                      <q-item-section>Consent Form</q-item-section>
+                      <q-item-section>Download Forms</q-item-section>
                     </q-item>
                   </q-list>
                 </q-menu>
               </q-btn>
             </q-td>
           </template>
-
+          <!-- small screen -->
           <template v-slot:item="props">
             <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
               <q-card flat bordered class="q-pa-sm">
@@ -213,12 +174,11 @@
                   </q-item-section>
                   <q-item-section>
                     <q-item-label class="text-weight-bold text-blue-10">
-                      {{ props.row.firstName }} {{ props.row.lastName }}
+                      {{ props.row.FIRSTNAME }} {{ props.row.LASTNAME }}
                     </q-item-label>
-                    <q-item-label caption>ID: {{ props.row.ID }}</q-item-label>
+                    <q-item-label caption>ID: {{ props.row.PATIENTREGID }}</q-item-label>
                   </q-item-section>
 
-                  <!-- small screen -->
                   <q-item-section side>
                     <q-btn flat round color="grey-7" icon="more_vert" @click.stop>
                       <q-menu cover auto-close>
@@ -304,7 +264,7 @@
       transition-show="scale"
       transition-hide="scale"
     >
-      <q-card style="width: 1000px; max-width: 90vw" class="rounded-borders">
+      <!-- <q-card style="width: 1000px; max-width: 90vw" class="rounded-borders">
         <q-card-section
           class="bg-gradient-primary text-white q-pa-md row items-center justify-between"
         >
@@ -550,6 +510,242 @@
             @click="handleValidatePatient(selectedPatient)"
           />
         </q-card-actions>
+      </q-card> -->
+
+      <q-card style="width: 800px; max-width: 80vw" class="rounded-borders">
+        <!-- HEADER -->
+        <q-card-section class="bg-gradient-primary text-white q-pa-md">
+          <div class="row items-center justify-center text-center">
+            <div class="text-subtitle2 text-weight-bold text-uppercase">
+              Patient Information
+            </div>
+          </div>
+
+          <q-btn
+            icon="las la-times"
+            flat
+            round
+            dense
+            v-close-popup
+            class="text-white opacity-70 absolute-top-right q-ma-sm"
+          />
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-section class="q-pa-lg scroll q-px-xl" style="max-height: 70vh">
+          <div class="text-subtitle2 text-grey-8 text-uppercase q-mb-sm">
+            Personal Information
+          </div>
+
+          <q-list bordered separator class="rounded-borders">
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="las la-user" color="grey-6" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label caption>Full Name</q-item-label>
+                <q-item-label class="text-caption1">
+                  {{ formatFullName(selectedPatient) }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="las la-birthday-cake" color="grey-6" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label caption>Birthdate / Age</q-item-label>
+                <q-item-label class="text-caption1">
+                  {{ formatDate(selectedPatient.BIRTHDATE) }}
+                  ({{ selectedPatient.AGE }} y/o)
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="las la-venus-mars" color="grey-6" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label caption>Gender</q-item-label>
+                <q-item-label class="text-caption1">
+                  {{ selectedPatient.SEX || "N/A" }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+
+          <div class="text-subtitle2 text-grey-8 text-uppercase q-mt-lg q-mb-sm">
+            Address Information
+          </div>
+
+          <q-list bordered separator class="rounded-borders">
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="las la-home" color="grey-6" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label caption>Street</q-item-label>
+                <q-item-label class="text-caption1">
+                  {{ selectedPatient.ADDRESSSTREET || "N/A" }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="las la-city" color="grey-6" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label caption>Barangay / City</q-item-label>
+                <q-item-label class="text-caption1">
+                  {{ selectedPatient.ADDRESSBARANGAY || "N/A" }},
+                  {{ selectedPatient.ADDRESSCITY || "N/A" }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+
+          <div class="text-subtitle2 text-grey-8 text-uppercase q-mt-lg q-mb-sm">
+            Government IDs
+          </div>
+
+          <q-list bordered separator class="rounded-borders">
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="las la-id-card" color="grey-6" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label caption>PhilHealth</q-item-label>
+                <q-item-label class="text-caption1">
+                  {{ selectedPatient.PHILHEALTHID || "N/A" }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="las la-id-card" color="grey-6" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label caption>Senior ID</q-item-label>
+                <q-item-label class="text-caption1">
+                  {{ selectedPatient.SENIORID || "N/A" }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="las la-id-card" color="grey-6" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label caption>PWD ID</q-item-label>
+                <q-item-label class="text-caption1">
+                  {{ selectedPatient.PWDID || "N/A" }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+
+          <!-- <div class="text-subtitle2 text-grey-8 text-uppercase q-mt-lg q-mb-sm">
+            Parent Details
+          </div>
+
+          <q-list bordered separator class="rounded-borders">
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="las la-user" color="grey-6" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label caption>Father's Name</q-item-label>
+                <q-item-label class="text-caption1">
+                  {{ selectedPatient.FATHER || "N/A" }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="las la-user" color="grey-6" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label caption>Mother's Name</q-item-label>
+                <q-item-label class="text-caption1">
+                  {{ selectedPatient.MOTHER || "N/A" }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+
+          <div class="text-subtitle2 text-grey-8 text-uppercase q-mt-lg q-mb-sm">
+            In Case of Emergency
+          </div>
+
+          <q-list bordered separator class="rounded-borders">
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="las la-user" color="grey-6" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label caption>Name</q-item-label>
+                <q-item-label class="text-caption1">
+                  {{ selectedPatient.CPNAME || "N/A" }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="las la-heart" color="grey-6" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label caption>Relationship</q-item-label>
+                <q-item-label class="text-caption1">
+                  {{ selectedPatient.CPRELATIONSHIP || "N/A" }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="las la-phone" color="grey-6" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label caption>Contact</q-item-label>
+                <q-item-label class="text-caption1">
+                  {{ selectedPatient.CPMOBILE || "N/A" }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="las la-map-marker" color="grey-6" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label caption>Address</q-item-label>
+                <q-item-label class="text-caption1">
+                  {{ selectedPatient.CPADDRESS || "N/A" }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list> -->
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-actions align="center" class="q-pa-md bg-grey-1">
+          <q-btn
+            unelevated
+            label="Generate Patient Number"
+            color="green-10"
+            icon-right="las la-share"
+            @click="handleValidatePatient(selectedPatient)"
+          />
+        </q-card-actions>
       </q-card>
     </q-dialog>
 
@@ -559,6 +755,7 @@
       persistent
       transition-show="scale"
       transition-hide="scale"
+      maximize
     >
       <q-card
         style="width: 1500px; max-width: 95vw; display: flex; flex-direction: column"
@@ -835,7 +1032,7 @@
             </div>
 
             <div class="row q-col-gutter-xs">
-              <div class="col-12 col-sm-4 col-md-4">
+              <div class="col-12 col-sm-3 col-md-3">
                 <q-input
                   outlined
                   dense
@@ -849,7 +1046,7 @@
                   </template>
                 </q-input>
               </div>
-              <div class="col-12 col-sm-4 col-md-4">
+              <div class="col-12 col-sm-3 col-md-3">
                 <q-input
                   outlined
                   dense
@@ -863,7 +1060,27 @@
                 </q-input>
               </div>
 
-              <div class="col-12 col-sm-4 col-md-4 q-mb-md">
+              <div class="col-12 col-sm-3 col-md-3">
+                <q-select
+                  outlined
+                  dense
+                  v-model="formData.avpuTriage"
+                  :options="[
+                    'Alert',
+                    'Verbally Responsive',
+                    'Painfully Responsive',
+                    'Unresponsive',
+                  ]"
+                  label
+                  :rules="[(val) => !!val || 'Required']"
+                >
+                  <template v-slot:label>
+                    AVPU Scale <span class="text-red">*</span>
+                  </template>
+                </q-select>
+              </div>
+
+              <div class="col-12 col-sm-3 col-md-3 q-mb-md">
                 <q-select
                   outlined
                   dense
@@ -1224,7 +1441,7 @@ export default {
         },
         {
           name: "fullName",
-          label: "Patient Name",
+          label: "NAME",
           field: "fullName",
           align: "center",
           sortable: true,
@@ -1232,7 +1449,7 @@ export default {
         },
         {
           name: "birthdateStr",
-          label: "Birthdate",
+          label: "BIRTHDATE",
           field: "birthdateStr",
           align: "center",
           format: (val) => (val ? date.formatDate(val, "MMM D, YYYY") : "-"),
@@ -1240,9 +1457,9 @@ export default {
           style: "width: 180px",
         },
         {
-          name: "ISADMITTED",
-          label: "Status",
-          field: "ISADMITTED",
+          name: "ISFORADMISSION",
+          label: "STATUS",
+          field: "ISFORADMISSION",
           align: "center",
           sortable: true,
           style: "width: 120px",
@@ -1250,7 +1467,7 @@ export default {
 
         {
           name: "actions",
-          label: "Actions",
+          label: "ACTIONS",
           field: "actions",
           align: "center",
           style: "width: 150px",
@@ -1374,7 +1591,7 @@ export default {
         this.viewPatientValidationDialog = false;
       } catch (error) {
         if (error.response && error.response.status === 409) {
-          this.handleLinkingConflict(error.response.data, row.ID);
+          this.handleLinkingConflict(error.response.data, row.PATIENTREGID);
         } else {
           console.error(error);
         }
@@ -1389,7 +1606,7 @@ export default {
       this.showDuplicateDialog = false;
 
       const payload = {
-        ID: this.pendingLinkData.originalId,
+        PATIENTREGID: this.pendingLinkData.originalId,
       };
 
       await this.sendDataInformation(payload, true);
@@ -1401,12 +1618,39 @@ export default {
       this.$q
         .dialog({
           title: "Confirm Admission",
-          message: `Please confirm that you wish to proceed with the admission for <span class="text-weight-bold text-primary">${patient.fullName}</span>.`,
+          message: `
+      <div class="text-subtitle2 q-mb-md">
+        Please review the details below before proceeding with the admission.
+      </div>
+
+      <div class="bg-grey-2 q-pa-md rounded-borders text-body2">
+        <div class="q-mb-xs">
+          <strong>Name:</strong> <span class="text-weight-bold text-primary">${
+            patient.fullName
+          }</span>
+        </div>
+        <div class="q-mb-xs">
+          <strong>Patient No:</strong> ${patient.PATIENTNO || "N/A"}
+        </div>
+        <div class="q-mb-xs">
+          <strong>Birthdate:</strong> ${patient.birthdateStr || "N/A"}
+        </div>
+        <div>
+          <strong>Status:</strong> Refer to Admission
+        </div>
+      </div>
+
+      <div class="q-mt-md text-caption text-grey-7">
+        Are you sure you want to officially admit this patient?
+      </div>
+    `,
           html: true,
           persistent: true,
+          style: "width: 550px; max-width: 90vw;",
           ok: {
-            label: "Send to Credit/Finance",
+            label: "Proceed with admission",
             color: "primary",
+            icon: "check",
             unelevated: true,
           },
           cancel: {
@@ -1421,17 +1665,17 @@ export default {
     },
 
     async handlePrint(row) {
-      const data = await this.getPatientFullDetails(row.ID);
+      const data = await this.getPatientFullDetails(row.PATIENTREGID);
       if (data) await this.generateTriagePatientPdf(data);
     },
 
     async handlePrintTreatment(row) {
-      const data = await this.getPatientFullDetails(row.ID);
+      const data = await this.getPatientFullDetails(row.PATIENTREGID);
       if (data) await this.generateEmergencyTreatmentPdf(data);
     },
 
     async handlePrintConsent(row) {
-      const data = await this.getPatientFullDetails(row.ID);
+      const data = await this.getPatientFullDetails(row.PATIENTREGID);
       if (data) await this.generatePatientConsentPdf(data);
     },
 

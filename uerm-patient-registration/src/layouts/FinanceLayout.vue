@@ -91,7 +91,7 @@
           class="q-mx-sm rounded-borders q-mb-xs"
         >
           <q-item-section avatar>
-            <q-icon name="dashboard" />
+            <q-icon name="las la-stream" />
           </q-item-section>
           <q-item-section>Dashboard</q-item-section>
         </q-item>
@@ -104,7 +104,7 @@
           class="q-mx-sm rounded-borders q-mb-xs"
         >
           <q-item-section avatar>
-            <q-icon name="assignment" />
+            <q-icon name="las la-clipboard-list" />
           </q-item-section>
           <q-item-section>Assessment</q-item-section>
         </q-item>
@@ -117,7 +117,7 @@
           class="q-mx-sm rounded-borders q-mb-xs"
         >
           <q-item-section avatar>
-            <q-icon name="verified_user" />
+            <q-icon name="las la-file-invoice-dollar" />
           </q-item-section>
           <q-item-section>Approval</q-item-section>
         </q-item>
