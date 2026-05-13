@@ -46,7 +46,6 @@
               :form="formData.personalInfo"
               :civilStatusOptions="civilStatusOptions"
               :religionOptions="religionOptions"
-              :sameAsPresent="formData.toggles.sameAsPresent"
               :sameAsFather="formData.toggles.sameAsFather"
               :prefill-patient="selectedPatient"
               @update:form="(val) => (formData.personalInfo = val)"
@@ -57,9 +56,6 @@
           <q-step :name="2" title="Contact Details" icon="person" :done="step > 2">
             <contact-details
               :form="formData.contactDetails"
-              :yesNoOptions="yesNoOptions"
-              :ownershipOptions="ownershipOptions"
-              :sourceIncomeOptions="sourceIncomeOptions"
               :relationshipOptions="relationshipOptions"
               :prefill-patient="selectedPatient"
               @update:form="(val) => (formData.contactDetails = val)"
@@ -72,7 +68,6 @@
             <patient-consent
               ref="patientConsent"
               :form="formData.patientConsent"
-              :mopOptions="mopOptions"
               :initial-signature="formData.signature"
               @update:signature="(val) => (formData.signature = val)"
               @update:form="(val) => (formData.patientConsent = val)"
@@ -118,11 +113,7 @@ export default defineComponent({
       "submitting",
       "civilStatusOptions",
       "religionOptions",
-      "ownershipOptions",
       "relationshipOptions",
-      "mopOptions",
-      "yesNoOptions",
-      "sourceIncomeOptions",
     ]),
   },
 
@@ -162,7 +153,12 @@ export default defineComponent({
       const isValid = await this.validateFinalStep();
       if (!isValid) return;
 
-      await this.registerPatient();
+      const success = await this.registerPatient();
+
+      if (success) {
+        this.selectedPatient = null;
+        this.step = 1;
+      }
     },
   },
 });

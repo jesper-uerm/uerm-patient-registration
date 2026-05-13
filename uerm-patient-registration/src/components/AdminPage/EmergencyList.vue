@@ -121,7 +121,9 @@
                     <q-item
                       clickable
                       :disable="
-                        props.row.ISFORADMISSION !== null && props.row.ISVALIDATED
+                        props.row.ISFORADMISSION !== null ||
+                        props.row.ISVALIDATED ||
+                        props.row.ISRETURNING
                       "
                       @click="handleAdmit(props.row)"
                     >
@@ -264,256 +266,7 @@
       transition-show="scale"
       transition-hide="scale"
     >
-      <!-- <q-card style="width: 1000px; max-width: 90vw" class="rounded-borders">
-        <q-card-section
-          class="bg-gradient-primary text-white q-pa-md row items-center justify-between"
-        >
-          <div class="text-subtitle1 text-weight-bold q-ml-sm">Patient Information</div>
-          <q-btn icon="close" flat round dense v-close-popup class="text-white" />
-        </q-card-section>
-
-        <q-separator />
-
-        <q-card-section class="q-pa-lg scroll" style="max-height: 70vh">
-          <div class="text-caption text-weight-medium text-primary q-mb-sm">
-            Patient Information
-          </div>
-          <div class="row q-col-gutter-md q-mb-lg">
-            <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Full Name</div>
-              <div class="text-body2">
-                {{ formatFullName(selectedPatient) }}
-              </div>
-            </div>
-            <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Birthdate</div>
-              <div class="text-body2">
-                {{ formatDate(selectedPatient.BIRTHDATE) }} ({{ selectedPatient.AGE }}
-                y/o)
-              </div>
-            </div>
-            <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Birthplace</div>
-              <div class="text-body2">{{ selectedPatient.BIRTHPLACE || "-" }}</div>
-            </div>
-            <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Gender</div>
-              <div class="text-body2">{{ selectedPatient.gender || "-" }}</div>
-            </div>
-            <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Civil Status</div>
-              <div class="text-body2">{{ selectedPatient.CIVILSTATUS || "-" }}</div>
-            </div>
-            <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Occupation</div>
-              <div class="text-body2">{{ selectedPatient.OCCUPATION || "-" }}</div>
-            </div>
-            <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Nationality</div>
-              <div class="text-body2">{{ selectedPatient.NATIONALITY || "-" }}</div>
-            </div>
-            <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Religion</div>
-              <div class="text-body2">{{ selectedPatient.RELIGION || "-" }}</div>
-            </div>
-          </div>
-
-          <q-separator dashed class="q-my-sm" />
-          <div class="text-caption text-weight-medium text-primary q-mb-sm">
-            Residential Address
-          </div>
-          <div class="row q-col-gutter-md q-mb-lg">
-            <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Street / House No.</div>
-              <div class="text-body2">{{ selectedPatient.ADDRESSSTREET || "-" }}</div>
-            </div>
-            <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Barangay</div>
-              <div class="text-body2">{{ selectedPatient.ADDRESSBARANGAY || "-" }}</div>
-            </div>
-            <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">City / Municipality</div>
-              <div class="text-body2">{{ selectedPatient.ADDRESSCITY || "-" }}</div>
-            </div>
-            <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Province</div>
-              <div class="text-body2">{{ selectedPatient.ADDRESSPROVINCE || "-" }}</div>
-            </div>
-            <div class="col-12 col-sm-4 col-md-4">
-              <div class="text-caption text-grey">Region</div>
-              <div class="text-body2">{{ selectedPatient.ADDRESSREGION || "-" }}</div>
-            </div>
-          </div>
-
-          <q-separator dashed class="q-my-sm" />
-
-          <div class="row q-col-gutter-xl">
-            <div class="col-12 col-md-6">
-              <div class="text-caption text-weight-medium text-primary q-mb-sm">
-                Emergency & Spouse
-              </div>
-
-              <div class="row q-col-gutter-md">
-                <div class="col-12 col-sm-6">
-                  <div class="text-subtitle2 text-weight-bold">
-                    {{ selectedPatient.CPNAME || "-" }}
-                  </div>
-                  <div class="text-caption text-grey-6 text-uppercase q-mb-xs">
-                    Emergency Contact ({{ selectedPatient.CPRELATIONSHIP || "N/A" }})
-                  </div>
-
-                  <div class="text-caption text-grey-9 q-gutter-y-xs">
-                    <div class="row items-center">
-                      <q-icon name="phone" size="14px" class="q-mr-sm text-grey-6" />
-                      {{ selectedPatient.CPMOBILE || "N/A" }}
-                      <span v-if="selectedPatient.CPLANDLINE">
-                        / {{ selectedPatient.CPLANDLINE }}
-                      </span>
-                    </div>
-                    <div class="row items-center">
-                      <q-icon name="place" size="14px" class="q-mr-sm text-grey-6" />
-                      <span style="max-width: 90%">
-                        {{ selectedPatient.CPADDRESS || "-" }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="col-12 col-sm-6">
-                  <div class="text-subtitle2 text-weight-bold">
-                    {{ selectedPatient.SPOUSENAME || "-" }}
-                  </div>
-                  <div class="text-caption text-grey-6 text-uppercase q-mb-xs">
-                    Spouse
-                  </div>
-
-                  <div class="text-caption text-grey-9 q-gutter-y-xs">
-                    <div class="row items-center">
-                      <q-icon name="work" size="14px" class="q-mr-sm text-grey-6" />
-                      {{ selectedPatient.SPOUSEOCCUPATION || "-" }}
-                    </div>
-                    <div class="row items-center">
-                      <q-icon name="business" size="14px" class="q-mr-sm text-grey-6" />
-                      {{ selectedPatient.SPOUSEEMPLOYERCONTACT || "-" }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-12 col-md-6">
-              <div class="text-caption text-weight-medium text-primary q-mb-sm">
-                Parent Information
-              </div>
-
-              <div class="row q-col-gutter-md">
-                <div class="col-12 col-sm-6">
-                  <div class="text-subtitle2 text-weight-bold">
-                    {{ selectedPatient.PTFATHERNAME || "-" }}
-                  </div>
-                  <div class="text-caption text-grey-6 text-uppercase q-mb-xs">
-                    Father's Name
-                  </div>
-
-                  <div class="text-caption text-grey-9 q-gutter-y-xs">
-                    <div class="row items-center" v-if="selectedPatient.PTFATHERCONTACT">
-                      <q-icon name="phone" size="14px" class="q-mr-sm text-grey-6" />
-                      {{ selectedPatient.PTFATHERCONTACT }}
-                    </div>
-                    <div class="row items-center">
-                      <q-icon name="place" size="14px" class="q-mr-sm text-grey-6" />
-                      <span style="max-width: 90%">
-                        {{ selectedPatient.PTFATHERADDRESS || "-" }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="col-12 col-sm-6">
-                  <div class="text-subtitle2 text-weight-bold">
-                    {{ selectedPatient.PTMOTHERMAIDENNAME || "-" }}
-                  </div>
-                  <div class="text-caption text-grey-6 text-uppercase q-mb-xs">
-                    Mother's Name
-                  </div>
-
-                  <div class="text-caption text-grey-9 q-gutter-y-xs">
-                    <div class="row items-center" v-if="selectedPatient.PTMOTHERCONTACT">
-                      <q-icon name="phone" size="14px" class="q-mr-sm text-grey-6" />
-                      {{ selectedPatient.PTMOTHERCONTACT }}
-                    </div>
-                    <div class="row items-center">
-                      <q-icon name="place" size="14px" class="q-mr-sm text-grey-6" />
-                      <span style="max-width: 90%">
-                        {{ selectedPatient.PTMOTHERADDRESS || "-" }}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <q-separator dashed class="q-my-sm" />
-
-          <div class="text-caption text-weight-medium text-primary q-mb-sm">
-            Government Identification
-          </div>
-
-          <div class="row q-col-gutter-sm">
-            <div class="col-6 col-sm-3">
-              <q-input
-                readonly
-                dense
-                outlined
-                v-model="selectedPatient.PHILHEALTHID"
-                label="PhilHealth ID"
-              />
-            </div>
-            <div class="col-6 col-sm-3">
-              <q-input
-                readonly
-                dense
-                outlined
-                v-model="selectedPatient.SSSGSISID"
-                label="SSS / GSIS ID"
-              />
-            </div>
-            <div class="col-6 col-sm-3">
-              <q-input
-                readonly
-                dense
-                outlined
-                v-model="selectedPatient.TINID"
-                label="TIN"
-              />
-            </div>
-            <div class="col-6 col-sm-3">
-              <q-input
-                readonly
-                dense
-                outlined
-                v-model="selectedPatient.SENIORID"
-                label="Senior / PWD ID"
-              />
-            </div>
-          </div>
-        </q-card-section>
-
-        <q-separator />
-
-        <q-card-actions align="center" class="q-pa-md bg-grey-1">
-          <q-btn
-            unelevated
-            label="Send Information to live server"
-            color="green-10"
-            icon-right="send"
-            @click="handleValidatePatient(selectedPatient)"
-          />
-        </q-card-actions>
-      </q-card> -->
-
       <q-card style="width: 800px; max-width: 80vw" class="rounded-borders">
-        <!-- HEADER -->
         <q-card-section class="bg-gradient-primary text-white q-pa-md">
           <div class="row items-center justify-center text-center">
             <div class="text-subtitle2 text-weight-bold text-uppercase">
@@ -649,90 +402,6 @@
               </q-item-section>
             </q-item>
           </q-list>
-
-          <!-- <div class="text-subtitle2 text-grey-8 text-uppercase q-mt-lg q-mb-sm">
-            Parent Details
-          </div>
-
-          <q-list bordered separator class="rounded-borders">
-            <q-item>
-              <q-item-section avatar>
-                <q-icon name="las la-user" color="grey-6" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label caption>Father's Name</q-item-label>
-                <q-item-label class="text-caption1">
-                  {{ selectedPatient.FATHER || "N/A" }}
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-
-            <q-item>
-              <q-item-section avatar>
-                <q-icon name="las la-user" color="grey-6" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label caption>Mother's Name</q-item-label>
-                <q-item-label class="text-caption1">
-                  {{ selectedPatient.MOTHER || "N/A" }}
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
-
-          <div class="text-subtitle2 text-grey-8 text-uppercase q-mt-lg q-mb-sm">
-            In Case of Emergency
-          </div>
-
-          <q-list bordered separator class="rounded-borders">
-            <q-item>
-              <q-item-section avatar>
-                <q-icon name="las la-user" color="grey-6" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label caption>Name</q-item-label>
-                <q-item-label class="text-caption1">
-                  {{ selectedPatient.CPNAME || "N/A" }}
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-
-            <q-item>
-              <q-item-section avatar>
-                <q-icon name="las la-heart" color="grey-6" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label caption>Relationship</q-item-label>
-                <q-item-label class="text-caption1">
-                  {{ selectedPatient.CPRELATIONSHIP || "N/A" }}
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-
-            <q-item>
-              <q-item-section avatar>
-                <q-icon name="las la-phone" color="grey-6" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label caption>Contact</q-item-label>
-                <q-item-label class="text-caption1">
-                  {{ selectedPatient.CPMOBILE || "N/A" }}
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-
-            <q-item>
-              <q-item-section avatar>
-                <q-icon name="las la-map-marker" color="grey-6" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label caption>Address</q-item-label>
-                <q-item-label class="text-caption1">
-                  {{ selectedPatient.CPADDRESS || "N/A" }}
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list> -->
         </q-card-section>
 
         <q-separator />
@@ -759,7 +428,7 @@
     >
       <q-card
         style="width: 1500px; max-width: 95vw; display: flex; flex-direction: column"
-        :style="{ height: $q.screen.lt.md ? '90vh' : '80vh' }"
+        :style="{ height: $q.screen.lt.md ? '90vh' : '87vh' }"
         class="rounded-borders"
       >
         <q-card-section
@@ -1235,7 +904,7 @@
 
         <q-separator />
 
-        <q-card-actions align="center" class="text-primary q-mt-md">
+        <q-card-actions align="center" class="text-primary q-mt-lg">
           <q-btn flat label="Cancel" v-close-popup />
 
           <q-btn
@@ -1617,46 +1286,82 @@ export default {
     handleAdmit(patient) {
       this.$q
         .dialog({
-          title: "Confirm Admission",
+          title: ` `,
           message: `
-      <div class="text-subtitle2 q-mb-md">
-        Please review the details below before proceeding with the admission.
-      </div>
+    <div class="q-pa-md rounded-borders" style="background: #f8f9fa; border: 1px solid #e0e0e0;">
 
-      <div class="bg-grey-2 q-pa-md rounded-borders text-body2">
-        <div class="q-mb-xs">
-          <strong>Name:</strong> <span class="text-weight-bold text-primary">${
-            patient.fullName
-          }</span>
+      <div class="row items-center q-mb-md">
+        <div class="col-auto q-mr-md">
+          <div class="bg-blue-1 text-primary flex flex-center rounded-borders" style="width: 42px; height: 42px;">
+            <i class="las la-user" style="font-size: 26px;"></i>
+          </div>
         </div>
-        <div class="q-mb-xs">
-          <strong>Patient No:</strong> ${patient.PATIENTNO || "N/A"}
-        </div>
-        <div class="q-mb-xs">
-          <strong>Birthdate:</strong> ${patient.birthdateStr || "N/A"}
-        </div>
-        <div>
-          <strong>Status:</strong> Refer to Admission
+        <div class="col">
+          <div class="text-caption text-grey-6 text-uppercase text-weight-bold" style="line-height: 1;">Patient Name</div>
+          <div class="text-subtitle1 text-uppercase" style="line-height: 1.2;">
+            ${patient.fullName || "N/A"}
+          </div>
         </div>
       </div>
 
-      <div class="q-mt-md text-caption text-grey-7">
-        Are you sure you want to officially admit this patient?
+      <hr style="border: none; height: 1px; background-color: #e0e0e0; margin: 12px 0;" />
+
+      <div class="row items-center q-mb-sm">
+        <div class="col-auto q-mr-sm" style="width: 24px; text-align: center;">
+          <i class="las la-id-badge text-grey-5" style="font-size: 20px;"></i>
+        </div>
+        <div class="col text-grey-7">Patient No.</div>
+        <div class="col-auto text-weight-bold text-dark">
+          ${patient.PATIENTNO || "N/A"}
+        </div>
       </div>
-    `,
+
+      <div class="row items-center q-mb-sm">
+        <div class="col-auto q-mr-sm" style="width: 24px; text-align: center;">
+          <i class="las la-calendar-day text-grey-5" style="font-size: 20px;"></i>
+        </div>
+        <div class="col text-grey-7">Birthdate</div>
+        <div class="col-auto text-weight-bold text-dark">
+          ${patient.birthdateStr || "N/A"}
+        </div>
+      </div>
+
+      <div class="row items-center">
+        <div class="col-auto q-mr-sm" style="width: 24px; text-align: center;">
+          <i class="las la-notes-medical text-grey-5" style="font-size: 20px;"></i>
+        </div>
+        <div class="col text-grey-7">Status</div>
+        <div class="col-auto">
+          <span class="bg-orange-1 text-orange-9 text-weight-bold q-px-sm q-py-xs rounded-borders" style="font-size: 11px; border: 1px solid #ffcc80;">
+            REFER TO ADMISSION
+          </span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="q-mt-lg row items-start text-body2 text-center text-grey-9 bg-grey-2 q-pa-md rounded-borders">
+      <i class="las la-question-circle text-primary q-mr-sm" style="font-size: 22px;"></i>
+      <div class="col text-weight-medium">
+        Are you sure you want to admit this patient?
+      </div>
+    </div>
+  `,
           html: true,
           persistent: true,
-          style: "width: 550px; max-width: 90vw;",
+          style: "min-width: 450px; border-radius: 12px;",
           ok: {
-            label: "Proceed with admission",
-            color: "primary",
-            icon: "check",
+            label: "Proceed to Admit",
+            iconRight: "las la-arrow-right",
             unelevated: true,
+            class: "q-px-md text-weight-bold rounded-borders",
+            style: "background-color: #004aad; color: white;",
           },
           cancel: {
             label: "Cancel",
-            color: "grey-8",
+            color: "grey-7",
             flat: true,
+            class: "q-px-md text-weight-bold",
           },
         })
         .onOk(() => {

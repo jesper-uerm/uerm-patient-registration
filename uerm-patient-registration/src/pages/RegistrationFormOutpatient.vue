@@ -122,19 +122,71 @@ export default {
         const isConsentValid = await this.$refs.patientConsentRef.validate();
 
         const signatureData = this.formData.contactPersonOutpatient.signature;
+
         const isSignatureValid = !!signatureData && signatureData.length > 100;
 
         if (!isConsentValid) {
-          this.$q.notify({ type: "warning", message: "Please correct form errors." });
+          this.$q.notify({
+            type: "warning",
+            message: "Please correct form errors.",
+          });
           return false;
         }
+
         if (!isSignatureValid) {
-          this.$q.notify({ type: "warning", message: "Patient Signature is required." });
+          this.$q.notify({
+            type: "warning",
+            message: "Patient Signature is required.",
+          });
           return false;
         }
+
         return true;
       }
+
       return false;
+    },
+
+    resetForm() {
+      this.formData = {
+        personalInfoOutpatient: {
+          lastNameOutpatient: "",
+          firstNameOutpatient: "",
+          middleNameOutpatient: "",
+          suffixOutpatient: "",
+          birthdateOutpatient: "",
+          ageOutpatient: "",
+          birthplaceOutpatient: "",
+          genderOutpatient: null,
+          civilStatusOutpatient: null,
+          religionOutpatient: null,
+          nationalityOutpatient: "",
+          occupationOutpatient: "",
+          hmoOutpatient: "",
+          scidnoOutpatient: "",
+          landlineOutpatient: "",
+          mobileOutpatient: "",
+          selectedRegionOutpatient: null,
+          selectedProvinceOutpatient: null,
+          selectedCityOutpatient: null,
+          selectedBarangayOutpatient: null,
+          streetNameOutpatient: "",
+        },
+
+        contactPersonOutpatient: {
+          contactPersonOutpatient: "",
+          contactPersonNumberOutpatient: "",
+          contactPersonRelationship: null,
+          outpatientProcedure: "",
+          outpatientPhysician: "",
+          signature: null,
+        },
+
+        patientConsent: {
+          consentGiven: false,
+          consentRelationship: null,
+        },
+      };
     },
 
     async onSubmit() {
@@ -149,12 +201,14 @@ export default {
       const finalData = {
         ...this.formData.personalInfoOutpatient,
         ...this.formData.contactPersonOutpatient,
-        signatureOutpatient: this.formData.signatureOutpatient,
+        signatureOutpatient: this.formData.contactPersonOutpatient.signature,
         patientType: "OUTPATIENT",
       };
 
       try {
         await axios.post("http://10.107.0.2:3000/api/patients/register", finalData);
+
+        this.resetForm();
 
         this.$q.notify({
           type: "positive",
@@ -164,7 +218,6 @@ export default {
 
         setTimeout(() => {
           this.OutpatientregistrationFormDialog = false;
-          window.location.reload();
         }, 500);
       } catch (error) {
         console.error(error);

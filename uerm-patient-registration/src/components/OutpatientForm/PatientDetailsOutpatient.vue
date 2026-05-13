@@ -191,6 +191,20 @@
 
     <q-separator class="q-my-md" />
 
+    <div class="col-12 col-md-12">
+      <q-input
+        outlined
+        dense
+        v-model="formData.personalInfoOutpatient.streetNameOutpatient"
+        :rules="[(val) => !!val || 'Field is required']"
+        label-slot
+      >
+        <template v-slot:label>
+          House No. / Street Name <span class="text-red">*</span>
+        </template>
+      </q-input>
+    </div>
+
     <div class="row q-col-gutter-md">
       <div class="col-12 col-sm-3 col-md-3">
         <q-select
@@ -259,41 +273,7 @@
           <template v-slot:label> Barangay <span class="text-red">*</span> </template>
         </q-select>
       </div>
-
-      <div class="col-12 col-md-12">
-        <q-input
-          outlined
-          dense
-          v-model="formData.personalInfoOutpatient.streetNameOutpatient"
-          :rules="[(val) => !!val || 'Field is required']"
-          label-slot
-        >
-          <template v-slot:label>
-            House No. / Street Name <span class="text-red">*</span>
-          </template>
-        </q-input>
-      </div>
     </div>
-
-    <!-- <div class="row q-col-gutter-md">
-      <div class="col-12 col-md-12">
-        <q-input
-          outlined
-          dense
-          v-model="formData.personalInfoOutpatient.permanentAddressOutpatient"
-          type="textarea"
-          rows="1"
-          label="Permanent Home Address"
-        />
-
-        <q-checkbox
-          :model-value="sameAsPresent"
-          @update:model-value="setSameAsPresent"
-          label="Same as Present Address"
-          class="q-mt-sm text-grey-8 text-caption"
-        />
-      </div>
-    </div> -->
 
     <q-stepper-navigation class="text-center">
       <q-btn
@@ -351,14 +331,9 @@ export default {
   },
 
   watch: {
-    "formData.personalInfoOutpatient.streetNameOutpatient": "updatePermanentAddress",
-    "formData.personalInfoOutpatient.selectedBarangayOutpatient":
-      "updatePermanentAddress",
-    "formData.personalInfoOutpatient.selectedCityOutpatient": "updatePermanentAddress",
-    "formData.personalInfoOutpatient.selectedProvinceOutpatient":
-      "updatePermanentAddress",
-    "formData.personalInfoOutpatient.selectedRegionOutpatient": "updatePermanentAddress",
-
+    "formData.personalInfoOutpatient.birthdateOutpatient": function (newVal) {
+      this.calculateAge(newVal);
+    },
     prefillPatient: {
       immediate: true,
 
@@ -389,7 +364,6 @@ export default {
             selectedCityOutpatient: patient.MUNICIPALITY_DESC || null,
             selectedBarangayOutpatient: patient.BARANGAY_DESC || null,
             streetNameOutpatient: patient.ADDRESS || "",
-            // permanentAddressOutpatient: patient.PERMANENT_ADDRESS || "",
           };
         }
       },
@@ -397,11 +371,7 @@ export default {
   },
 
   methods: {
-    ...mapActions(useOutpatientStore, [
-      "calculateAge",
-      "updatePermanentAddress",
-      "setSameAsPresent",
-    ]),
+    ...mapActions(useOutpatientStore, ["calculateAge"]),
 
     async validate() {
       return await this.$refs.personalInfoOutpatient.validate();

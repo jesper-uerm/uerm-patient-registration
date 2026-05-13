@@ -438,16 +438,18 @@ export const useTriageStore = defineStore('triage', {
       try {
         await axios.post(`${API_URL}/triage`, finalData)
 
+        this.formData.patientSignature = null
+
         Notify.create({
           type: 'positive',
           message: 'Registration Successful!',
           position: 'top',
           timeout: 500,
+
         })
-        setTimeout(() => {
-          window.location.reload()
-        }, 500)
+
         this.TriageAssessmentFormDialog = false
+
       } catch (error) {
         console.error('Submission Error:', error)
         const errorMsg = error.response?.data?.message || 'Server Error: Could not save.'

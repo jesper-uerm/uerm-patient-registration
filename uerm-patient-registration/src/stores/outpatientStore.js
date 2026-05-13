@@ -25,6 +25,7 @@ export const useOutpatientStore = defineStore("outpatient", {
     sameAsPresent: false,
     civilStatusOptions: ["Single", "Married", "Widowed", "Separated", "Divorced"],
     religionOptions: ["Roman Catholic", "Christian", "Islam", "Others"],
+
     formData: {
       personalInfoOutpatient: {
         lastNameOutpatient: "",
@@ -48,20 +49,26 @@ export const useOutpatientStore = defineStore("outpatient", {
         selectedCityOutpatient: null,
         selectedBarangayOutpatient: null,
         streetNameOutpatient: "",
-        permanentAddressOutpatient: "",
       },
+
       contactPersonOutpatient: {
-      contactPersonOutpatient: "",
-      contactPersonNumberOutpatient: "",
-      contactPersonRelationship: null,
-      outpatientProcedure: "",
-      outpatientPhysician: "",
-      signature: null,
+        contactPersonOutpatient: "",
+        contactPersonNumberOutpatient: "",
+        contactPersonRelationship: null,
+        outpatientProcedure: "",
+        outpatientPhysician: "",
+        signature: null,
+      },
+
+      patientConsent: {
+        consentGiven: false,
+        consentRelationship: null,
       },
     }
   }),
 
   actions: {
+
     async fetchInitialData() {
       this.loading = true;
       try {
@@ -220,30 +227,5 @@ export const useOutpatientStore = defineStore("outpatient", {
 
       this.formData.personalInfoOutpatient.ageOutpatient = age;
     },
-
-    // updatePermanentAddress() {
-    //   if (this.sameAsPresent) {
-    //     const info = this.formData.personalInfoOutpatient;
-
-    //     const parts = [
-    //       info.streetNameOutpatient,
-    //       info.selectedBarangayOutpatient?.name,
-    //       info.selectedCityOutpatient?.name,
-    //       info.selectedProvinceOutpatient?.name,
-    //       info.selectedRegionOutpatient?.name
-    //     ].filter(Boolean);
-
-    //     this.formData.personalInfoOutpatient.permanentAddressOutpatient = parts.join(', ');
-    //   }
-    // },
-
-    // setSameAsPresent(value) {
-    //   this.sameAsPresent = value;
-    //   if (value) {
-    //     this.updatePermanentAddress();
-    //   } else {
-    //     this.formData.personalInfoOutpatient.permanentAddressOutpatient = "";
-    //   }
-    // }
   },
 });

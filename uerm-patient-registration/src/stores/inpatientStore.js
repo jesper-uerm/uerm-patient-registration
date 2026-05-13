@@ -27,165 +27,148 @@ export const useInpatientStore = defineStore("inpatient", {
 
     civilStatusOptions: ["Single", "Married", "Widowed", "Separated", "Divorced"],
     religionOptions: ["Roman Catholic", "Christian", "Islam", "Others"],
-    ownershipOptions: ["Owned", "Company", "Mortgaged"],
     relationshipOptions: ["Spouse", "Parent", "Sibling", "Child", "Co-Maker"],
-    mopOptions: [
-      { label: "Cash", value: "Cash" },
-      { label: "Credit Card", value: "Credit Card" },
-      { label: "Others", value: "Others" },
-    ],
-    yesNoOptions: [
-      { label: "Yes", value: "yes" },
-      { label: "No", value: "no" },
-    ],
-    sourceIncomeOptions: [
-      { label: "Full-Time Employment", value: "Full-Time Employment" },
-      { label: "Business", value: "Business" },
-      { label: "Remittance", value: "Remittance" },
-      { label: "Other", value: "Others" },
-    ],
-
     appOptions: {
-      yesNo: ['Yes', 'No'],
-      sourceIncome: ['Employed', 'Self-Employed', 'Unemployed', 'Retired'],
-      ownership: ['Owned', 'Mortgaged', 'Rented'],
       relationships: ['Parent', 'Spouse', 'Sibling', 'Child', 'Guardian', 'Other'],
-      consentItems: [
-        { label: "UERM Brochure", value: "UERM Brochure" },
-        { label: "Admission Kit", value: "Admission Kit" },
-        { label: "Patient Satisfaction Survey", value: "Patient Satisfaction Survey" },
-      ],
     },
 
     formData: {
-        personalInfo: {
-        empCode: "",
-        patientNo: "",
-        lastName: "",
-        firstName: "",
-        middleName: "",
-        suffix: "",
-        age: "",
-        gender: null,
-        civilStatus: null,
-        religion: null,
-        landline: "",
-        mobile: "",
-        email: "",
-        occupation: "",
-        employer: "",
-        employerAddress: "",
-        employerContactNo: "",
-        birthdate: "",
-        birthplace: "",
-        nationality: "",
-        selectedRegion: null,
-        selectedProvince: null,
-        selectedCity: null,
-        selectedBarangay: null,
-        streetName: "",
-        fathersName: "",
-        fathersAddress: "",
-        fatherContactNumber: "",
-        mothersName: "",
-        mothersAddress: "",
-        motherContactNumber: "",
-      },
+      personalInfo: {
+      empCode: "",
+      patientNo: "",
 
-      contactDetails: {
-        spouseName: "",
-        spouseAddress: "",
-        spouseContact: "",
-        spouseOccupation: "",
-        contactPersonInpatient: "",
-        contactPersonInpatientRelationship: null,
-        contactPersonInpatientAddress: "",
-        contactPersonInpatientMobile: "",
-      },
+      lastName: "",
+      firstName: "",
+      middleName: "",
+      suffix: "",
 
-      signature: null,
+      birthdate: "",
+      age: "",
+      birthplace: "",
 
-      addressOptions: {
-        regions: [],
-        provinces: [],
-        cities: [],
-        barangays: []
-      },
+      gender: null,
+      civilStatus: null,
+      religion: null,
+      nationality: "",
 
-      addressLoading: {
-        regions: false,
-        provinces: false,
-        cities: false,
-        barangays: false
-      },
+      streetName: "",
+      landline: "",
+      mobile: "",
+      email: "",
 
-      toggles: {
-        sameAsFather: false,
-      },
+      selectedRegion: null,
+      selectedProvince: null,
+      selectedCity: null,
+      selectedBarangay: null,
 
-      govtIds: {
-        philhealth: "",
-        govId: "",
-        seniorId: "",
-        pwdId: "",
-        pwdIdExp: "",
-      },
+      occupation: "",
+      employer: "",
+      employerAddress: "",
+      employerContactNo: "",
 
-      consent: {
-        signature: null,
-      },
+      fathersName: "",
+      fathersAddress: "",
+      fatherContactNumber: "",
 
-      cPatientno: "",
-      cFullname: "",
-      cBirthdate: "",
-      cAge: "",
-      cSeniorNo: "",
-      cPwdNo: "",
-      cPatientType: "",
-      cAdmissionDate: "",
-      cDateDisc: "",
-      CRoom: "",
-      CRoomRate: "",
-      cChiefComplaint: "",
-      cAdmissionDiag: "",
-      cAdmissionType: "",
-      cServiceType: "",
-      cPhic: "",
-      cCaseType: "",
-      cDoc: "",
-      cWatcherID: "",
-      cRemarks: "",
-      cAllergies: "",
-      cAdmittedBy: "",
-      cMotherCaseno: "",
-
-      cTypeClass: "",
-      cValidity: "",
-      cClassifiedBy: "",
-
-      cCompany: "",
-      cHMO: "",
-      cEmployer: "",
-      cCardNo: "",
-      cCoverageAmount: "",
-      cAppCode: "",
-      cEffectivity: "",
-      cRoomPlan: "",
-      cLoaNo: "",
-      cApprovalNo: "",
-
-      cErPatient: false,
-      cConfidential: false,
-      cIndigent: false,
-      cVIP: false,
-      cPay: false,
-      cCharity: false,
-      cPatho: false,
-      cOrSched: false,
-      cEmpDependent: false,
-      cNewborn: false,
-      cWalkin: false,
+      mothersName: "",
+      mothersAddress: "",
+      motherContactNumber: "",
     },
+
+    govtIds: {
+      philhealth: "",
+      govId: "",
+      seniorId: "",
+      pwdId: "",
+      pwdIdExp: "",
+    },
+
+    contactDetails: {
+      spouseName: "",
+      spouseAddress: "",
+      spouseContact: "",
+      spouseOccupation: "",
+
+      contactPersonInpatient: "",
+      contactPersonInpatientRelationship: null,
+      contactPersonInpatientAddress: "",
+      contactPersonInpatientMobile: "",
+    },
+
+    consent: {
+      signature: null,
+    },
+
+    addressOptions: {
+      regions: [],
+      provinces: [],
+      cities: [],
+      barangays: [],
+    },
+
+    addressLoading: {
+      regions: false,
+      provinces: false,
+      cities: false,
+      barangays: false,
+    },
+
+    toggles: {
+      sameAsFather: false,
+    },
+
+    cPatientno: "",
+    cFullname: "",
+    cBirthdate: "",
+    cAge: "",
+    cSeniorNo: "",
+    cPwdNo: "",
+    cPatientType: "",
+    cAdmissionDate: "",
+    cDateDisc: "",
+    CRoom: "",
+    CRoomRate: "",
+    cChiefComplaint: "",
+    cAdmissionDiag: "",
+    cAdmissionType: "",
+    cServiceType: "",
+    cPhic: "",
+    cCaseType: "",
+    cDoc: "",
+    cWatcherID: "",
+    cRemarks: "",
+    cAllergies: "",
+    cAdmittedBy: "",
+    cMotherCaseno: "",
+
+    cTypeClass: "",
+    cValidity: "",
+    cClassifiedBy: "",
+
+    cCompany: "",
+    cHMO: "",
+    cEmployer: "",
+    cCardNo: "",
+    cCoverageAmount: "",
+    cAppCode: "",
+    cEffectivity: "",
+    cRoomPlan: "",
+    cLoaNo: "",
+    cApprovalNo: "",
+
+    cErPatient: false,
+    cConfidential: false,
+    cIndigent: false,
+    cVIP: false,
+    cPay: false,
+    cCharity: false,
+    cPatho: false,
+    cOrSched: false,
+    cEmpDependent: false,
+    cNewborn: false,
+    cWalkin: false,
+  },
+
   }),
 
   actions: {
@@ -196,22 +179,91 @@ export const useInpatientStore = defineStore("inpatient", {
   },
 
   resetForm() {
-    this.formData.personalInfo = {
-        lastName: "", firstName: "", middleName: "", suffix: "", age: "", gender: null, civilStatus: null,
-        religion: null, landline: "", mobile: "", email: "", occupation: "", birthdate: "", birthplace: "",
-        nationality: "", selectedRegion: "", selectedProvince: "", selectedCity: "", selectedBarangay: "",
-        streetName: "", permanentAddress: "", fathersName: "", fathersAddress: "", fatherContactNumber: "",
-        mothersName: "", mothersAddress: "", motherContactNumber: "",
+    this.formData = {
+      personalInfo: {
+        empCode: "",
+        patientNo: "",
+
+        lastName: "",
+        firstName: "",
+        middleName: "",
+        suffix: "",
+
+        birthdate: "",
+        age: "",
+        birthplace: "",
+
+        gender: null,
+        civilStatus: null,
+        religion: null,
+        nationality: "",
+
+        streetName: "",
+        landline: "",
+        mobile: "",
+        email: "",
+
+        selectedRegion: null,
+        selectedProvince: null,
+        selectedCity: null,
+        selectedBarangay: null,
+
+        occupation: "",
+        employer: "",
+        employerAddress: "",
+        employerContactNo: "",
+
+        fathersName: "",
+        fathersAddress: "",
+        fatherContactNumber: "",
+
+        mothersName: "",
+        mothersAddress: "",
+        motherContactNumber: "",
+      },
+
+      govtIds: {
+        philhealth: "",
+        govId: "",
+        seniorId: "",
+        pwdId: "",
+        pwdIdExp: "",
+      },
+
+      contactDetails: {
+        spouseName: "",
+        spouseAddress: "",
+        spouseContact: "",
+        spouseOccupation: "",
+
+        contactPersonInpatient: "",
+        contactPersonInpatientRelationship: null,
+        contactPersonInpatientAddress: "",
+        contactPersonInpatientMobile: "",
+      },
+
+      consent: {
+        signature: null,
+      },
+
+      addressOptions: {
+        regions: [],
+        provinces: [],
+        cities: [],
+        barangays: [],
+      },
+
+      addressLoading: {
+        regions: false,
+        provinces: false,
+        cities: false,
+        barangays: false,
+      },
+
+      toggles: {
+        sameAsFather: false,
+      },
     };
-    this.formData.contactDetails = {
-        seniorpwd: "", philhealth: "", sssgsis: "", tin: "", others: "", spouseName: "", spouseOccupation: "",
-        spouseEmployerContact: "", spouseEmployerName: "", spouseEmployerAddress: "", contactPersonInpatient: "",
-        contactPersonInpatientRelationship: null, contactPersonInpatientLandline: "", contactPersonInpatientMobile: "",
-        contactPersonInpatientEmail: "", contactPersonInpatientAddress: "", contactPersonInpatientOccupation: "",
-        contactPersonInpatientEmployerNumber: "",
-    };
-    this.formData.patientConsent = { mop: "", specificmop: "", creditCard: "", bank: "", items: [] };
-    this.formData.signature = null;
   },
 
   async registerPatient() {
@@ -233,6 +285,11 @@ const finalData = {
 
   try {
     await axios.post(`${PATIENT_API_URL}/register`, finalData);
+
+        this.resetForm()
+
+        this.formData.patientSignature = null
+
         Notify.create({
           type: "positive",
           message: "Registration Successful!",
@@ -240,10 +297,7 @@ const finalData = {
           timeout: 500,
         });
 
-        setTimeout(() => {
-          this.regFormdialogVisible = false;
-          window.location.reload();
-        }, 500);
+        this.regFormdialogVisible = false;
 
         return true;
       } catch (error) {

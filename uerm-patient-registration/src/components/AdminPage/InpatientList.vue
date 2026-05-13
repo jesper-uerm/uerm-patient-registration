@@ -206,7 +206,7 @@
       transition-show="scale"
       transition-hide="scale"
     >
-      <q-card style="width: 900px; max-width: 80vw" class="rounded-borders">
+      <q-card style="width: 800px; max-width: 80vw" class="rounded-borders">
         <q-card-section class="bg-gradient-primary text-white q-pa-md relative-position">
           <div class="row justify-center items-center text-center">
             <div class="text-subtitle2 text-weight-bold text-uppercase">

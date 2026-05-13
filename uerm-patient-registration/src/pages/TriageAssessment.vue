@@ -108,6 +108,10 @@ export default {
         ...triageStore.formData,
       };
       await this.submitRegistration(payload);
+
+      this.localDetailsData = {};
+      this.selectedPatient = null;
+      this.step = 1;
     },
   },
 };
