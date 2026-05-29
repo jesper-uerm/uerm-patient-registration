@@ -30,14 +30,26 @@ const ErModel = {
     let transaction;
 
     try {
-        const permParts = [
-            body.streetTriage,
-            body.barangayTriage,
-            body.cityTriage,
-            body.provinceTriage,
-            body.regionTriage
-        ];
+        const streetVal = body.streetName;
+        const barangayVal = body.selectedBarangay; 
+        
+        const cityVal = body.selectedCity && typeof body.selectedCity === 'object' 
+            ? body.selectedCity.Name 
+            : body.selectedCity;
+            
+        let provinceVal = body.selectedProvince && typeof body.selectedProvince === 'object' 
+            ? body.selectedProvince.Name 
+            : body.selectedProvince;
+            
+        if (provinceVal && typeof provinceVal === 'string') {
+            provinceVal = provinceVal.split(' (')[0].trim();
+        }
 
+        const regionVal = body.selectedRegion && typeof body.selectedRegion === 'object' 
+            ? body.selectedRegion.NAME 
+            : body.selectedRegion;
+
+        const permParts = [streetVal, barangayVal, cityVal, provinceVal, regionVal];
         const formattedPermanentAddress = permParts
             .filter(part => part && String(part).trim() !== '')
             .join(', ');
@@ -52,11 +64,13 @@ const ErModel = {
             age: calculateAge(body.birthdateTriage),
             gender: toStr(body.genderTriage),
             civilStatus: toStr(body.civilStatus),
-            street: toStr(body.streetTriage),
-            barangay: toStr(body.barangayTriage),
-            city: toStr(body.cityTriage),
-            province: toStr(body.provinceTriage),
-            region: toStr(body.regionTriage),
+
+            street: toStr(streetVal),
+            barangay: toStr(barangayVal),
+            city: toStr(cityVal),
+            province: toStr(provinceVal),
+            region: toStr(regionVal),
+
             patientType: toStr(body.patientType),
             infirmary: toStr(body.infirmary),
             chiefComplaint: toStr(body.chiefComplaintTriage),
@@ -187,6 +201,7 @@ const ErModel = {
         throw err;
     }
 },
+
     updateTriage: async (body) => {
         let transaction;
         try {
@@ -764,18 +779,17 @@ const ErModel = {
                     RTRIM(PatientNo) = RTRIM(C.PATIENTNO)
             ) SS
             WHERE 
-                -- C.UDF_CaseDept = 'ER'
-                --- AND C.PATIENTTYPE = 'OPD'
-                C.ForAdmission = 1
-                AND (PRC.FOR_APPROV = 0 OR PRC.FOR_APPROV IS NULL) 
-                AND C.DATEAD >= DATEADD(hour, -24, GETDATE())
+                C.UDF_CaseDept = 'ER'
+                AND C.PATIENTTYPE = 'OPD'
+                AND C.ForAdmission = 1
+                -- AND (PRC.FOR_APPROV = 0 OR PRC.FOR_APPROV IS NULL) 
+                -- AND C.DATEAD >= DATEADD(hour, -24, GETDATE())
                 -- AND PR.FORREVIEW = 1
                 
             ORDER BY DATEAD DESC
                 `);
 
             return result.recordset;
-
 
 
         } catch (err) {

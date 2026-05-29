@@ -2,6 +2,245 @@ const { sql, poolPromise } = require('../config/sqlHelper');
 
 const PatientModel = {
 
+// upsertPatient: async (p) => {
+//     let transaction;
+
+//     try {
+//         const pool = await poolPromise;
+//         transaction = new sql.Transaction(pool);
+
+//         await transaction.begin();
+
+//         const request = new sql.Request(transaction);
+
+//         request.input('patientNo', sql.NVarChar, p.patientNo ? p.patientNo.toUpperCase() : null);
+//         request.input('isReturning', sql.Bit, p.patientNo && p.patientNo.trim() !== '' ? 1 : 0);
+//         request.input('lastName', sql.NVarChar, p.lastName ? p.lastName.toUpperCase() : '');
+//         request.input('firstName', sql.NVarChar, p.firstName ? p.firstName.toUpperCase() : '');
+//         request.input('middleName', sql.NVarChar, p.middleName ? p.middleName.toUpperCase() : null);
+//         request.input('suffix', sql.NVarChar, p.suffix ? p.suffix.toUpperCase() : null);
+
+//         request.input('birthdate', sql.Date, p.birthdate || null);
+//         request.input('age', sql.Int, p.age || null);
+//         request.input('birthplace', sql.NVarChar, p.birthplace ? p.birthplace.toUpperCase() : null);
+
+//         request.input('gender', sql.NVarChar, p.gender ? p.gender.toUpperCase() : null);
+//         request.input('civilStatus', sql.NVarChar, p.civilStatus ? p.civilStatus.toUpperCase() : null);
+//         request.input('religion', sql.NVarChar, p.religion ? p.religion.toUpperCase() : null);
+//         request.input('nationality', sql.NVarChar, p.nationality ? p.nationality.toUpperCase() : null);
+
+//         request.input('empCode', sql.NVarChar, p.empCode ? p.empCode.toUpperCase() : null);
+
+//         request.input('philhealthId', sql.NVarChar, p.philhealthId ? p.philhealthId.toUpperCase() : null);
+//         request.input('govtId', sql.NVarChar, p.govtId ? p.govtId.toUpperCase() : null);
+//         request.input('seniorId', sql.NVarChar, p.seniorId ? p.seniorId.toUpperCase() : null);
+//         request.input('pwdId', sql.NVarChar, p.pwdId ? p.pwdId.toUpperCase() : null);
+//         request.input('pwdIdExp', sql.Date, p.pwdIdExp || null);
+
+//         request.input('landline', sql.NVarChar, p.landline ? p.landline.toUpperCase() : null);
+//         request.input('mobile', sql.NVarChar, p.mobile ? p.mobile.toUpperCase() : null);
+//         request.input('email', sql.NVarChar, p.email ? p.email.toUpperCase() : null);
+
+//         request.input('occupation', sql.NVarChar, p.occupation ? p.occupation.toUpperCase() : null);
+//         request.input('employer', sql.NVarChar, p.employer ? p.employer.toUpperCase() : null);
+//         request.input('employerAddress', sql.NVarChar, p.employerAddress ? p.employerAddress.toUpperCase() : null);
+//         request.input('employerContactNo', sql.NVarChar, p.employerContactNo ? p.employerContactNo.toUpperCase() : null);
+
+//         request.input('street', sql.NVarChar, p.street ? p.street.toUpperCase() : null);
+//         request.input('barangay', sql.NVarChar, p.barangay ? p.barangay.toUpperCase() : null);
+//         request.input('city', sql.NVarChar, p.city ? p.city.toUpperCase() : null);
+//         request.input('province', sql.NVarChar, p.province ? p.province.toUpperCase() : null);
+//         request.input('region', sql.NVarChar, p.region ? p.region.toUpperCase() : null);
+
+//         request.input('father', sql.NVarChar, p.father ? p.father.toUpperCase() : null);
+//         request.input('fatherAddress', sql.NVarChar, p.fatherAddress ? p.fatherAddress.toUpperCase() : null);
+//         request.input('fatherContact', sql.NVarChar, p.fatherContact ? p.fatherContact.toUpperCase() : null);
+
+//         request.input('mother', sql.NVarChar, p.mother ? p.mother.toUpperCase() : null);
+//         request.input('motherAddress', sql.NVarChar, p.motherAddress ? p.motherAddress.toUpperCase() : null);
+//         request.input('motherContact', sql.NVarChar, p.motherContact ? p.motherContact.toUpperCase() : null);
+
+//         request.input('spouseName', sql.NVarChar, p.spouseName ? p.spouseName.toUpperCase() : null);
+//         request.input('spouseAddress', sql.NVarChar, p.spouseAddress ? p.spouseAddress.toUpperCase() : null);
+//         request.input('spouseContact', sql.NVarChar, p.spouseContact ? p.spouseContact.toUpperCase() : null);
+//         request.input('spouseOccupation', sql.NVarChar, p.spouseOccupation ? p.spouseOccupation.toUpperCase() : null);
+
+//         request.input('cpName', sql.NVarChar, p.cpName ? p.cpName.toUpperCase() : null);
+//         request.input('cpRelationship', sql.NVarChar, p.cpRelationship ? p.cpRelationship.toUpperCase() : null);
+//         request.input('cpAddress', sql.NVarChar, p.cpAddress ? p.cpAddress.toUpperCase() : null);
+//         request.input('cpMobile', sql.NVarChar, p.cpMobile ? p.cpMobile.toUpperCase() : null);
+
+//         request.input('patientType', sql.NVarChar, p.patientType ? p.patientType.toUpperCase() : null);
+
+//         const patientResult = await request.query(`
+//             INSERT INTO PATIENTREG (
+//                 EMPCODE,
+//                 PATIENTNO,
+//                 ISRETURNING,
+//                 LASTNAME,
+//                 FIRSTNAME,
+//                 MIDDLENAME,
+//                 SUFFIX,
+//                 BIRTHDATE,
+//                 AGE,
+//                 BIRTHPLACE,
+//                 SEX,
+//                 CIVILSTATUS,
+//                 RELIGION,
+//                 NATIONALITY,
+//                 LANDLINE,
+//                 MOBILE,
+//                 EMAIL,
+//                 PHILHEALTHID,
+//                 GOVTID,
+//                 SENIORID,
+//                 PWDID,
+//                 PWDIDEXP,
+//                 OCCUPATION,
+//                 EMPLOYER,
+//                 EMPLOYERADDRESS,
+//                 EMPLOYERCONTACTNO,
+//                 ADDRESSSTREET,
+//                 ADDRESSBARANGAY,
+//                 ADDRESSCITY,
+//                 ADDRESSPROVINCE,
+//                 ADDRESSREGION,
+//                 FATHER,
+//                 FATHERADDRESS,
+//                 FATHERCONTACT,
+//                 MOTHER,
+//                 MOTHERADDRESS,
+//                 MOTHERCONTACT,
+//                 SPOUSENAME,
+//                 SPOUSEADDRESS,
+//                 SPOUSECONTACT,
+//                 SPOUSEOCCUPATION,
+//                 CPNAME,
+//                 CPRELATIONSHIP,
+//                 CPADDRESS,
+//                 CPMOBILE,
+//                 PATIENTTYPE,
+//                 CREATEDAT
+//             )
+//             VALUES (
+//                 @empCode,
+//                 @patientNo,
+//                 @isReturning,
+//                 @lastName,
+//                 @firstName,
+//                 @middleName,
+//                 @suffix,
+//                 @birthdate,
+//                 @age,
+//                 @birthplace,
+//                 @gender,
+//                 @civilStatus,
+//                 @religion,
+//                 @nationality,
+//                 @landline,
+//                 @mobile,
+//                 @email,
+//                 @philhealthId,
+//                 @govtId,
+//                 @seniorId,
+//                 @pwdId,
+//                 @pwdIdExp,
+//                 @occupation,
+//                 @employer,
+//                 @employerAddress,
+//                 @employerContactNo,
+//                 @street,
+//                 @barangay,
+//                 @city,
+//                 @province,
+//                 @region,
+//                 @father,
+//                 @fatherAddress,
+//                 @fatherContact,
+//                 @mother,
+//                 @motherAddress,
+//                 @motherContact,
+//                 @spouseName,
+//                 @spouseAddress,
+//                 @spouseContact,
+//                 @spouseOccupation,
+//                 @cpName,
+//                 @cpRelationship,
+//                 @cpAddress,
+//                 @cpMobile,
+//                 @patientType,
+//                 GETDATE()
+//             );
+
+//             SELECT SCOPE_IDENTITY() AS PATIENTREGID;
+//         `);
+
+//         let newPatientID = null;
+
+//         if (
+//             patientResult &&
+//             patientResult.recordset &&
+//             patientResult.recordset.length > 0
+//         ) {
+//             newPatientID = patientResult.recordset[0].PATIENTREGID;
+//         }
+
+//         if (p.signature && newPatientID) {
+
+//             const cleanSignature = p.signature.replace(
+//                 /^data:image\/\w+;base64,/,
+//                 ''
+//             );
+
+//             const finalSignatureBuffer = Buffer.from(
+//                 cleanSignature,
+//                 'base64'
+//             );
+
+//             const signRequest = new sql.Request(transaction);
+
+//             signRequest.input('pId', sql.Int, newPatientID);
+//             signRequest.input('patientNo', sql.VarChar(14), p.patientNo || null);
+
+//             signRequest.input(
+//                 'signData',
+//                 sql.VarBinary(sql.MAX),
+//                 finalSignatureBuffer
+//             );
+
+//             await signRequest.query(`
+//                 INSERT INTO PATIENTREG_PTSIGNATURE (
+//                     PATIENTREGID,
+//                     PATIENTNO,
+//                     SIGNATURE
+//                 )
+//                 VALUES (
+//                     @pId,
+//                     @patientNo,
+//                     @signData
+//                 );
+//             `);
+//         }
+
+//         await transaction.commit();
+
+//         return {
+//             patientId: newPatientID,
+//             status: 'INSERTED'
+//         };
+
+//     } catch (err) {
+
+//         if (transaction) {
+//             await transaction.rollback();
+//         }
+
+//         console.error('Model Error (upsertPatient):', err);
+
+//         throw err;
+//     }
+// },
+
 upsertPatient: async (p) => {
     let transaction;
 
@@ -15,6 +254,7 @@ upsertPatient: async (p) => {
 
         request.input('patientNo', sql.NVarChar, p.patientNo ? p.patientNo.toUpperCase() : null);
         request.input('isReturning', sql.Bit, p.patientNo && p.patientNo.trim() !== '' ? 1 : 0);
+
         request.input('lastName', sql.NVarChar, p.lastName ? p.lastName.toUpperCase() : '');
         request.input('firstName', sql.NVarChar, p.firstName ? p.firstName.toUpperCase() : '');
         request.input('middleName', sql.NVarChar, p.middleName ? p.middleName.toUpperCase() : null);
@@ -49,7 +289,7 @@ upsertPatient: async (p) => {
         request.input('street', sql.NVarChar, p.street ? p.street.toUpperCase() : null);
         request.input('barangay', sql.NVarChar, p.barangay ? p.barangay.toUpperCase() : null);
         request.input('city', sql.NVarChar, p.city ? p.city.toUpperCase() : null);
-        request.input('province', sql.NVarChar, p.province ? p.province.toUpperCase() : null);
+        request.input('province', sql.NVarChar, p.province ? p.province.split(' (')[0].trim().toUpperCase() : null);
         request.input('region', sql.NVarChar, p.region ? p.region.toUpperCase() : null);
 
         request.input('father', sql.NVarChar, p.father ? p.father.toUpperCase() : null);
@@ -71,6 +311,16 @@ upsertPatient: async (p) => {
         request.input('cpMobile', sql.NVarChar, p.cpMobile ? p.cpMobile.toUpperCase() : null);
 
         request.input('patientType', sql.NVarChar, p.patientType ? p.patientType.toUpperCase() : null);
+
+        const existingPatient = await request.query(`
+            SELECT PATIENTNO
+            FROM PATIENTINFO
+            WHERE PATIENTNO = @patientNo
+        `);
+
+        const patientExists =
+            existingPatient.recordset &&
+            existingPatient.recordset.length > 0;
 
         const patientResult = await request.query(`
             INSERT INTO PATIENTREG (
@@ -175,14 +425,72 @@ upsertPatient: async (p) => {
             SELECT SCOPE_IDENTITY() AS PATIENTREGID;
         `);
 
-        let newPatientID = null;
+        let newPatientID = patientResult.recordset[0].PATIENTREGID;
 
-        if (
-            patientResult &&
-            patientResult.recordset &&
-            patientResult.recordset.length > 0
-        ) {
-            newPatientID = patientResult.recordset[0].PATIENTREGID;
+        if (patientExists) {
+
+            await request.query(`
+            UPDATE PI
+            SET
+                PI.LASTNAME = @lastName,
+                PI.FIRSTNAME = @firstName,
+                PI.MIDDLENAME = @middleName,
+                PI.SUFFIX = @suffix,
+                PI.DBIRTH = @birthdate,
+                PI.AGE = @age,
+                PI.BPLACE = @birthplace,
+                PI.SEX = @gender,
+                PI.STATUS = @civilStatus,
+                PI.RELIGION = R.CODE,
+                PI.NATIONALITY = N.CODE,
+                PI.MOBILENO = @mobile,
+                PI.PHONENOS = @landline,
+                PI.EMAILADD = @email,
+                PI.OCCUPATION = O.CODE,
+                PI.EMPLOYER = @employer,
+                PI.EMPLOYERADD = @employerAddress,
+                PI.EMPLOYERTELNO = @employerContactNo,
+                PI.UDF_STREETADDRESS = @street,
+                PI.BARANGAY = B.CODE,
+                PI.MUNICIPALITY = M.CODE,
+                PI.UDF_PROVINCE = @province,
+                PI.FATHER = @father,
+                PI.FADDRESS = @fatherAddress,
+                PI.FTEL = @fatherContact,
+                PI.MOTHER = @mother,
+                PI.MADDRESS = @motherAddress,
+                PI.MTEL = @motherContact,
+                PI.NAMEOFSPOUSE = @spouseName,
+                PI.UDF_SPOUSEADDRESS = @spouseAddress,
+                PI.UDF_SPOUSECONT = @spouseContact,
+                PI.SPOUSEOCCUPATION = @spouseOccupation,
+                PI.INCASE = @cpName,
+                PI.RELATIONSHIP = @cpRelationship,
+                PI.INCASEADD = @cpAddress,
+                PI.INCASEPHONENO = @cpMobile,
+                PI.UDF_PHILHEALTHNO = @philhealthId,
+                PI.TINNO = @govtId,
+                PI.SCIDNO = @seniorId,
+                PI.PWD_IDNO = @pwdId,
+                PI.PWD_IDExpiry = @pwdIdExp,
+                PI.UDF_EMPLOYEECODE = @empCode,
+                PI.DATE_UPDATED = GETDATE()
+
+            FROM PATIENTINFO PI
+
+            LEFT JOIN BARANGAYS B
+                ON UPPER(B.DESCRIPTION) = UPPER(@barangay)
+            LEFT JOIN MUNICIPALITY M
+                ON UPPER(M.DESCRIPTION) = UPPER(@city)
+            LEFT JOIN NATIONALITY N
+                ON UPPER(N.DESCRIPTION) = UPPER(@nationality)
+            LEFT JOIN RELIGION R
+                ON UPPER(R.DESCRIPTION) = UPPER(@religion)
+            LEFT JOIN OCCUPATION O
+                ON UPPER(O.DESCRIPTION) = UPPER(@occupation)
+
+            WHERE PI.PATIENTNO = @patientNo
+            `);
         }
 
         if (p.signature && newPatientID) {
@@ -226,7 +534,9 @@ upsertPatient: async (p) => {
 
         return {
             patientId: newPatientID,
-            status: 'INSERTED'
+            status: patientExists
+                ? 'INSERTED_AND_UPDATED'
+                : 'INSERTED_ONLY'
         };
 
     } catch (err) {
@@ -673,7 +983,7 @@ upsertPatient: async (p) => {
     }
 },
 
-    transferPatientToLegacy: async (id, force) => {
+    transferPatientInfo: async (id, force) => {
         let transaction;
         try {
             const pool = await poolPromise;
@@ -750,7 +1060,7 @@ upsertPatient: async (p) => {
             INSERT INTO UERMMMC.dbo.PATIENTINFO (
                 PATIENTNO,
                 LASTNAME, FIRSTNAME, MIDDLENAME, SUFFIX,
-                BARANGAY, MUNICIPALITY, ADDRESS,
+                BARANGAY, MUNICIPALITY, MunCityCode, ADDRESS,
                 SEX, STATUS, RELIGION, NATIONALITY,
                 DBIRTH, AGE, BPLACE,OCCUPATION,
                 INCASE, RELATIONSHIP, INCASEPHONENO, INCASEADD,
@@ -774,7 +1084,15 @@ upsertPatient: async (p) => {
                 WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(PR.ADDRESSBARANGAY)))),
 
                 (SELECT TOP 1 CODE FROM UERMMMC.dbo.MUNICIPALITY
-                WHERE UPPER(LTRIM(RTRIM(DESCRIPTION))) = UPPER(LTRIM(RTRIM(PR.ADDRESSCITY)))),
+                WHERE 
+                    LTRIM(RTRIM(REPLACE(REPLACE(UPPER(DESCRIPTION), 'CITY', ''), 'OF', ''))) 
+                    = 
+                    LTRIM(RTRIM(REPLACE(REPLACE(UPPER(PR.ADDRESSCITY), 'CITY', ''), 'OF', '')))
+                ),
+
+                (SELECT TOP 1 CODE FROM UERMHIMS.dbo.CodeMunicipalityCity
+                WHERE UPPER(LTRIM(RTRIM(Name))) = UPPER(LTRIM(RTRIM(PR.ADDRESSCITY)))),
+
                 PR.ADDRESSSTREET,
 
                 PR.SEX,
@@ -1095,6 +1413,7 @@ upsertPatient: async (p) => {
             ON P.OCCUPATION = O.CODE
 
         WHERE 1 = 1
+        
         `;
 
         if (firstName) {
@@ -1138,6 +1457,7 @@ upsertPatient: async (p) => {
             FROM PATIENTREG
             WHERE 
                 PATIENTTYPE = 'Inpatient'
+                ORDER BY CREATEDAT DESC;
             `);
 
             return result.recordset;
@@ -1370,6 +1690,80 @@ upsertPatient: async (p) => {
             WHERE ROOMNO IS NOT NULL
             ORDER BY ROOMNO ASC
         `);
+        return result.recordset;
+    } catch (error) {
+        throw error;
+    }
+},
+
+    getRegion: async () => {
+    try {
+        const pool = await poolPromise;
+        const result = await pool.request().query(`
+            SELECT 
+                CODE, 
+                NAME 
+            FROM UERMHIMS.dbo.CodeRegion 
+            ORDER BY NAME ASC
+        `);
+        return result.recordset;
+    } catch (error) {
+        throw error;
+    }
+},
+
+    getProvince: async (regionPrefix) => {
+    try {
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .input('prefix', sql.VarChar, `${regionPrefix}%`)
+            .query(`
+                SELECT 
+                    Code,
+                    Name,
+                    Province 
+                FROM  UERMHIMS.dbo.CodeProvince
+                WHERE Code LIKE @prefix
+                ORDER BY Name ASC
+            `);
+        return result.recordset;
+    } catch (error) {
+        throw error;
+    }
+},
+
+    getMunicipality: async (cityPrefix) => {
+    try {
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .input('prefix', sql.VarChar, `${cityPrefix}%`)
+            .query(`
+                SELECT 
+                    Code,
+                    Name
+                FROM UERMHIMS.dbo.CodeMunicipalityCity 
+                WHERE Code LIKE @prefix
+                ORDER BY Name ASC
+            `);
+        return result.recordset;
+    } catch (error) {
+        throw error;
+    }
+},
+
+    getBarangays: async (search) => {
+    try {
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .input('searchStr', sql.VarChar, `%${search}%`)
+            .query(`
+                SELECT TOP (10) 
+                    CODE, 
+                    DESCRIPTION 
+                FROM UERMMMC.dbo.BARANGAYS
+                WHERE DESCRIPTION LIKE @searchStr
+                ORDER BY DESCRIPTION ASC
+            `);
         return result.recordset;
     } catch (error) {
         throw error;

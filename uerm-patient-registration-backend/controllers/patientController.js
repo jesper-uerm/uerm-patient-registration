@@ -2,120 +2,6 @@ const PatientModel = require("../models/patientModel");
 
 const PatientController = {
 
-    // register: async (req, res) => {
-    //     try {
-
-    //         if (!req.body) {
-    //             return res.status(400).json({
-    //                 message: "Invalid Request: Body is missing.",
-    //             });
-    //         }
-
-    //         const body = req.body;
-
-    //         const getValue = (val) =>
-    //             typeof val === "object" && val !== null
-    //                 ? val.name
-    //                 : val;
-
-    //         let province = getValue(body.selectedProvince) || "";
-
-    //         if (province === "NCR" || province === "N/A (NCR)") {
-    //             province = "NCR";
-    //         }
-
-    //         const patientData = {
-    //             empCode: body.empCode || "",
-    //             patientNo: body.patientNo || "",
-    //             lastName: body.lastName || "",
-    //             firstName: body.firstName || "",
-    //             middleName: body.middleName || "",
-    //             suffix: body.suffix || "",
-    //             birthdate: body.birthdate || null,
-    //             age: body.age || null,
-    //             birthplace: body.birthplace || "",
-    //             gender: body.gender || "",
-    //             civilStatus: body.civilStatus || "",
-    //             religion: body.religion || "",
-    //             nationality: body.nationality || "",
-    //             philhealthId: body.philhealth || "",
-    //             govId: body.govId || "",
-    //             seniorId: body.seniorId || "",
-    //             pwdId: body.pwdId || "",
-    //             pwdIdExp: body.pwdIdExp || null,
-    //             street: body.streetName || "",
-    //             region: getValue(body.selectedRegion) || "",
-    //             province: province,
-    //             city: getValue(body.selectedCity) || "",
-    //             barangay: getValue(body.selectedBarangay) || "",
-    //             landline: body.landline || "",
-    //             mobile: body.mobile || "",
-    //             email: body.email || "",
-    //             occupation: body.occupation || "",
-    //             employer: body.employer || "",
-    //             employerAddress: body.employerAddress || "",
-    //             employerContactNo: body.employerContactNo || "",
-    //             father: body.fathersName || "",
-    //             fatherAddress: body.fathersAddress || "",
-    //             fatherContact: body.fatherContactNumber || "",
-    //             mother: body.mothersName || "",
-    //             motherAddress: body.mothersAddress || "",
-    //             motherContact: body.motherContactNumber || "",
-    //             sameAsFather: body.sameAsFather || false,
-    //             spouseName: body.spouseName || "",
-    //             spouseAddress: body.spouseAddress || "",
-    //             spouseContact: body.spouseContact || "",
-    //             spouseOccupation: body.spouseOccupation || "",
-    //             cpName: body.contactPersonInpatient || "",
-    //             cpRelationship: body.contactPersonInpatientRelationship || "",
-    //             cpAddress: body.contactPersonInpatientAddress || "",
-    //             cpMobile: body.contactPersonInpatientMobile || "",
-    //             patientType: body.patientType,
-    //             signature: body.signature || null,
-    //         };
-
-    //         if (!patientData.lastName?.trim()) {
-    //             return res.status(400).json({
-    //                 message: "Last name is required.",
-    //             });
-    //         }
-
-    //         if (!patientData.firstName?.trim()) {
-    //             return res.status(400).json({
-    //                 message: "First name is required.",
-    //             });
-    //         }
-
-    //         console.log("PROCESSED PATIENT DATA:", patientData);
-
-    //         const result = await PatientModel.upsertPatient(patientData);
-
-    //         res.status(200).json({
-    //             message:
-    //                 result.status === "UPDATED"
-    //                     ? "User record updated successfully"
-    //                     : "User registered successfully",
-
-    //             patientId: result.patientId,
-    //             action: result.status,
-    //         });
-
-    //     } catch (err) {
-
-    //         console.error("Register Error:", err);
-
-    //         if (err.number === 2627) {
-    //             return res.status(409).json({
-    //                 message: "Database constraint error (Duplicate key).",
-    //             });
-    //         }
-
-    //         res.status(500).json({
-    //             message: "Server error: " + err.message,
-    //         });
-    //     }
-    // },
-    
     register: async (req, res) => {
         try {
             if (!req.body) {
@@ -126,8 +12,13 @@ const PatientController = {
 
             const body = req.body;
 
-            const getValue = (val) =>
-                typeof val === "object" && val !== null ? val.name || val.value : val;
+            const getValue = (val) => {
+                if (typeof val === "object" && val !== null) {
+                    return val.NAME || val.Name || val.name || val.DESCRIPTION || val.description || 
+                            val.CODE || val.Code || val.code || val.value || "";
+                }
+                return val;
+            };
 
             const rawProvince = body.selectedProvince || body.selectedProvinceOutpatient;
             let province = getValue(rawProvince) || "";
@@ -351,7 +242,7 @@ const PatientController = {
                 return res.status(400).json({ message: "Patient ID is required" });
             }
 
-            const result = await PatientModel.transferPatientToLegacy(
+            const result = await PatientModel.transferPatientInfo(
                 PATIENTREGID,
                 force,
             );
@@ -624,6 +515,70 @@ const PatientController = {
             });
         }
     },
+
+    getRegion: async (req, res) => {
+        try {
+            const room = await PatientModel.getRegion();
+            res.json(room || []);
+        } catch (error) {
+            console.error("Error fetching Region:", error);
+            res.status(500).json({
+                message: "Failed to fetch Region list",
+                error: error.message,
+            });
+        }
+    },
+
+    getProvince: async (req, res) => {
+        try {
+            const { regionPrefix } = req.query; 
+            if (!regionPrefix) {
+                return res.status(400).json({ message: "regionPrefix query parameter is required" });
+            }
+            const provinces = await PatientModel.getProvince(regionPrefix);
+            res.json(provinces || []);
+        } catch (error) {
+            console.error("Error fetching Province:", error);
+            res.status(500).json({
+                message: "Failed to fetch Province list",
+                error: error.message,
+            });
+        }
+    },
+
+
+    getMunicipality: async (req, res) => {
+        try {
+            const { cityPrefix } = req.query; 
+            if (!cityPrefix) {
+                return res.status(400).json({ message: "cityPrefix query parameter is required" });
+            }
+            
+            const cities = await PatientModel.getMunicipality(cityPrefix);
+            res.json(cities || []);
+        } catch (error) {
+            console.error("Error fetching Cities/Municipalities:", error);
+            res.status(500).json({
+                message: "Failed to fetch City/Municipality list",
+                error: error.message,
+            });
+        }
+    },
+
+    getBarangays: async (req, res) => {
+    try {
+        const { search } = req.query;
+        if (!search) {
+            return res.status(400).json({ message: "Search parameter is required" });
+        }
+
+        const barangays = await PatientModel.getBarangays(search);
+        res.json(barangays || []);
+    } catch (error) {
+        console.error("Error searching Barangays:", error);
+        res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+},
 
     fetchAssessmentDetails: async (req, res) => {
         try {

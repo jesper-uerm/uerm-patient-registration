@@ -19,6 +19,11 @@ router.get('/department', PatientController.getDepartment);
 router.get('/hmo', PatientController.getHMO);
 router.get('/rooms', PatientController.getRooms);
 
+router.get('/region', PatientController.getRegion);
+router.get('/provinces', PatientController.getProvince);
+router.get('/cities', PatientController.getMunicipality);
+router.get('/barangays', PatientController.getBarangays);
+
 
 router.get('/search-inpatient', PatientController.searchInpatient);
 router.get('/search-outpatient', PatientController.searchOutpatient);
