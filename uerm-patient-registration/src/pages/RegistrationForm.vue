@@ -8,7 +8,7 @@
   >
     <q-card
       class="column no-wrap"
-      style="width: 1300px; max-width: 95vw; max-height: 87vh; border-radius: 20px"
+      style="width: 1300px; max-width: 95vw; max-height: 90vh; border-radius: 20px"
     >
       <q-card-section
         class="column text-center text-white q-py-md relative-position"

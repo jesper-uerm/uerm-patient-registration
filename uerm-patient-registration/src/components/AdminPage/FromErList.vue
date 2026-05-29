@@ -13,6 +13,8 @@
           v-model="localSearchQuery"
           placeholder="Enter Name or ID"
           @keyup.enter="handleSearch"
+          debounce="500"
+          @update:model-value="handleSearch"
           :disable="loading"
           class="bg-white"
         >
@@ -23,7 +25,7 @@
           <template v-slot:after>
             <q-btn
               unelevated
-              color="blue-10"
+              color="yellow-10"
               label="Search"
               class="q-px-lg"
               @click="handleSearch"

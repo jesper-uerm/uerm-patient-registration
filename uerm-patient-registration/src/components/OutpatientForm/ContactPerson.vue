@@ -69,17 +69,24 @@
             </div>
 
             <div class="col-12 col-md-6 col-sm-6">
-              <q-input
+              <q-select
                 outlined
                 dense
+                v-model="formData.outpatientPhysician"
+                :options="allDoctors || []"
+                emit-value
+                map-options
                 label-slot
-                v-model="formData.contactPersonOutpatient.outpatientPhysician"
-                :rules="[(val) => !!val || 'Physician is required']"
               >
                 <template v-slot:label>
                   Attending Physician <span class="text-red">*</span>
                 </template>
-              </q-input>
+                <template v-slot:no-option>
+                  <q-item>
+                    <q-item-section class="text-grey"> No doctors found </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
             </div>
           </div>
         </div>
@@ -110,7 +117,7 @@
 </template>
 
 <script>
-import { mapWritableState } from "pinia";
+import { mapWritableState, mapState, mapActions } from "pinia";
 import { useOutpatientStore } from "src/stores/outpatientStore";
 
 export default {
@@ -135,28 +142,16 @@ export default {
 
   computed: {
     ...mapWritableState(useOutpatientStore, ["formData"]),
+    ...mapState(useOutpatientStore, ["allDoctors"]),
   },
 
-  watch: {
-    prefillPatient: {
-      immediate: true,
-
-      handler(patient) {
-        if (patient) {
-          this.formData.contactPersonOutpatient.contactPersonOutpatient =
-            patient.INCASE || "";
-
-          this.formData.contactPersonOutpatient.contactPersonNumberOutpatient =
-            patient.INCASEPHONENO || "";
-
-          this.formData.contactPersonOutpatient.contactPersonRelationship =
-            patient.RELATIONSHIP || "";
-        }
-      },
-    },
+  created() {
+    this.fetchDoctors();
   },
 
   methods: {
+    ...mapActions(useOutpatientStore, ["fetchDoctors"]),
+
     async validate() {
       const isFormValid = await this.$refs.contactPersonForm.validate();
       return isFormValid;
@@ -171,7 +166,6 @@ export default {
           message: "Please fill all required fields.",
           position: "top",
         });
-
         return;
       }
 

@@ -35,7 +35,7 @@
           <template v-slot:after>
             <q-btn
               unelevated
-              color="blue-10"
+              color="yellow-10"
               label="Search"
               class="q-px-lg"
               @click="handleSearch"
@@ -120,11 +120,7 @@
                   <q-list style="min-width: 170px">
                     <q-item
                       clickable
-                      :disable="
-                        props.row.ISFORADMISSION !== null ||
-                        props.row.ISVALIDATED ||
-                        props.row.ISRETURNING
-                      "
+                      :disable="props.row.ISFORADMISSION !== null"
                       @click="handleAdmit(props.row)"
                     >
                       <q-item-section avatar>
@@ -410,7 +406,7 @@
           <q-btn
             unelevated
             label="Generate Patient Number"
-            color="green-10"
+            color="yellow-10"
             icon-right="las la-share"
             @click="handleValidatePatient(selectedPatient)"
           />
@@ -491,7 +487,7 @@
                 />
               </div>
               <div class="col-12 col-sm-3 col-md-3 q-mb-md">
-                <q-select
+                <q-input
                   outlined
                   dense
                   v-model="formData.suffixTriage"
@@ -542,11 +538,10 @@
                   v-model="formData.ageTriage"
                   label="Age"
                   readonly
-                  bg-color="grey-2"
                 />
               </div>
               <div class="col-12 col-sm-4 col-md-4 q-mb-md">
-                <q-select
+                <q-input
                   outlined
                   dense
                   v-model="formData.genderTriage"
@@ -837,7 +832,6 @@
                   outlined
                   dense
                   readonly
-                  class="bg-grey-2"
                   v-model="formData.personnelTriage"
                   label-slot
                 >
@@ -910,7 +904,7 @@
           <q-btn
             unelevated
             type="button"
-            color="blue-10"
+            color="yellow-10"
             style="width: 100%; height: 45px; max-width: 150px"
             icon-right="upload"
             label="Submit"
@@ -927,49 +921,71 @@
       transition-show="scale"
       transition-hide="scale"
     >
-      <q-card style="width: 600px; max-width: 90vw">
-        <q-card-section class="text-negative">
-          <div class="text-h6 text-center">
-            <q-icon name="warning" class="q-mr-sm" />Possible Duplicate Found
-            <div class="text-caption text-grey-8">
-              We found existing records that match the details of the patient you are
-              trying to register.
+      <q-card style="width: 700px; max-width: 80vw" class="rounded-borders">
+        <q-card-section class="bg-gradient-primary text-white q-pa-md">
+          <div class="row items-center justify-center text-center">
+            <div class="text-subtitle2 text-weight-bold text-uppercase">
+              <q-icon name="las la-exclamation-triangle" class="q-mr-xs" size="xs" />
+              Possible Duplicate Found
             </div>
           </div>
+
+          <q-btn
+            icon="las la-times"
+            flat
+            round
+            dense
+            v-close-popup
+            class="text-white opacity-70 absolute-top-right q-ma-sm"
+          />
         </q-card-section>
 
-        <q-card-section>
-          <div
-            class="row q-col-gutter-xs q-ma-xs q-py-sm text-center bg-green-1 rounded-borders"
-          >
-            <div class="col">
-              <div class="text-caption text-grey-7">Name</div>
-              <div class="text-body2 text-weight-bold text-dark">
-                {{ formatFullName(selectedPatient) }}
-              </div>
-            </div>
+        <q-separator />
 
-            <div class="col">
-              <div class="text-caption text-grey-7">Birthdate</div>
-              <div class="text-body2 text-weight-bold text-dark">
-                {{ formatDate(selectedPatient.BIRTHDATE) }}
-                <span class="text-grey-7"></span>
-              </div>
-            </div>
-
-            <div class="col">
-              <div class="text-caption text-grey-7">Age</div>
-              <div class="text-body2 text-weight-bold text-dark">
-                {{ selectedPatient.AGE }}
-                <span class="text-grey-7"></span>
-              </div>
-            </div>
-          </div>
-          <div class="text-caption text-grey-8 q-mt-md q-mb-sm">
-            Select patient you want to link.
+        <q-card-section class="q-pa-lg scroll q-px-xl" style="max-height: 70vh">
+          <div class="text-caption text-grey-8 text-center q-mb-lg">
+            We found existing records that match the details of the patient you are trying
+            to register.
           </div>
 
-          <q-markup-table flat bordered>
+          <div class="text-subtitle2 text-grey-8 text-uppercase q-mb-sm">
+            Personal Information Entered
+          </div>
+
+          <q-list bordered separator class="rounded-borders q-mb-lg">
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="las la-user" color="grey-6" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label caption>Full Name</q-item-label>
+                <q-item-label class="text-caption1 text-bold">
+                  {{ formatFullName(selectedPatient) }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="las la-birthday-cake" color="grey-6" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label caption>Birthdate</q-item-label>
+                <q-item-label class="text-caption1 text-bold">
+                  {{ formatDate(selectedPatient.BIRTHDATE) }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+
+          <div class="text-subtitle2 text-grey-8 text-uppercase q-mt-lg q-mb-sm">
+            Matching Existing Records
+          </div>
+          <div class="text-caption text-grey-7 q-mb-sm">
+            Select the patient you want to link.
+          </div>
+
+          <q-markup-table flat bordered class="rounded-borders">
             <thead class="bg-grey-2">
               <tr>
                 <th class="text-left"></th>
@@ -999,7 +1015,7 @@
                     color="primary"
                   />
                 </td>
-                <td class="text-weight-bold text-negative">
+                <td class="text-weight-bold text-primary">
                   {{ patient.existingPatientNo }}
                 </td>
                 <td>
@@ -1017,12 +1033,16 @@
           </q-markup-table>
         </q-card-section>
 
-        <q-card-actions align="right" class="bg-grey-1 q-pa-md">
+        <q-separator />
+
+        <q-card-actions align="center" class="bg-grey-1 q-pa-md">
           <q-btn unelevated label="Cancel" color="grey-7" v-close-popup />
+
           <q-btn
             unelevated
             label="Ignore & Create New"
-            color="primary"
+            color="yellow-10"
+            icon-right="las la-user-plus"
             @click="ignoreDuplicate"
           />
 
@@ -1030,7 +1050,8 @@
             v-if="selectedDuplicate"
             unelevated
             label="Link Record"
-            color="negative"
+            color="blue-10"
+            icon-right="las la-link"
             @click="confirmLinkPatient"
           />
         </q-card-actions>
@@ -1354,8 +1375,9 @@ export default {
             label: "Proceed to Admit",
             iconRight: "las la-arrow-right",
             unelevated: true,
+            color: "yellow-10",
             class: "q-px-md text-weight-bold rounded-borders",
-            style: "background-color: #004aad; color: white;",
+            style: "color: white;",
           },
           cancel: {
             label: "Cancel",

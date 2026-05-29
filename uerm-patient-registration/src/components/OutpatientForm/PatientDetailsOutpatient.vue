@@ -77,7 +77,7 @@
         </q-input>
       </div>
 
-      <div class="col-12 col-sm-4 col-md-4 q-mb-md">
+      <div v-if="false" class="col-12 col-sm-4 col-md-4 q-mb-md">
         <q-input
           outlined
           dense
@@ -96,10 +96,7 @@
           label="Birthplace"
         />
       </div>
-    </div>
-
-    <div class="row q-col-gutter-sm">
-      <div class="col-12 col-sm-3 col-md-3">
+      <div class="col-12 col-sm-4 col-md-4">
         <q-select
           outlined
           dense
@@ -111,8 +108,10 @@
           <template v-slot:label> Gender <span class="text-red">*</span> </template>
         </q-select>
       </div>
+    </div>
 
-      <div class="col-12 col-sm-3 col-md-3">
+    <div class="row q-col-gutter-sm">
+      <div class="col-12 col-sm-4 col-md-4">
         <q-select
           outlined
           dense
@@ -125,7 +124,7 @@
         </q-select>
       </div>
 
-      <div class="col-12 col-sm-3 col-md-3 q-mb-md">
+      <div class="col-12 col-sm-4 col-md-4 q-mb-md">
         <q-input
           outlined
           dense
@@ -134,7 +133,7 @@
         />
       </div>
 
-      <div class="col-12 col-sm-3 col-md-3">
+      <div class="col-12 col-sm-4 col-md-4">
         <q-select
           outlined
           dense
@@ -210,7 +209,7 @@
         <q-select
           v-model="formData.personalInfoOutpatient.selectedRegionOutpatient"
           :options="regionList"
-          option-label="name"
+          option-label="NAME"
           outlined
           dense
           :loading="loadingRegions"
@@ -226,7 +225,7 @@
         <q-select
           v-model="formData.personalInfoOutpatient.selectedProvinceOutpatient"
           :options="provinceList"
-          option-label="name"
+          option-label="Name"
           :disable="!formData.personalInfoOutpatient.selectedRegionOutpatient"
           outlined
           dense
@@ -243,12 +242,11 @@
         <q-select
           v-model="formData.personalInfoOutpatient.selectedCityOutpatient"
           :options="cityList"
-          option-label="name"
+          option-label="Name"
           :disable="!formData.personalInfoOutpatient.selectedProvinceOutpatient"
           outlined
           dense
           :loading="loadingCities"
-          @update:model-value="loadBarangays"
           :rules="[(val) => !!val || 'Required']"
           label-slot
         >
@@ -259,19 +257,16 @@
       </div>
 
       <div class="col-12 col-sm-3 col-md-3">
-        <q-select
+        <q-input
           v-model="formData.personalInfoOutpatient.selectedBarangayOutpatient"
-          :options="barangayList"
-          option-label="name"
           :disable="!formData.personalInfoOutpatient.selectedCityOutpatient"
           outlined
           dense
-          :loading="loadingBarangays"
           :rules="[(val) => !!val || 'Required']"
           label-slot
         >
           <template v-slot:label> Barangay <span class="text-red">*</span> </template>
-        </q-select>
+        </q-input>
       </div>
     </div>
 
@@ -290,6 +285,7 @@
 <script>
 import { mapWritableState, mapActions } from "pinia";
 import { useOutpatientStore } from "src/stores/outpatientStore";
+
 import { date } from "quasar";
 
 export default {
@@ -393,16 +389,15 @@ export default {
     },
 
     async loadRegions() {
+      if (this.regionList && this.regionList.length > 0) return;
       this.loadingRegions = true;
-
       try {
-        const response = await fetch("https://psgc.gitlab.io/api/regions/");
+        const res = await fetch("http://10.107.0.2:3000/api/patients/region");
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
 
-        const data = await response.json();
-
-        this.regionList = data.sort((a, b) => a.name.localeCompare(b.name));
-      } catch (error) {
-        console.error("Failed to load regions:", error);
+        this.regionList = await res.json();
+      } catch (e) {
+        console.error("Failed to load regions from backend:", e);
       } finally {
         this.loadingRegions = false;
       }
@@ -410,9 +405,7 @@ export default {
 
     async loadProvinces() {
       this.formData.personalInfoOutpatient.selectedProvinceOutpatient = null;
-
       this.formData.personalInfoOutpatient.selectedCityOutpatient = null;
-
       this.formData.personalInfoOutpatient.selectedBarangayOutpatient = null;
 
       this.provinceList = [];
@@ -420,108 +413,56 @@ export default {
       this.barangayList = [];
 
       const region = this.formData.personalInfoOutpatient.selectedRegionOutpatient;
+      const regionCode = region?.CODE || region?.code;
+      if (!regionCode) return;
 
-      if (!region) return;
-
-      if (region.code === "130000000") {
-        await this.loadCitiesForRegion();
-        return;
-      }
+      const regionPrefix = regionCode.substring(0, 2);
 
       this.loadingProvinces = true;
-
       try {
         const res = await fetch(
-          `https://psgc.gitlab.io/api/regions/${region.code}/provinces/`
+          `http://10.107.0.2:3000/api/patients/provinces?regionPrefix=${regionPrefix}`
         );
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
 
-        const data = await res.json();
+        this.provinceList = await res.json();
 
-        this.provinceList = data.sort((a, b) => a.name.localeCompare(b.name));
-      } catch (error) {
-        console.error("Failed to load provinces:", error);
+        if (this.provinceList.length === 0 && regionPrefix === "13") {
+          await this.loadCitiesForRegion(regionCode);
+        }
+      } catch (e) {
+        console.error("Failed to load provinces:", e);
       } finally {
         this.loadingProvinces = false;
       }
     },
 
-    async loadCitiesForRegion() {
-      this.loadingCities = true;
-
-      try {
-        const region = this.formData.personalInfoOutpatient.selectedRegionOutpatient;
-
-        const response = await fetch(
-          `https://psgc.gitlab.io/api/regions/${region.code}/cities-municipalities/`
-        );
-
-        const data = await response.json();
-
-        this.cityList = data.sort((a, b) => a.name.localeCompare(b.name));
-
-        this.formData.personalInfoOutpatient.selectedProvinceOutpatient = {
-          name: "NCR / Metro Manila",
-          code: "NCR",
-        };
-      } catch (e) {
-        console.error("Failed to load cities for region:", e);
-      } finally {
-        this.loadingCities = false;
-      }
-    },
-
     async loadCities() {
-      this.formData.personalInfoOutpatient.selectedCityOutpatient = null;
+      const province = this.formData.personalInfoOutpatient.selectedProvinceOutpatient;
+      const provinceCode = province?.Code || province?.code;
 
+      if (!provinceCode || provinceCode === "130000000" || provinceCode === "NCR") return;
+
+      this.formData.personalInfoOutpatient.selectedCityOutpatient = null;
       this.formData.personalInfoOutpatient.selectedBarangayOutpatient = null;
 
       this.cityList = [];
       this.barangayList = [];
 
-      const province = this.formData.personalInfoOutpatient.selectedProvinceOutpatient;
-
-      if (!province || province.code === "NCR") return;
+      const cityPrefix = provinceCode.substring(0, 4);
 
       this.loadingCities = true;
-
       try {
         const res = await fetch(
-          `https://psgc.gitlab.io/api/provinces/${province.code}/cities-municipalities/`
+          `http://10.107.0.2:3000/api/patients/cities?cityPrefix=${cityPrefix}`
         );
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
 
-        const data = await res.json();
-
-        this.cityList = data.sort((a, b) => a.name.localeCompare(b.name));
-      } catch (error) {
-        console.error("Failed to load cities:", error);
+        this.cityList = await res.json();
+      } catch (e) {
+        console.error("Failed to load cities:", e);
       } finally {
         this.loadingCities = false;
-      }
-    },
-
-    async loadBarangays() {
-      this.formData.personalInfoOutpatient.selectedBarangayOutpatient = null;
-
-      this.barangayList = [];
-
-      const city = this.formData.personalInfoOutpatient.selectedCityOutpatient;
-
-      if (!city) return;
-
-      this.loadingBarangays = true;
-
-      try {
-        const res = await fetch(
-          `https://psgc.gitlab.io/api/cities-municipalities/${city.code}/barangays/`
-        );
-
-        const data = await res.json();
-
-        this.barangayList = data.sort((a, b) => a.name.localeCompare(b.name));
-      } catch (error) {
-        console.error("Failed to load barangays:", error);
-      } finally {
-        this.loadingBarangays = false;
       }
     },
   },

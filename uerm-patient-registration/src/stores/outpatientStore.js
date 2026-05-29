@@ -16,6 +16,8 @@ export const useOutpatientStore = defineStore("outpatient", {
     selectedPatient: null,
 
     duplicateList: [],
+    allDoctors: [],
+
     showDuplicateDialog: false,
     pendingLinkData: null,
     selectedDuplicate: null,
@@ -121,6 +123,28 @@ export const useOutpatientStore = defineStore("outpatient", {
       }
     },
 
+    async fetchDoctors() {
+      if (this.allDoctors?.length > 0) return;
+
+      try {
+        const response = await axios.get(`${PATIENT_API_URL}/doctors`);
+
+        if (Array.isArray(response.data)) {
+          this.allDoctors = response.data.map(doc => ({
+            label: (doc.label || '').toUpperCase(),
+            value: doc.value,
+            department: doc.department || '',
+            contactNo: doc.contactNo || ''
+          }));
+        } else {
+          this.allDoctors = [];
+        }
+      } catch (error) {
+        console.error('API Error fetching doctors:', error);
+        this.allDoctors = [];
+      }
+    },
+
     async sendDataInformation(patient, isForce = false) {
       this.loading = true;
       try {
@@ -129,7 +153,7 @@ export const useOutpatientStore = defineStore("outpatient", {
           force: isForce,
         });
 
-        Notify.create({ type: "positive", message: "Data sent successfully." });
+        Notify.create({ type: "positive", position:"top", message: "Data sent successfully." });
         await this.fetchInitialData();
         return true;
       } catch (error) {
@@ -163,7 +187,7 @@ export const useOutpatientStore = defineStore("outpatient", {
           patientno: this.selectedDuplicate.existingPatientNo,
         });
 
-        Notify.create({ type: "positive", message: "Linked successfully!" });
+        Notify.create({ type: "positive", position:"top", message: "Patient successfully linked." });
         this.showDuplicateDialog = false;
         await this.fetchInitialData();
         return true;

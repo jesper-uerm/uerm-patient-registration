@@ -24,6 +24,8 @@
           v-model="localSearchQuery"
           placeholder="Enter Name or ID"
           @keyup.enter="handleSearch"
+          debounce="500"
+          @update:model-value="handleSearch"
           :disable="loading"
           class="bg-white"
         >
@@ -33,7 +35,7 @@
           <template v-slot:after>
             <q-btn
               unelevated
-              color="blue-10"
+              color="yellow-10"
               label="Search"
               class="q-px-lg"
               @click="handleSearch"
@@ -59,6 +61,12 @@
           <template v-slot:body-cell-PATIENTREGID="props">
             <q-td :props="props">
               <span class="text-grey-8">#{{ props.value }}</span>
+            </q-td>
+          </template>
+
+          <template v-slot:body-cell-PATIENTNO="props">
+            <q-td :props="props">
+              <div class="text-weight-medium">{{ props.value }}</div>
             </q-td>
           </template>
 
@@ -306,7 +314,7 @@
                 ? 'Already Forwarded'
                 : 'Forward to credit and finance'
             "
-            :color="selectedPatient.FORREVIEW ? 'grey' : 'blue-10'"
+            :color="selectedPatient.FORREVIEW ? 'grey' : 'yellow-10'"
             :disable="selectedPatient.FORREVIEW"
             icon-right="las la-arrow-up"
             @click="handleSendToCredit(selectedPatient)"
@@ -414,7 +422,7 @@
             </q-item>
           </q-list>
 
-          <!-- <div class="text-subtitle2 text-grey-8 text-uppercase q-mt-lg q-mb-sm">
+          <div class="text-subtitle2 text-grey-8 text-uppercase q-mt-lg q-mb-sm">
             Government IDs
           </div>
           <q-list bordered separator class="rounded-borders">
@@ -454,132 +462,6 @@
               </q-item-section>
             </q-item>
           </q-list>
-
-          <div class="text-subtitle2 text-grey-8 text-uppercase q-mt-lg q-mb-sm">
-            Parent Details
-          </div>
-          <q-list bordered separator class="rounded-borders">
-            <q-item>
-              <q-item-section avatar>
-                <q-icon name="las la-user-tie" color="grey-6" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label caption>Father's Name</q-item-label>
-                <q-item-label class="text-caption1">
-                  {{ selectedPatient.FATHER || "N/A" }}
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-
-            <q-item>
-              <q-item-section avatar>
-                <q-icon name="las la-female" color="grey-6" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label caption>Mother's Name</q-item-label>
-                <q-item-label class="text-caption1">
-                  {{ selectedPatient.MOTHER || "N/A" }}
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
-
-          <div class="text-subtitle2 text-grey-8 text-uppercase q-mt-lg q-mb-sm">
-            In Case of Emergency
-          </div>
-          <q-list bordered separator class="rounded-borders">
-            <q-item>
-              <q-item-section avatar>
-                <q-icon name="las la-user-injured" color="grey-6" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label caption>Contact Name</q-item-label>
-                <q-item-label class="text-caption1">
-                  {{ selectedPatient.cpName || "N/A" }}
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-
-            <q-item>
-              <q-item-section avatar>
-                <q-icon name="las la-heart" color="grey-6" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label caption>Relationship</q-item-label>
-                <q-item-label class="text-caption1">
-                  {{ selectedPatient.cpRelationship || "N/A" }}
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-
-            <q-item>
-              <q-item-section avatar>
-                <q-icon name="las la-phone" color="grey-6" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label caption>Contact Numbers</q-item-label>
-                <q-item-label class="text-caption1">
-                  {{ selectedPatient.cpMobile || "N/A" }}
-                  <span v-if="selectedPatient.cpLandline">
-                    / {{ selectedPatient.cpLandline }}</span
-                  >
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-
-            <q-item>
-              <q-item-section avatar>
-                <q-icon name="las la-home" color="grey-6" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label caption>Address</q-item-label>
-                <q-item-label class="text-caption1">
-                  {{ selectedPatient.cpAddress || "N/A" }}
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
-
-          <div class="text-subtitle2 text-grey-8 text-uppercase q-mt-lg q-mb-sm">
-            Spouse Information
-          </div>
-          <q-list bordered separator class="rounded-borders">
-            <q-item>
-              <q-item-section avatar>
-                <q-icon name="las la-user-friends" color="grey-6" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label caption>Spouse Name</q-item-label>
-                <q-item-label class="text-caption1">
-                  {{ selectedPatient.spouseName || "N/A" }}
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-
-            <q-item>
-              <q-item-section avatar>
-                <q-icon name="las la-briefcase" color="grey-6" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label caption>Occupation</q-item-label>
-                <q-item-label class="text-caption1">
-                  {{ selectedPatient.spouseOccupation || "N/A" }}
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-
-            <q-item>
-              <q-item-section avatar>
-                <q-icon name="las la-building" color="grey-6" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label caption>Employer Contact</q-item-label>
-                <q-item-label class="text-caption1">
-                  {{ selectedPatient.spouseEmployerContact || "N/A" }}
-                </q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list> -->
         </q-card-section>
 
         <q-separator />
@@ -588,7 +470,7 @@
           <q-btn
             unelevated
             label="Send Information to live server"
-            color="green-10"
+            color="yellow-10"
             icon-right="las la-share"
             @click="handleValidatePatient(selectedPatient)"
           />
@@ -597,51 +479,73 @@
     </q-dialog>
 
     <q-dialog
-      v-model="showDuplicateDialog"
+      v-model="localShowDuplicateDialog"
       persistent
       transition-show="scale"
       transition-hide="scale"
     >
-      <q-card style="width: 600px; max-width: 90vw">
-        <q-card-section class="text-negative">
-          <div class="text-h6 text-center">
-            <q-icon name="warning" class="q-mr-sm" />Possible Duplicate Found
-            <div class="text-caption text-grey-8">
-              We found existing records that match the details of the patient you are
-              trying to register.
+      <q-card style="width: 700px; max-width: 80vw" class="rounded-borders">
+        <q-card-section class="bg-gradient-primary text-white q-pa-md">
+          <div class="row items-center justify-center text-center">
+            <div class="text-subtitle2 text-weight-bold text-uppercase">
+              <q-icon name="las la-exclamation-triangle" class="q-mr-xs" size="xs" />
+              Possible Duplicate Found
             </div>
           </div>
+
+          <q-btn
+            icon="las la-times"
+            flat
+            round
+            dense
+            v-close-popup
+            class="text-white opacity-70 absolute-top-right q-ma-sm"
+          />
         </q-card-section>
 
-        <q-card-section>
-          <div
-            class="row q-col-gutter-xs q-ma-xs q-py-sm text-center bg-green-1 rounded-borders"
-          >
-            <div class="col">
-              <div class="text-caption text-grey-7">Name</div>
-              <div class="text-body2 text-weight-bold text-dark">
-                {{ formatFullName(selectedPatient) }}
-              </div>
-            </div>
+        <q-separator />
 
-            <div class="col">
-              <div class="text-caption text-grey-7">Birthdate</div>
-              <div class="text-body2 text-weight-bold text-dark">
-                {{ formatDate(selectedPatient.birthdate) }}
-                <span class="text-grey-7"></span>
-              </div>
-            </div>
-
-            <div class="col">
-              <div class="text-caption text-grey-7">Age</div>
-              <div class="text-body2 text-weight-bold text-dark">
-                {{ selectedPatient.age }}
-                <span class="text-grey-7"></span>
-              </div>
-            </div>
+        <q-card-section class="q-pa-lg scroll q-px-xl" style="max-height: 70vh">
+          <div class="text-caption text-grey-8 text-center q-mb-lg">
+            We found existing records that match the details of the patient you are trying
+            to register.
           </div>
-          <div class="text-caption text-grey-8 q-mt-md q-mb-sm">
-            Select patient you want to link.
+
+          <div class="text-subtitle2 text-grey-8 text-uppercase q-mb-sm">
+            Personal Information Entered
+          </div>
+
+          <q-list bordered separator class="rounded-borders q-mb-lg">
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="las la-user" color="grey-6" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label caption>Full Name</q-item-label>
+                <q-item-label class="text-caption1 text-bold">
+                  {{ formatFullName(selectedPatient) }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="las la-birthday-cake" color="grey-6" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label caption>Birthdate</q-item-label>
+                <q-item-label class="text-caption1 text-bold">
+                  {{ formatDate(selectedPatient.BIRTHDATE) }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+
+          <div class="text-subtitle2 text-grey-8 text-uppercase q-mt-lg q-mb-sm">
+            Matching Existing Records
+          </div>
+          <div class="text-caption text-grey-7 q-mb-sm">
+            Select the patient you want to link.
           </div>
 
           <q-markup-table flat bordered>
@@ -658,23 +562,23 @@
               <tr
                 v-for="patient in duplicateList"
                 :key="patient.existingPatientNo"
-                @click="selectedDuplicate = patient"
+                @click="localSelectedDuplicate = patient"
                 class="cursor-pointer transition-generic"
                 :class="
-                  selectedDuplicate?.existingPatientNo === patient.existingPatientNo
+                  localSelectedDuplicate?.existingPatientNo === patient.existingPatientNo
                     ? 'bg-blue-1'
                     : 'hover:bg-grey-1'
                 "
               >
                 <td class="text-left">
                   <q-radio
-                    v-model="selectedDuplicate"
+                    v-model="localSelectedDuplicate"
                     :val="patient"
                     dense
                     color="primary"
                   />
                 </td>
-                <td class="text-weight-bold text-negative">
+                <td class="text-weight-bold text-primary">
                   {{ patient.existingPatientNo }}
                 </td>
                 <td>
@@ -692,20 +596,24 @@
           </q-markup-table>
         </q-card-section>
 
-        <q-card-actions align="right" class="bg-grey-1 q-pa-md">
+        <q-separator />
+        <q-card-actions align="center" class="bg-grey-1 q-pa-md">
           <q-btn unelevated label="Cancel" color="grey-7" v-close-popup />
+
           <q-btn
             unelevated
             label="Ignore & Create New"
-            color="primary"
-            @click="ignoreDuplicate"
+            color="yellow-10"
+            icon-right="las la-user-plus"
+            @click="handleIgnoreDuplicate"
           />
 
           <q-btn
-            v-if="selectedDuplicate"
+            v-if="localSelectedDuplicate"
             unelevated
             label="Link Record"
-            color="negative"
+            color="blue-10"
+            icon-right="las la-link"
             @click="confirmLinkPatient"
           />
         </q-card-actions>

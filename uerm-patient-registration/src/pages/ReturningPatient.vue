@@ -176,8 +176,8 @@ export default {
 
   props: {
     module: {
-      type: String,
-      default: "",
+      type: [String, Array],
+      default: () => [],
     },
   },
 
@@ -324,6 +324,10 @@ export default {
                 label: "Outpatient",
                 value: "OUTPATIENT",
               },
+              {
+                label: "Emergency/Triage",
+                value: "ER",
+              },
             ],
           },
 
@@ -337,6 +341,10 @@ export default {
 
           if (selected === "OUTPATIENT") {
             this.$emit("open-outpatient", patient);
+          }
+
+          if (selected === "ER") {
+            this.$emit("open-triage", patient);
           }
         });
     },

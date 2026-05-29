@@ -23,7 +23,7 @@
                   'text-caption': $q.screen.lt.md,
                 }"
               >
-                ADMISSION
+                INPATIENT
               </div>
             </q-card-section>
 
@@ -158,7 +158,7 @@
             <div
               class="text-subtitle2 text-weight-bold text-center text-uppercase text-blue-grey-9"
             >
-              By Patient Type
+              By Payment Type
             </div>
           </q-card-section>
 
@@ -298,7 +298,7 @@ export default {
             },
           },
         },
-        colors: ["#1976D2", "#26A69A", "#9C27B0"],
+        colors: ["#FF9800", "#1976D2", "#4CAF50"],
       },
 
       seriesPie: [],
@@ -307,7 +307,7 @@ export default {
           id: "patient-type-pie",
         },
         labels: [],
-        colors: ["#1976D2", "#26A69A", "#9C27B0"],
+        colors: ["#FF9800", "#1976D2", "#4CAF50"],
         legend: {
           position: "bottom",
         },

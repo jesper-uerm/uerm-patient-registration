@@ -332,11 +332,18 @@ const finalData = {
     if (this.formData.addressOptions.regions.length > 0) return;
     this.formData.addressLoading.regions = true;
     try {
-      const res = await fetch("https://psgc.gitlab.io/api/regions/");
+      const res = await fetch("http://10.107.0.2:3000/api/patients/region");
+      if (!res.ok) {
+        throw new Error(`Server error: ${res.status}`);
+      }
       const data = await res.json();
-      this.formData.addressOptions.regions = data.sort((a, b) => a.name.localeCompare(b.name));
-    } catch (e) { console.error(e); }
-    finally { this.formData.addressLoading.regions = false; }
+      this.formData.addressOptions.regions = data;
+
+    } catch (e) {
+      console.error("Failed to load regions from backend:", e);
+    } finally {
+      this.formData.addressLoading.regions = false;
+    }
   },
 
   async loadProvinces() {
@@ -348,68 +355,54 @@ const finalData = {
     this.formData.addressOptions.barangays = [];
 
     const region = this.formData.personalInfo.selectedRegion;
-    if (!region) return;
+    const regionCode = region?.CODE || region?.code;
+    if (!regionCode) return;
+
+    const regionPrefix = regionCode.substring(0, 2);
 
     this.formData.addressLoading.provinces = true;
     try {
-      const res = await fetch(`https://psgc.gitlab.io/api/regions/${region.code}/provinces/`);
-      const data = await res.json();
-      this.formData.addressOptions.provinces = data.sort((a, b) => a.name.localeCompare(b.name));
+      const res = await fetch(`http://10.107.0.2:3000/api/patients/provinces?regionPrefix=${regionPrefix}`);
+      if (!res.ok) throw new Error(`Server error: ${res.status}`);
 
-      if (this.formData.addressOptions.provinces.length === 0 && region.code === "130000000") {
-        await this.loadCitiesForRegion(region.code);
+      const data = await res.json();
+      this.formData.addressOptions.provinces = data;
+
+      if (this.formData.addressOptions.provinces.length === 0 && regionPrefix === "13") {
+        await this.loadCitiesForRegion(regionCode);
       }
-    } catch (e) { console.error(e); }
-    finally { this.formData.addressLoading.provinces = false; }
-  },
-
-  async loadCitiesForRegion(regionCode) {
-    this.formData.addressLoading.cities = true;
-    try {
-      const res = await fetch(`https://psgc.gitlab.io/api/regions/${regionCode}/cities-municipalities/`);
-      const data = await res.json();
-      this.formData.addressOptions.cities = data.sort((a, b) => a.name.localeCompare(b.name));
-      this.formData.personalInfo.selectedProvince = { name: "NCR", code: "NCR" };
-    } catch (e) { console.error(e); }
-    finally { this.formData.addressLoading.cities = false; }
+    } catch (e) {
+      console.error("Failed to load provinces:", e);
+    } finally {
+      this.formData.addressLoading.provinces = false;
+    }
   },
 
   async loadCities() {
     const province = this.formData.personalInfo.selectedProvince;
-    if (!province || province.code === "NCR") return;
+    const provinceCode = province?.Code || province?.code;
+
+    if (!provinceCode || provinceCode === "130000000" || provinceCode === "NCR") return;
 
     this.formData.personalInfo.selectedCity = null;
     this.formData.personalInfo.selectedBarangay = null;
     this.formData.addressOptions.cities = [];
     this.formData.addressOptions.barangays = [];
 
+    const cityPrefix = provinceCode.substring(0, 4);
+
     this.formData.addressLoading.cities = true;
     try {
-      const res = await fetch(`https://psgc.gitlab.io/api/provinces/${province.code}/cities-municipalities/`);
+      const res = await fetch(`http://10.107.0.2:3000/api/patients/cities?cityPrefix=${cityPrefix}`);
+      if (!res.ok) throw new Error(`Server error: ${res.status}`);
+
       const data = await res.json();
-      this.formData.addressOptions.cities = data.sort((a, b) => a.name.localeCompare(b.name));
-    } catch (e) { console.error(e); }
-    finally { this.formData.addressLoading.cities = false; }
-  },
-
-  async loadBarangays() {
-    const city = this.formData.personalInfo.selectedCity;
-    if (!city) return;
-
-    this.formData.personalInfo.selectedBarangay = null;
-    this.formData.addressOptions.barangays = [];
-
-    this.formData.addressLoading.barangays = true;
-    try {
-      const res = await fetch(`https://psgc.gitlab.io/api/cities-municipalities/${city.code}/barangays/`);
-      const data = await res.json();
-      this.formData.addressOptions.barangays = data.sort((a, b) => a.name.localeCompare(b.name));
-    } catch (e) { console.error(e); }
-    finally { this.formData.addressLoading.barangays = false; }
-
-    if (this.formData.toggles.sameAsPresent) {
-    this.updatePermanentAddress();
-  }
+      this.formData.addressOptions.cities = data;
+    } catch (e) {
+      console.error("Failed to load cities:", e);
+    } finally {
+      this.formData.addressLoading.cities = false;
+    }
   },
 
   async fetchInitialData() {

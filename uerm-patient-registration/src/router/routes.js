@@ -4,11 +4,19 @@ const routes = [
     component: () => import('layouts/MainLayout.vue'),
     children: [{ path: '', component: () => import('src/pages/HomePage.vue') }]
   },
+
+  {
+    path: '/forms',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [{ path: '', component: () => import('src/pages/HomePortals.vue') }]
+  },
+
   {
     path: '/triage',
     component: () => import('layouts/MainLayout.vue'),
     children: [{ path: '', component: () => import('src/pages/HomePageER.vue') }]
   },
+
   {
     path: '/login',
     component: () => import('src/pages/LoginPage.vue')

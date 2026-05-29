@@ -36,7 +36,6 @@
         <q-input
           outlined
           dense
-          type="number"
           v-model="formData.personalInfo.employerContactNo"
           label="Contact No."
         />
@@ -71,7 +70,6 @@
         <q-input
           outlined
           dense
-          type="number"
           v-model="formData.personalInfo.fatherContactNumber"
           label="Contact No."
           unmasked-value
@@ -107,7 +105,6 @@
         <q-input
           outlined
           dense
-          type="number"
           v-model="formData.personalInfo.motherContactNumber"
           label="Contact No."
           unmasked-value
@@ -142,7 +139,6 @@
           outlined
           dense
           unmasked-value
-          type="number"
           v-model="formData.contactDetails.spouseContact"
           label="Contact No."
         />
@@ -205,7 +201,6 @@
           outlined
           dense
           v-model="formData.contactDetails.contactPersonInpatientMobile"
-          type="number"
           label-slot
           :rules="[(val) => !!val || 'Required']"
         >

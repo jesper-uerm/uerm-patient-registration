@@ -552,7 +552,7 @@ export const useTriageStore = defineStore('triage', {
           PATIENTREGID: patient.PATIENTREGID,
           force: isForce,
         })
-        Notify.create({ type: 'positive', message: 'Data sent successfully.' })
+        Notify.create({ type: 'positive', position:"top",  message: 'Data sent successfully.' })
         this.fetchPatients()
         return true
       } catch (error) {
@@ -575,7 +575,7 @@ export const useTriageStore = defineStore('triage', {
           PATIENTREGID: patientId,
           patientno: existingPatientNo,
         })
-        Notify.create({ type: 'positive', message: 'Linked successfully!' })
+        Notify.create({ type: 'positive', position: "top", message: 'Patient successfully linked.' })
         this.fetchPatients()
         return true
       } catch (error) {
@@ -602,105 +602,125 @@ export const useTriageStore = defineStore('triage', {
     },
 
     async loadRegions(payload) {
-      if (payload.addressOptions.regions.length > 0) return
-      payload.addressLoading.regions = true
-      try {
-        const res = await fetch('https://psgc.gitlab.io/api/regions/')
-        const data = await res.json()
-        payload.addressOptions.regions = data.sort((a, b) => a.name.localeCompare(b.name))
-      } catch (e) {
-        console.error('Failed to load regions:', e)
-      } finally {
-        payload.addressLoading.regions = false
-      }
-    },
+        if (!payload || payload.addressOptions.regions.length > 0) return;
+
+        payload.addressLoading.regions = true;
+        try {
+          const res = await fetch("http://10.107.0.2:3000/api/patients/region");
+          if (!res.ok) throw new Error(`Server error: ${res.status}`);
+
+          const data = await res.json();
+
+          payload.addressOptions.regions = data.sort((a, b) => {
+            const nameA = a.NAME || a.name || "";
+            const nameB = b.NAME || b.name || "";
+            return nameA.localeCompare(nameB);
+          });
+        } catch (e) {
+          console.error("Failed to load regions:", e);
+        } finally {
+          payload.addressLoading.regions = false;
+        }
+      },
 
     async loadProvinces(payload) {
-      payload.selectedProvince = null
-      payload.selectedCity = null
-      payload.selectedBarangay = null
+        if (!payload) return;
 
-      payload.addressOptions.provinces = []
-      payload.addressOptions.cities = []
-      payload.addressOptions.barangays = []
+        payload.selectedProvince = null;
+        payload.selectedCity = null;
+        payload.selectedBarangay = null;
 
-      const region = payload.selectedRegion
-      if (!region) return
+        payload.addressOptions.provinces = [];
+        payload.addressOptions.cities = [];
+        payload.addressOptions.barangays = [];
 
-      payload.addressLoading.provinces = true
-      try {
-        const res = await fetch(`https://psgc.gitlab.io/api/regions/${region.code}/provinces/`)
-        const data = await res.json()
-        payload.addressOptions.provinces = data.sort((a, b) => a.name.localeCompare(b.name))
+        const region = payload.selectedRegion;
+        const regionCode = region?.CODE || region?.code;
+        if (!regionCode) return;
 
-        if (payload.addressOptions.provinces.length === 0 && region.code === '130000000') {
-          await this.loadCitiesForRegion(payload, region.code)
+        const regionPrefix = regionCode.substring(0, 2);
+
+        payload.addressLoading.provinces = true;
+        try {
+          const res = await fetch(`http://10.107.0.2:3000/api/patients/provinces?regionPrefix=${regionPrefix}`);
+          if (!res.ok) throw new Error(`Server error: ${res.status}`);
+
+          const data = await res.json();
+          payload.addressOptions.provinces = data.sort((a, b) => {
+            const nameA = a.Name || a.NAME || a.name || "";
+            const nameB = b.Name || b.NAME || b.name || "";
+            return nameA.localeCompare(nameB);
+          });
+
+          if (payload.addressOptions.provinces.length === 0 && regionPrefix === "13") {
+            await this.loadCitiesForRegion(payload, regionCode);
+          }
+        } catch (e) {
+          console.error("Failed to load provinces:", e);
+        } finally {
+          payload.addressLoading.provinces = false;
         }
-      } catch (e) {
-        console.error('Failed to load provinces:', e)
-      } finally {
-        payload.addressLoading.provinces = false
-      }
-    },
-
-    async loadCitiesForRegion(payload, regionCode) {
-      payload.addressLoading.cities = true
-      try {
-        const res = await fetch(
-          `https://psgc.gitlab.io/api/regions/${regionCode}/cities-municipalities/`,
-        )
-        const data = await res.json()
-        payload.addressOptions.cities = data.sort((a, b) => a.name.localeCompare(b.name))
-        payload.selectedProvince = { name: 'NCR', code: 'NCR' }
-      } catch (e) {
-        console.error('Failed to load cities for region:', e)
-      } finally {
-        payload.addressLoading.cities = false
-      }
-    },
+      },
 
     async loadCities(payload) {
-      const province = payload.selectedProvince
-      if (!province || province.code === 'NCR') return
+        if (!payload) return;
 
-      payload.selectedCity = null
-      payload.selectedBarangay = null
-      payload.addressOptions.cities = []
-      payload.addressOptions.barangays = []
+        const province = payload.selectedProvince;
+        const provinceCode = province?.Code || province?.code || province?.PROVCODE || province?.CODE;
 
-      payload.addressLoading.cities = true
-      try {
-        const res = await fetch(
-          `https://psgc.gitlab.io/api/provinces/${province.code}/cities-municipalities/`,
-        )
-        const data = await res.json()
-        payload.addressOptions.cities = data.sort((a, b) => a.name.localeCompare(b.name))
-      } catch (e) {
-        console.error('Failed to load cities:', e)
-      } finally {
-        payload.addressLoading.cities = false
-      }
-    },
+        if (!provinceCode || provinceCode === "130000000" || provinceCode === "NCR") return;
 
-    async loadBarangays(payload) {
-      const city = payload.selectedCity
-      if (!city) return
+        payload.selectedCity = null;
+        payload.selectedBarangay = null;
+        payload.addressOptions.cities = [];
+        payload.addressOptions.barangays = [];
 
-      payload.selectedBarangay = null
-      payload.addressOptions.barangays = []
+        const cityPrefix = provinceCode.substring(0, 4);
 
-      payload.addressLoading.barangays = true
-      try {
-        const res = await fetch(
-          `https://psgc.gitlab.io/api/cities-municipalities/${city.code}/barangays/`,
-        )
-        const data = await res.json()
-        payload.addressOptions.barangays = data.sort((a, b) => a.name.localeCompare(b.name))
-      } catch (e) {
-        console.error('Failed to load barangays:', e)
-      } finally {
-        payload.addressLoading.barangays = false
-      }
-    },
+        payload.addressLoading.cities = true;
+        try {
+          const res = await fetch(`http://10.107.0.2:3000/api/patients/cities?cityPrefix=${cityPrefix}`);
+          if (!res.ok) throw new Error(`Server error: ${res.status}`);
+
+          const data = await res.json();
+          payload.addressOptions.cities = data.sort((a, b) => {
+            const nameA = a.Name || a.NAME || a.name || "";
+            const nameB = b.Name || b.NAME || b.name || "";
+            return nameA.localeCompare(nameB);
+          });
+        } catch (e) {
+          console.error("Failed to load cities:", e);
+        } finally {
+          payload.addressLoading.cities = false;
+        }
+      },
+
+      // async loadBarangays(payload) {
+      //   if (!payload) return;
+
+      //   const city = payload.selectedCity;
+      //   const cityCode = city?.Code || city?.code || city?.CITYMUNCODE || city?.CODE;
+      //   if (!cityCode) return;
+
+      //   payload.selectedBarangay = null;
+      //   payload.addressOptions.barangays = [];
+
+      //   payload.addressLoading.barangays = true;
+      //   try {
+      //     const res = await fetch(`http://10.107.0.2:3000/api/patients/barangays?cityCode=${cityCode}`);
+      //     if (!res.ok) throw new Error(`Server error: ${res.status}`);
+
+      //     const data = await res.json();
+      //     payload.addressOptions.barangays = data.sort((a, b) => {
+      //       const nameA = a.Name || a.NAME || a.name || "";
+      //       const nameB = b.Name || b.NAME || b.name || "";
+      //       return nameA.localeCompare(nameB);
+      //     });
+      //   } catch (e) {
+      //     console.error("Failed to load barangays:", e);
+      //   } finally {
+      //     payload.addressLoading.barangays = false;
+      //   }
+      // }
   },
 })

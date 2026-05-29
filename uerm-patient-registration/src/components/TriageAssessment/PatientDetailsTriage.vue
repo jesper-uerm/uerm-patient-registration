@@ -174,8 +174,8 @@
         <q-select
           v-model="formData.selectedRegion"
           :options="formData.addressOptions.regions"
-          option-label="name"
-          option-value="code"
+          option-label="NAME"
+          option-value="CODE"
           label-slot
           outlined
           dense
@@ -192,8 +192,8 @@
         <q-select
           v-model="formData.selectedProvince"
           :options="formData.addressOptions.provinces"
-          option-label="name"
-          option-value="code"
+          option-label="Name"
+          option-value="Code"
           label-slot
           :disable="!formData.selectedRegion"
           outlined
@@ -210,14 +210,13 @@
         <q-select
           v-model="formData.selectedCity"
           :options="formData.addressOptions.cities"
-          option-label="name"
-          option-value="code"
+          option-label="Name"
+          option-value="Code"
           label-slot
           :disable="!formData.selectedProvince"
           outlined
           dense
           :loading="formData.addressLoading.cities"
-          @update:model-value="handleLoadBarangays"
           :rules="[(val) => !!val || 'Required']"
         >
           <template v-slot:label>
@@ -226,12 +225,12 @@
         </q-select>
       </div>
 
-      <div class="col-12 col-sm-3 col-md-3">
+      <!-- <div class="col-12 col-sm-3 col-md-3">
         <q-select
           v-model="formData.selectedBarangay"
           :options="formData.addressOptions.barangays"
-          option-label="name"
-          option-value="code"
+          option-label="Name"
+          option-value="Code"
           label-slot
           :disable="!formData.selectedCity"
           outlined
@@ -241,6 +240,20 @@
         >
           <template v-slot:label> Barangay <span class="text-red">*</span> </template>
         </q-select>
+      </div> -->
+
+      <div class="col-12 col-sm-3 col-md-3">
+        <q-input
+          v-model="formData.selectedBarangay"
+          label-slot
+          outlined
+          dense
+          :disable="!formData.selectedCity"
+          lazy-rules
+          :rules="[(val) => !!val || 'Required']"
+        >
+          <template v-slot:label> Barangay <span class="text-red">*</span> </template>
+        </q-input>
       </div>
     </div>
     <q-stepper-navigation class="text-center" :class="$q.screen.lt.sm ? '' : 'q-mt-xs'">
@@ -297,14 +310,14 @@ export default {
           regions: [],
           provinces: [],
           cities: [],
-          barangays: [],
+          // barangays: [],
         },
 
         addressLoading: {
           regions: false,
           provinces: false,
           cities: false,
-          barangays: false,
+          // barangays: false,
         },
       },
     };
@@ -396,7 +409,7 @@ export default {
       "loadRegions",
       "loadProvinces",
       "loadCities",
-      "loadBarangays",
+      // "loadBarangays",
     ]),
 
     async handleLoadRegions() {
@@ -409,10 +422,6 @@ export default {
 
     handleLoadCities() {
       this.loadCities(this.formData);
-    },
-
-    handleLoadBarangays() {
-      this.loadBarangays(this.formData);
     },
 
     async onNext() {

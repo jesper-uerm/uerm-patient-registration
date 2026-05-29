@@ -79,11 +79,10 @@
           </template>
         </q-input>
       </div>
-      <div class="col-12 col-sm-4 col-md-4 q-mb-md">
+      <div v-if="false" class="col-12 col-sm-4 col-md-4 q-mb-md">
         <q-input
           outlined
           dense
-          type="number"
           v-model="formData.personalInfo.age"
           label="Age"
           readonly
@@ -97,9 +96,7 @@
           label="Birthplace"
         />
       </div>
-    </div>
-    <div class="row q-col-gutter-xs">
-      <div class="col-12 col-sm-3 col-md-3">
+      <div class="col-12 col-sm-4 col-md-4">
         <q-select
           outlined
           dense
@@ -112,7 +109,9 @@
           <template v-slot:label> Gender <span class="text-red">*</span> </template>
         </q-select>
       </div>
-      <div class="col-12 col-sm-3 col-md-3">
+    </div>
+    <div class="row q-col-gutter-xs">
+      <div class="col-12 col-sm-4 col-md-4">
         <q-select
           outlined
           dense
@@ -127,7 +126,7 @@
           <template v-slot:label> Civil Status <span class="text-red">*</span> </template>
         </q-select>
       </div>
-      <div class="col-12 col-sm-3 col-md-3">
+      <div class="col-12 col-sm-4 col-md-4">
         <q-select
           outlined
           dense
@@ -142,7 +141,7 @@
           <template v-slot:label> Religion <span class="text-red">*</span> </template>
         </q-select>
       </div>
-      <div class="col-12 col-sm-3 col-md-3 q-mb-md">
+      <div class="col-12 col-sm-4 col-md-4 q-mb-md">
         <q-input
           outlined
           dense
@@ -152,7 +151,7 @@
       </div>
     </div>
 
-    <div class="row q-col-gutter-md">
+    <div class="row q-col-gutter-xs">
       <div class="col-12 col-sm-4 col-md-4">
         <q-input
           outlined
@@ -160,13 +159,15 @@
           v-model="formData.personalInfo.empCode"
           label="Employee Code"
         />
+        <div class="text-red q-mt-xs q-pl-xs" style="font-size: 9px">
+          *For UERMMMC employees only.
+        </div>
       </div>
       <div class="col-12 col-sm-4 col-md-4">
         <q-input
           outlined
           dense
           v-model="formData.govtIds.philhealth"
-          type="number"
           label="PhilHealth No."
         />
       </div>
@@ -178,7 +179,6 @@
           outlined
           dense
           v-model="formData.govtIds.seniorId"
-          type="number"
           label="Senior Citizen ID No."
         />
       </div>
@@ -187,10 +187,15 @@
           outlined
           dense
           v-model="formData.govtIds.pwdId"
-          type="number"
-          label="PWD No."
+          label="PWD ID No."
+          @update:model-value="
+            (val) => {
+              if (!val) formData.govtIds.pwdIdExp = null;
+            }
+          "
         />
       </div>
+
       <div class="col-12 col-sm-4 col-md-4">
         <q-input
           outlined
@@ -198,6 +203,10 @@
           type="date"
           v-model="formData.govtIds.pwdIdExp"
           label="PWD No. Expiry"
+          :disable="!formData.govtIds.pwdId"
+          :rules="
+            formData.govtIds.pwdId ? [(val) => !!val || 'Expiry date is required'] : []
+          "
         />
       </div>
     </div>
@@ -223,8 +232,8 @@
         <q-select
           v-model="formData.personalInfo.selectedRegion"
           :options="formData.addressOptions.regions"
-          option-label="name"
-          option-value="code"
+          option-label="NAME"
+          option-value="CODE"
           label-slot
           outlined
           dense
@@ -240,8 +249,8 @@
         <q-select
           v-model="formData.personalInfo.selectedProvince"
           :options="formData.addressOptions.provinces"
-          option-label="name"
-          option-value="code"
+          option-label="Name"
+          option-value="Code"
           label-slot
           :disable="!formData.personalInfo.selectedRegion"
           outlined
@@ -257,14 +266,13 @@
         <q-select
           v-model="formData.personalInfo.selectedCity"
           :options="formData.addressOptions.cities"
-          option-label="name"
-          option-value="code"
+          option-label="Name"
+          option-value="Code"
           label-slot
           :disable="!formData.personalInfo.selectedProvince"
           outlined
           dense
           :loading="formData.addressLoading.cities"
-          @update:model-value="loadBarangays"
           :rules="[(val) => !!val || 'Required']"
         >
           <template v-slot:label>
@@ -272,21 +280,45 @@
           </template>
         </q-select>
       </div>
-      <div class="col-12 col-sm-3 col-md-3">
+      <!-- <div class="col-12 col-sm-3 col-md-3">
         <q-select
           v-model="formData.personalInfo.selectedBarangay"
           :options="formData.addressOptions.barangays"
-          option-label="name"
-          option-value="code"
+          option-label="DESCRIPTION"
+          option-value="CODE"
           label-slot
+          use-input
+          fill-input
+          hide-selected
           :disable="!formData.personalInfo.selectedCity"
           outlined
           dense
           :loading="formData.addressLoading.barangays"
+          @filter="filterBarangays"
           :rules="[(val) => !!val || 'Required']"
         >
           <template v-slot:label> Barangay <span class="text-red">*</span> </template>
+
+          <template v-slot:no-option>
+            <q-item>
+              <q-item-section class="text-grey">
+                Type to search barangays...
+              </q-item-section>
+            </q-item>
+          </template>
         </q-select>
+      </div> -->
+      <div class="col-12 col-sm-3 col-md-3">
+        <q-input
+          v-model="formData.personalInfo.selectedBarangay"
+          :disable="!formData.personalInfo.selectedCity"
+          outlined
+          dense
+          :rules="[(val) => !!val || 'Required']"
+          label-slot
+        >
+          <template v-slot:label> Barangay <span class="text-red">*</span> </template>
+        </q-input>
       </div>
     </div>
 
@@ -297,7 +329,6 @@
           dense
           v-model="formData.personalInfo.landline"
           label="Landline No."
-          type="number"
         >
           <template v-slot:append>
             <q-icon name="phone" />
@@ -305,13 +336,7 @@
         </q-input>
       </div>
       <div class="col-12 col-sm-4 col-md-4">
-        <q-input
-          outlined
-          dense
-          v-model="formData.personalInfo.mobile"
-          type="number"
-          label="Mobile No."
-        >
+        <q-input outlined dense v-model="formData.personalInfo.mobile" label="Mobile No.">
           <template v-slot:append>
             <q-icon name="smartphone" />
           </template>
@@ -395,8 +420,8 @@ export default {
           this.formData.govtIds.pwdId = patient.PWD_IDNo || "";
           this.formData.personalInfo.empCode = patient.EmpNo || "";
           this.formData.personalInfo.mobile = patient.MOBILENO || "";
+          this.formData.personalInfo.landline = patient.PHONENOS || "";
           this.formData.personalInfo.email = patient.EMAILADD || "";
-
           this.formData.personalInfo.selectedCity = patient.MUNICIPALITY_DESC || null;
           this.formData.personalInfo.selectedBarangay = patient.BARANGAY_DESC || null;
         }
@@ -412,7 +437,6 @@ export default {
       "loadRegions",
       "loadProvinces",
       "loadCities",
-      "loadBarangays",
       "calculateAge",
     ]),
 
@@ -421,6 +445,31 @@ export default {
       const today = new Date();
       return dateObj < today || "Date must be in the past";
     },
+
+    // async filterBarangays(val, update, abort) {
+    //   if (val.length < 2) {
+    //     abort();
+    //     return;
+    //   }
+    //   update(async () => {
+    //     this.formData.addressLoading.barangays = true;
+    //     try {
+    //       const res = await fetch(
+    //         `http://10.107.0.2:3000/api/patients/barangays?search=${encodeURIComponent(
+    //           val
+    //         )}`
+    //       );
+    //       if (!res.ok) throw new Error(`Server error: ${res.status}`);
+
+    //       const data = await res.json();
+    //       this.formData.addressOptions.barangays = data;
+    //     } catch (e) {
+    //       console.error("Failed to filter barangays:", e);
+    //     } finally {
+    //       this.formData.addressLoading.barangays = false;
+    //     }
+    //   }, 300);
+    // },
 
     updatePermanentAddress() {
       if (this.formData.toggles.sameAsPresent) {
