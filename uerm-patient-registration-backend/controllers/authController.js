@@ -72,7 +72,7 @@ exports.login = async (req, res) => {
 
         if (userRole.includes('EMERGENCY ROOM')) {
             redirectPath = '/er';
-        } else if (userRole.includes('ADMITTING SECTION')) {
+        } else if (userRole.includes('ADMITTING UNIT')) {
             redirectPath = '/admitting';
         } else if (userRole.includes('HOSPITAL FINANCE AND OPERATIONS')) {
             redirectPath = '/finance';

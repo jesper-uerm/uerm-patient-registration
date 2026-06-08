@@ -50,14 +50,26 @@ const ErController = {
   },
 
   admitErPatient: async (req, res) => {
-    const { PATIENTREGID } = req.body;
+    const { 
+      PATIENTREGID, 
+      admittingPhysician, 
+      admittingDepartment, 
+      attendingPhysician, 
+      attendingDepartment 
+    } = req.body;
 
     if (!PATIENTREGID) {
       return res.status(400).json({ message: "Patient ID is required." });
     }
 
     try {
-      const rowsAffected = await ErModel.admitPatient(PATIENTREGID);
+      const rowsAffected = await ErModel.admitPatient({
+        PATIENTREGID,
+        admittingPhysician,
+        admittingDepartment,
+        attendingPhysician,
+        attendingDepartment
+      });
 
       if (rowsAffected === 0) {
         return res.status(404).json({ message: "Patient not found." });
@@ -81,27 +93,6 @@ const ErController = {
     }
   },
 
-  fetchPatientsForFinance: async (req, res) => {
-    try {
-      const patients = await ErModel.fetchPatientsForFinance();
-
-      res.status(200).json(patients);
-    } catch (err) {
-      console.error("Fetch Review Error:", err);
-      res.status(500).json({ message: "Database error: " + err.message });
-    }
-  },
-
-  fetchErPatientsForFinanceApproval: async (req, res) => {
-    try {
-      const patients = await ErModel.fetchErPatientsForFinanceApproval();
-
-      res.status(200).json(patients);
-    } catch (err) {
-      console.error("Fetch Review Error:", err);
-      res.status(500).json({ message: "Database error: " + err.message });
-    }
-  },
 
   fetchPatientRecords: async (req, res) => {
     try {

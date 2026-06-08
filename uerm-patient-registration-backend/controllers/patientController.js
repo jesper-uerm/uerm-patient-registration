@@ -136,37 +136,67 @@ const PatientController = {
         }
     },
     
+    // updateDetails: async (req, res) => {
+    //     try {
+    //         const { caseno, patientno, formData, reviewedBy } = req.body;
+
+    //         if (!caseno || !patientno || !formData) {
+    //             return res.status(400).json({
+    //                 success: false,
+    //                 message: "Missing CASENO, PATIENTNO or form data.",
+    //             });
+    //         }
+
+    //         await PatientModel.upsertPatientCredit(
+    //             caseno,
+    //             patientno,
+    //             formData,
+    //             reviewedBy,
+    //         );
+
+    //         res.status(200).json({
+    //             success: true,
+    //             message: "Patient credit details saved successfully.",
+    //         });
+    //     } catch (error) {
+    //         console.error("Update Details Error:", error);
+    //         res.status(500).json({
+    //             success: false,
+    //             message: "Server error while updating details.",
+    //         });
+    //     }
+    // },
+
     updateDetails: async (req, res) => {
-        try {
-            const { caseno, patientno, formData, reviewedBy } = req.body;
+    try {
+        const { patientno, formData, reviewedBy } = req.body;
 
-            if (!caseno || !patientno || !formData) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Missing CASENO, PATIENTNO or form data.",
-                });
-            }
-
-            await PatientModel.upsertPatientCredit(
-                caseno,
-                patientno,
-                formData,
-                reviewedBy,
-            );
-
-            res.status(200).json({
-                success: true,
-                message: "Patient credit details saved successfully.",
-            });
-        } catch (error) {
-            console.error("Update Details Error:", error);
-            res.status(500).json({
+        if (!patientno || !formData) {
+            return res.status(400).json({
                 success: false,
-                message: "Server error while updating details.",
+                message: "Missing PATIENTNO or form data.",
             });
         }
-    },
 
+        await PatientModel.upsertPatientCredit(
+            patientno,
+            formData,
+            reviewedBy,
+        );
+
+        res.status(200).json({
+            success: true,
+            message: "Patient credit details saved successfully.",
+        });
+    } catch (error) {
+        console.error("Update Details Error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Server error while updating details.",
+        });
+    }
+},
+    
     getById: async (req, res) => {
         try {
             const { id } = req.params;
@@ -270,6 +300,24 @@ const PatientController = {
                 });
             }
             res.status(500).json({ message: "Transfer failed", error: err.message });
+        }
+    },
+
+    
+    searchERpatient: async (req, res) => {
+        try {
+            const { query } = req.query;
+
+            if (!query || query.trim() === "") {
+                return res.status(200).json([]);
+            }
+
+            const results = await PatientModel.searchErRecords(query.trim());
+
+            res.status(200).json(results);
+        } catch (err) {
+            console.error("Search Error:", err);
+            res.status(500).json({ message: "Database error", error: err.message });
         }
     },
 
@@ -396,6 +444,29 @@ const PatientController = {
             console.error("Fetch Error:", err);
             res.status(500).json({ message: "Database error" });
         }
+    },
+
+    
+    fetchPatientsForFinance: async (req, res) => {
+    try {
+        const patients = await PatientModel.fetchPatientsForFinance();
+
+        res.status(200).json(patients);
+    } catch (err) {
+        console.error("Fetch Review Error:", err);
+        res.status(500).json({ message: "Database error: " + err.message });
+    }
+    },
+
+    fetchErPatientsForFinanceApproval: async (req, res) => {
+    try {
+        const patients = await PatientModel.fetchErPatientsForFinanceApproval();
+
+        res.status(200).json(patients);
+    } catch (err) {
+        console.error("Fetch Review Error:", err);
+        res.status(500).json({ message: "Database error: " + err.message });
+    }
     },
 
     getSignature: async (req, res) => {
@@ -546,7 +617,6 @@ const PatientController = {
         }
     },
 
-
     getMunicipality: async (req, res) => {
         try {
             const { cityPrefix } = req.query; 
@@ -565,72 +635,104 @@ const PatientController = {
         }
     },
 
-    getBarangays: async (req, res) => {
+//     getBarangays: async (req, res) => {
+//     try {
+//         const { search } = req.query;
+//         if (!search) {
+//             return res.status(400).json({ message: "Search parameter is required" });
+//         }
+
+//         const barangays = await PatientModel.getBarangays(search);
+//         res.json(barangays || []);
+//     } catch (error) {
+//         console.error("Error searching Barangays:", error);
+//         res.status(500).json({ message: "Internal server error", error: error.message });
+//     }
+// },
+
+    // fetchAssessmentDetails: async (req, res) => {
+    //     try {
+    //         const { caseno } = req.params;
+
+    //         if (!caseno) {
+    //             return res.status(400).json({
+    //                 success: false,
+    //                 message: "Case number is required.",
+    //             });
+    //         }
+
+    //         const patientDetails =
+    //             await PatientModel.getAssessmentDetailsByCaseno(caseno);
+
+    //         if (!patientDetails) {
+    //             return res.status(404).json({
+    //                 success: false,
+    //                 message: "Patient assessment details not found.",
+    //             });
+    //         }
+
+    //         return res.status(200).json(patientDetails);
+    //     } catch (error) {
+    //         console.error("Error fetching assessment details:", error);
+    //         return res.status(500).json({
+    //             success: false,
+    //             message: "Internal server error.",
+    //             error: error.message,
+    //         });
+    //     }
+    // },
+
+    fetchAssessmentDetails: async (req, res) => {
     try {
-        const { search } = req.query;
-        if (!search) {
-            return res.status(400).json({ message: "Search parameter is required" });
+        const { patientno } = req.params;
+
+        if (!patientno) {
+            return res.status(400).json({
+                success: false,
+                message: "Patient number is required.",
+            });
         }
 
-        const barangays = await PatientModel.getBarangays(search);
-        res.json(barangays || []);
+        const patientDetails =
+            await PatientModel.getAssessmentDetailsByPatientno(patientno);
+
+        if (!patientDetails) {
+            return res.status(404).json({
+                success: false,
+                message: "Patient assessment details not found.",
+            });
+        }
+
+        return res.status(200).json(patientDetails);
     } catch (error) {
-        console.error("Error searching Barangays:", error);
-        res.status(500).json({ message: "Internal server error", error: error.message });
+        console.error("Error fetching assessment details:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error.",
+            error: error.message,
+        });
     }
 },
 
-    fetchAssessmentDetails: async (req, res) => {
-        try {
-            const { caseno } = req.params;
-
-            if (!caseno) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Case number is required.",
-                });
-            }
-
-            const patientDetails =
-                await PatientModel.getAssessmentDetailsByCaseno(caseno);
-
-            if (!patientDetails) {
-                return res.status(404).json({
-                    success: false,
-                    message: "Patient assessment details not found.",
-                });
-            }
-
-            return res.status(200).json(patientDetails);
-        } catch (error) {
-            console.error("Error fetching assessment details:", error);
-            return res.status(500).json({
-                success: false,
-                message: "Internal server error.",
-                error: error.message,
-            });
-        }
-    },
-
     approvePatient: async (req, res) => {
-        const { CASENO, approvedBy } = req.body;
+        const { PATIENTNO, approvedBy } = req.body;
 
-        if (!CASENO || !approvedBy) {
+        if (!PATIENTNO || !approvedBy) {
             return res.status(400).json({
-                message: "Case Number (CASENO) and Approved By are required.",
+                message: "Patient Number and Approved By are required.",
             });
         }
 
         try {
             const rowsAffected = await PatientModel.approvePatient(
-                CASENO,
+                PATIENTNO,
                 approvedBy,
             );
 
             if (rowsAffected === 0) {
                 return res
                     .status(404)
-                    .json({ message: "Record with this Case Number not found." });
+                    .json({ message: "Record with this Patient Number not found." });
             }
 
             res.status(200).json({ message: "Patient successfully admitted." });
@@ -641,21 +743,21 @@ const PatientController = {
     },
 
     disapprovePatient: async (req, res) => {
-        const { CASENO } = req.body;
+        const { PATIENTNO } = req.body;
 
-        if (!CASENO) {
+        if (!PATIENTNO) {
             return res
                 .status(400)
-                .json({ message: "Case Number (CASENO) is required." });
+                .json({ message: "Patient Number is required." });
         }
 
         try {
-            const rowsAffected = await PatientModel.disapprovePatient(CASENO);
+            const rowsAffected = await PatientModel.disapprovePatient(PATIENTNO);
 
             if (rowsAffected === 0) {
                 return res
                     .status(404)
-                    .json({ message: "Record with this Case Number not found." });
+                    .json({ message: "Record with this Patient Number not found." });
             }
 
             res.status(200).json({ message: "Patient declined admission." });

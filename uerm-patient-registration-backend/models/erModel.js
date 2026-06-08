@@ -296,7 +296,7 @@ const ErModel = {
                         AVPU = @avpu, CONTAGIOUS = @contagious, ISOLATION = @isolation, CPD = @cpd,
                         LEVEL = @level, REMARKS = @remarks, SYMPTOMS = @checkforPresense,
                         PERSONNEL = @personnel, DATEACCOMPLISHED = @dateAccomplished,
-                        PATIENTTYPE = 'EMERGENCY'
+                        PATIENTTYPE = 'EMERGENCY', UPDATEDAT = GETDATE()
                     OUTPUT inserted.PATIENTREGID, inserted.PATIENTNO
                     WHERE PATIENTREGID = @patientId
                 END
@@ -308,7 +308,7 @@ const ErModel = {
                         WEIGHT, BROUGHTBY, PHILHEALTHCATEG, PTCONDITION,
                         CHIEFCOMPLAINT, TEMP, HEARTRATE, OXYGEN, BP, RESPIRATE, PAINSCORE,
                         AVPU, CONTAGIOUS, ISOLATION, CPD, LEVEL, REMARKS, SYMPTOMS,
-                        PERSONNEL, DATEACCOMPLISHED, PATIENTTYPE
+                        PERSONNEL, DATEACCOMPLISHED, PATIENTTYPE, UPDATEDAT
                     )
                     OUTPUT inserted.PATIENTREGID, inserted.PATIENTNO
                     VALUES (
@@ -317,7 +317,7 @@ const ErModel = {
                         @weightTriage, @broughtBy, @philHealthCateg, @ptCondition,
                         @chiefComplaint, @temp, @heartRate, @oxygen, @bp, @respiRate, @painScore,
                         @avpu, @contagious, @isolation, @cpd, @level, @remarks, @checkforPresense,
-                        @personnel, @dateAccomplished, 'Emergency'
+                        @personnel, @dateAccomplished, 'Emergency', GETDATE()
                     )
                 END
             `);
@@ -370,270 +370,331 @@ const ErModel = {
         }
     },
 
-    generateCaseNumber: async (data) => {
-        const pool = await sql.connect();
-        const transaction = new sql.Transaction(pool);
+    // generateCaseNumber: async (data) => {
+    //     const pool = await sql.connect();
+    //     const transaction = new sql.Transaction(pool);
 
-        try {
-            await transaction.begin();
+    //     try {
+    //         await transaction.begin();
 
-            const hmoReq = new sql.Request(transaction);
-            hmoReq.input('hmoDesc', sql.VarChar, data.caseHmo ?? null);
-            const hmoResult = await hmoReq.query(`
-                SELECT TOP 1 CODE 
-                FROM [UERMMMC]..[HMO] WITH(NOLOCK)
-                WHERE UPPER(LTRIM(RTRIM(NAME))) = UPPER(LTRIM(RTRIM(@hmoDesc)))
-            `);
-            const actualHmoCode = hmoResult.recordset.length > 0 ? hmoResult.recordset[0].CODE : null;
+    //         const hmoReq = new sql.Request(transaction);
+    //         hmoReq.input('hmoDesc', sql.VarChar, data.caseHmo ?? null);
+    //         const hmoResult = await hmoReq.query(`
+    //             SELECT TOP 1 CODE 
+    //             FROM [UERMMMC]..[HMO] WITH(NOLOCK)
+    //             WHERE UPPER(LTRIM(RTRIM(NAME))) = UPPER(LTRIM(RTRIM(@hmoDesc)))
+    //         `);
+    //         const actualHmoCode = hmoResult.recordset.length > 0 ? hmoResult.recordset[0].CODE : null;
 
-            const generateCaseQuery = `
-                DECLARE @tmpVal VARCHAR(8);
+    //         const generateCaseQuery = `
+    //             DECLARE @tmpVal VARCHAR(8);
                 
-                IF (SELECT MAX(CONVERT(INT,LEFT(RTRIM(CASENO),7))) + 1  
-                    FROM [UERMMMC]..[CASES] WITH(NOLOCK) 
-                    WHERE RIGHT(CASENO, 1) = 'B') IS NULL
-                BEGIN
-                    SELECT '0000001B' AS NewCaseNo
-                END
-                ELSE
-                BEGIN
-                    SET @tmpVal = (
-                        SELECT CONVERT(VARCHAR(8), 
-                            MAX(CONVERT(INT, LEFT(RTRIM(caseno),7))) + 1)
-                        FROM [UERMMMC]..[CASES] WITH(NOLOCK) 
-                        WHERE RIGHT(RTRIM(CASENO), 1) = 'B'
-                    )
-                    SELECT REPLICATE('0', 7-LEN(@tmpVal)) + @tmpVal + 'B' AS NewCaseNo
-                END
-            `;
+    //             IF (SELECT MAX(CONVERT(INT,LEFT(RTRIM(CASENO),7))) + 1  
+    //                 FROM [UERMMMC]..[CASES] WITH(NOLOCK) 
+    //                 WHERE RIGHT(CASENO, 1) = 'B') IS NULL
+    //             BEGIN
+    //                 SELECT '0000001B' AS NewCaseNo
+    //             END
+    //             ELSE
+    //             BEGIN
+    //                 SET @tmpVal = (
+    //                     SELECT CONVERT(VARCHAR(8), 
+    //                         MAX(CONVERT(INT, LEFT(RTRIM(caseno),7))) + 1)
+    //                     FROM [UERMMMC]..[CASES] WITH(NOLOCK) 
+    //                     WHERE RIGHT(RTRIM(CASENO), 1) = 'B'
+    //                 )
+    //                 SELECT REPLICATE('0', 7-LEN(@tmpVal)) + @tmpVal + 'B' AS NewCaseNo
+    //             END
+    //         `;
 
-            const genReq = new sql.Request(transaction);
-            const caseResult = await genReq.query(generateCaseQuery);
-            const newCaseNo = caseResult.recordset[0].NewCaseNo;
+    //         const genReq = new sql.Request(transaction);
+    //         const caseResult = await genReq.query(generateCaseQuery);
+    //         const newCaseNo = caseResult.recordset[0].NewCaseNo;
 
-            const insertReq = new sql.Request(transaction);
+    //         const insertReq = new sql.Request(transaction);
 
-            insertReq.input('caseNo', sql.VarChar, newCaseNo);
-            insertReq.input('patientNo', sql.VarChar, data.casepatientno ?? null);
-            insertReq.input('caseOrSched', sql.Int, data.caseOrSched ?? 0);
-            insertReq.input('caseDependent', sql.VarChar, typeof caseDependent !== 'undefined' ? caseDependent : null); 
-            insertReq.input('caseTransfer', sql.VarChar, data.caseTransfer ?? null);
-            insertReq.input('caseAge', sql.Int, data.caseAge ?? 0);
-            insertReq.input('casedtAdmission', sql.VarChar, data.casedtAdmission ?? null);
-            insertReq.input('casepwdId', sql.VarChar, data.casepwdId ?? null);
-            insertReq.input('caseSeniorId', sql.VarChar, data.caseSeniorId ?? null);
-            insertReq.input('casepatientCat', sql.VarChar, data.casepatientCat ?? null);
-            insertReq.input('chiefComplaintTriage', sql.VarChar, data.chiefComplaintTriage ?? null);
-            insertReq.input('caseadmDiagnosis', sql.VarChar, data.caseadmDiagnosis ?? null);
-            insertReq.input('casefromER', sql.VarChar, data.casefromER ?? null);
-            insertReq.input('caseserviceType', sql.VarChar, data.caseserviceType ?? null);
-            insertReq.input('caseAllergies', sql.VarChar, data.caseAllergies ?? null);
-            insertReq.input('caseerPhysician', sql.VarChar, data.caseerPhysician ?? null);
-            insertReq.input('caseCensusInfirmary', sql.VarChar, data.caseCensusInfirmary ?? null);
-            insertReq.input('caseDepartment', sql.VarChar, data.caseDepartment ?? null);
-            insertReq.input('caseAdmittedBy', sql.VarChar, data.caseAdmittedBy ?? null);
-            insertReq.input('casepdfRemarks', sql.VarChar, data.casepdfRemarks ?? null);
-            insertReq.input('caseRemarks', sql.VarChar, data.caseRemarks ?? null);
-            insertReq.input('COMPANY_CODE', sql.VarChar, data.caseCompany ?? null);
-            insertReq.input('HMOCODE', sql.VarChar, actualHmoCode); 
-            insertReq.input('employer', sql.VarChar, data.caseEmployer ?? null);
-            insertReq.input('card_No', sql.VarChar, data.caseCardNo ?? null);
-            insertReq.input('creditlimit', sql.VarChar, data.casecovAmount ?? null);
-            insertReq.input('approvalCode', sql.VarChar, data.caseappCode ?? null);
-            insertReq.input('effectivity', sql.VarChar, data.caseEffectivity ?? null);
-            insertReq.input('roomplan', sql.VarChar, data.casermPlan ?? null);
-            insertReq.input('HMO_LOA', sql.VarChar, data.caseLoa ?? null);
-            insertReq.input('HMO_APPROVALNO', sql.VarChar, data.caseApprov ?? null);
-            insertReq.input('inf_Name', sql.VarChar, data.caseInformantName ?? null);
-            insertReq.input('inf_Add', sql.VarChar, data.caseInfAddress ?? null);
-            insertReq.input('inf_Rel', sql.VarChar, data.caseInfRelationship?.value ?? data.caseInfRelationship ?? null);
+    //         insertReq.input('caseNo', sql.VarChar, newCaseNo);
+    //         insertReq.input('patientNo', sql.VarChar, data.casepatientno ?? null);
+    //         insertReq.input('caseOrSched', sql.Int, data.caseOrSched ?? 0);
+    //         insertReq.input('caseDependent', sql.VarChar, typeof caseDependent !== 'undefined' ? caseDependent : null); 
+    //         insertReq.input('caseTransfer', sql.VarChar, data.caseTransfer ?? null);
+    //         insertReq.input('caseAge', sql.Int, data.caseAge ?? 0);
+    //         insertReq.input('casedtAdmission', sql.VarChar, data.casedtAdmission ?? null);
+    //         insertReq.input('casepwdId', sql.VarChar, data.casepwdId ?? null);
+    //         insertReq.input('caseSeniorId', sql.VarChar, data.caseSeniorId ?? null);
+    //         insertReq.input('casepatientCat', sql.VarChar, data.casepatientCat ?? null);
+    //         insertReq.input('chiefComplaintTriage', sql.VarChar, data.chiefComplaintTriage ?? null);
+    //         insertReq.input('caseadmDiagnosis', sql.VarChar, data.caseadmDiagnosis ?? null);
+    //         insertReq.input('casefromER', sql.VarChar, data.casefromER ?? null);
+    //         insertReq.input('caseserviceType', sql.VarChar, data.caseserviceType ?? null);
+    //         insertReq.input('caseAllergies', sql.VarChar, data.caseAllergies ?? null);
+    //         insertReq.input('caseerPhysician', sql.VarChar, data.caseerPhysician ?? null);
+    //         insertReq.input('caseCensusInfirmary', sql.VarChar, data.caseCensusInfirmary ?? null);
+    //         insertReq.input('caseDepartment', sql.VarChar, data.caseDepartment ?? null);
+    //         insertReq.input('caseAdmittedBy', sql.VarChar, data.caseAdmittedBy ?? null);
+    //         insertReq.input('casepdfRemarks', sql.VarChar, data.casepdfRemarks ?? null);
+    //         insertReq.input('caseRemarks', sql.VarChar, data.caseRemarks ?? null);
+    //         insertReq.input('COMPANY_CODE', sql.VarChar, data.caseCompany ?? null);
+    //         insertReq.input('HMOCODE', sql.VarChar, actualHmoCode); 
+    //         insertReq.input('employer', sql.VarChar, data.caseEmployer ?? null);
+    //         insertReq.input('card_No', sql.VarChar, data.caseCardNo ?? null);
+    //         insertReq.input('creditlimit', sql.VarChar, data.casecovAmount ?? null);
+    //         insertReq.input('approvalCode', sql.VarChar, data.caseappCode ?? null);
+    //         insertReq.input('effectivity', sql.VarChar, data.caseEffectivity ?? null);
+    //         insertReq.input('roomplan', sql.VarChar, data.casermPlan ?? null);
+    //         insertReq.input('HMO_LOA', sql.VarChar, data.caseLoa ?? null);
+    //         insertReq.input('HMO_APPROVALNO', sql.VarChar, data.caseApprov ?? null);
+    //         insertReq.input('inf_Name', sql.VarChar, data.caseInformantName ?? null);
+    //         insertReq.input('inf_Add', sql.VarChar, data.caseInfAddress ?? null);
+    //         insertReq.input('inf_Rel', sql.VarChar, data.caseInfRelationship?.value ?? data.caseInfRelationship ?? null);
 
-            const insertQuery = `
-                INSERT INTO [UERMMMC]..[CASES] (
-                    CASENO, PATIENTNO, PATIENT_CATEGORY, PATIENTTYPE, DATEAD, CC, TYPE_OF_ADMISSION, 
-                    DISC_CODE, DEPTID, PWD_IDNo, isPay, Charity, ISSENIOR, ISNEWBORN_NONPATHOLOGIC, UDF_ISPWD, 
-                    CATEGORY, COMPANY_CODE, HMO_CODE, EMPLOYER, CARD_NO, EFFECTIVITY, CREDITLIMIT,
-                    UDF_APPROVALCODE, ROOM_PLAN, Informant, InformantAddRESS, Informantrelation, 
-                    UERM_STUD_EMPLOYEE, UDF_REMARKS, UDF_CaseDept, ADMITTED_BY, UDF_DATEADDED, 
-                    DISC_CODE1, COMPANY2, HMO2, AGE, UDF_AppVersion, UDF_CaseLink, UDF_isChild, 
-                    hmo_transloa, hmo_transapp, ForAdmission, ApplicationName, ForORScheduled, Allergies
-                )
-                SELECT
-                    CASENO              = @caseNo 
-                    , PATIENTNO         = @patientNo
-                    , PATIENT_CATEGORY  = @casepatientCat
-                    , PATIENTTYPE       = 'OPD'
-                    , DATEAD            = @casedtAdmission
-                    , CC                = @chiefComplaintTriage
-                    , TYPE_OF_ADMISSION = @casefromER
-                    , DISC_CODE = CASE WHEN NULLIF(LTRIM(RTRIM(ISNULL((SELECT A.PWD_IDNo FROM [UERMMMC]..[PATIENTINFO] A WITH(NOLOCK) WHERE A.PATIENTNO = @patientNo), ''))), '') IS NOT NULL AND NULLIF(LTRIM(RTRIM(ISNULL((SELECT A.SCIDNO FROM [UERMMMC]..[PATIENTINFO] A WITH(NOLOCK) WHERE A.PATIENTNO = @patientNo), ''))), '') IS NULL THEN 'DISAB' WHEN NULLIF(LTRIM(RTRIM(ISNULL((SELECT A.SCIDNO FROM [UERMMMC]..[PATIENTINFO] A WITH(NOLOCK) WHERE A.PATIENTNO = @patientNo), ''))), '') IS NOT NULL AND NULLIF(LTRIM(RTRIM(ISNULL((SELECT A.PWD_IDNo FROM [UERMMMC]..[PATIENTINFO] A WITH(NOLOCK) WHERE A.PATIENTNO = @patientNo), ''))), '') IS NULL THEN 'SEN' ELSE '' END
-                    , DEPTID            = @caseserviceType
-                    , PWD_IDNo          = @casepwdId
-                    , isPay             = CASE WHEN @casepatientCat = 'PAY' THEN 1 ELSE 0 END
-                    , Charity           = CASE WHEN @casepatientCat = 'CHA' THEN 1 ELSE 0 END
-                    , ISSENIOR          = CASE WHEN NULLIF(LTRIM(RTRIM(ISNULL((SELECT A.SCIDNO FROM [UERMMMC]..[PATIENTINFO] A WITH(NOLOCK) WHERE A.PATIENTNO = @patientNo), ''))), '') IS NOT NULL THEN 1 ELSE 0 END
-                    , ISNEWBORN_NONPATHOLOGIC = 0
-                    , UDF_ISPWD         = CASE WHEN NULLIF(LTRIM(RTRIM(ISNULL((SELECT A.PWD_IDNo FROM [UERMMMC]..[PATIENTINFO] A WITH(NOLOCK) WHERE A.PATIENTNO = @patientNo), ''))), '') IS NOT NULL THEN 1 ELSE 0 END
-                    , CATEGORY          = CASE WHEN LEFT(RIGHT(@caseNo, 2), 1) = 'N' THEN 'NEWBORN' ELSE NULL END
-                    , COMPANY_CODE      = @COMPANY_CODE
-                    , HMO_CODE          = @HMOCODE
-                    , EMPLOYER          = @employer
-                    , CARD_NO           = @card_No
-                    , EFFECTIVITY       = CASE WHEN @effectivity IS NULL THEN CONVERT(VARCHAR(20), CAST(GETDATE() AS DATETIME), 101) ELSE CONVERT(VARCHAR(20), CAST(@effectivity AS DATETIME), 101) END
-                    , CREDITLIMIT       = CAST(CASE WHEN @creditlimit IS NULL THEN 0 ELSE cast(@creditlimit as decimal(18,2)) END AS DECIMAL(18,2))
-                    , UDF_APPROVALCODE  = @approvalCode
-                    , ROOM_PLAN         = @roomplan
-                    , Informant         = @inf_Name
-                    , InformantAddRESS  = @inf_Add
-                    , Informantrelation = @inf_Rel                          
-                    , UERM_STUD_EMPLOYEE= @caseCensusInfirmary
-                    , UDF_REMARKS       = @caseRemarks
-                    , UDF_CaseDept      = 'ER'
-                    , ADMITTED_BY       = @caseAdmittedBy
-                    , UDF_DATEADDED     = GETDATE()
-                    , DISC_CODE1        = 'N/A'
-                    , COMPANY2          = 'N/A'
-                    , HMO2              = 'N/A'
-                    , AGE               = @caseAge
-                    , UDF_AppVersion    = NULL
-                    , UDF_CaseLink      = CASE WHEN LEFT(RIGHT(@caseNo, 2), 1) = 'N' THEN LEFT(@caseNo, LEN(@caseNo)-2) END
-                    , UDF_isChild       = CASE WHEN LEFT(RIGHT(@caseNo, 2), 1) = 'N' THEN 1 ELSE 0 END
-                    , hmo_transloa      = @HMO_LOA
-                    , hmo_transapp      = @HMO_APPROVALNO
-                    , ForAdmission      = 1
-                    , ApplicationName   = 'UERMPATIENTREG'
-                    , ForORScheduled    = @caseOrSched
-                    , Allergies         = @caseAllergies
-            `;
+    //         const insertQuery = `
+    //             INSERT INTO [UERMMMC]..[CASES] (
+    //                 CASENO, PATIENTNO, PATIENT_CATEGORY, PATIENTTYPE, DATEAD, CC, TYPE_OF_ADMISSION, 
+    //                 DISC_CODE, DEPTID, PWD_IDNo, isPay, Charity, ISSENIOR, ISNEWBORN_NONPATHOLOGIC, UDF_ISPWD, 
+    //                 CATEGORY, COMPANY_CODE, HMO_CODE, EMPLOYER, CARD_NO, EFFECTIVITY, CREDITLIMIT,
+    //                 UDF_APPROVALCODE, ROOM_PLAN, Informant, InformantAddRESS, Informantrelation, 
+    //                 UERM_STUD_EMPLOYEE, UDF_REMARKS, UDF_CaseDept, ADMITTED_BY, UDF_DATEADDED, 
+    //                 DISC_CODE1, COMPANY2, HMO2, AGE, UDF_AppVersion, UDF_CaseLink, UDF_isChild, 
+    //                 hmo_transloa, hmo_transapp, ForAdmission, ApplicationName, ForORScheduled, Allergies
+    //             )
+    //             SELECT
+    //                 CASENO              = @caseNo 
+    //                 , PATIENTNO         = @patientNo
+    //                 , PATIENT_CATEGORY  = @casepatientCat
+    //                 , PATIENTTYPE       = 'OPD'
+    //                 , DATEAD            = @casedtAdmission
+    //                 , CC                = @chiefComplaintTriage
+    //                 , TYPE_OF_ADMISSION = @casefromER
+    //                 , DISC_CODE = CASE WHEN NULLIF(LTRIM(RTRIM(ISNULL((SELECT A.PWD_IDNo FROM [UERMMMC]..[PATIENTINFO] A WITH(NOLOCK) WHERE A.PATIENTNO = @patientNo), ''))), '') IS NOT NULL AND NULLIF(LTRIM(RTRIM(ISNULL((SELECT A.SCIDNO FROM [UERMMMC]..[PATIENTINFO] A WITH(NOLOCK) WHERE A.PATIENTNO = @patientNo), ''))), '') IS NULL THEN 'DISAB' WHEN NULLIF(LTRIM(RTRIM(ISNULL((SELECT A.SCIDNO FROM [UERMMMC]..[PATIENTINFO] A WITH(NOLOCK) WHERE A.PATIENTNO = @patientNo), ''))), '') IS NOT NULL AND NULLIF(LTRIM(RTRIM(ISNULL((SELECT A.PWD_IDNo FROM [UERMMMC]..[PATIENTINFO] A WITH(NOLOCK) WHERE A.PATIENTNO = @patientNo), ''))), '') IS NULL THEN 'SEN' ELSE '' END
+    //                 , DEPTID            = @caseserviceType
+    //                 , PWD_IDNo          = @casepwdId
+    //                 , isPay             = CASE WHEN @casepatientCat = 'PAY' THEN 1 ELSE 0 END
+    //                 , Charity           = CASE WHEN @casepatientCat = 'CHA' THEN 1 ELSE 0 END
+    //                 , ISSENIOR          = CASE WHEN NULLIF(LTRIM(RTRIM(ISNULL((SELECT A.SCIDNO FROM [UERMMMC]..[PATIENTINFO] A WITH(NOLOCK) WHERE A.PATIENTNO = @patientNo), ''))), '') IS NOT NULL THEN 1 ELSE 0 END
+    //                 , ISNEWBORN_NONPATHOLOGIC = 0
+    //                 , UDF_ISPWD         = CASE WHEN NULLIF(LTRIM(RTRIM(ISNULL((SELECT A.PWD_IDNo FROM [UERMMMC]..[PATIENTINFO] A WITH(NOLOCK) WHERE A.PATIENTNO = @patientNo), ''))), '') IS NOT NULL THEN 1 ELSE 0 END
+    //                 , CATEGORY          = CASE WHEN LEFT(RIGHT(@caseNo, 2), 1) = 'N' THEN 'NEWBORN' ELSE NULL END
+    //                 , COMPANY_CODE      = @COMPANY_CODE
+    //                 , HMO_CODE          = @HMOCODE
+    //                 , EMPLOYER          = @employer
+    //                 , CARD_NO           = @card_No
+    //                 , EFFECTIVITY       = CASE WHEN @effectivity IS NULL THEN CONVERT(VARCHAR(20), CAST(GETDATE() AS DATETIME), 101) ELSE CONVERT(VARCHAR(20), CAST(@effectivity AS DATETIME), 101) END
+    //                 , CREDITLIMIT       = CAST(CASE WHEN @creditlimit IS NULL THEN 0 ELSE cast(@creditlimit as decimal(18,2)) END AS DECIMAL(18,2))
+    //                 , UDF_APPROVALCODE  = @approvalCode
+    //                 , ROOM_PLAN         = @roomplan
+    //                 , Informant         = @inf_Name
+    //                 , InformantAddRESS  = @inf_Add
+    //                 , Informantrelation = @inf_Rel                          
+    //                 , UERM_STUD_EMPLOYEE= @caseCensusInfirmary
+    //                 , UDF_REMARKS       = @caseRemarks
+    //                 , UDF_CaseDept      = 'ER'
+    //                 , ADMITTED_BY       = @caseAdmittedBy
+    //                 , UDF_DATEADDED     = GETDATE()
+    //                 , DISC_CODE1        = 'N/A'
+    //                 , COMPANY2          = 'N/A'
+    //                 , HMO2              = 'N/A'
+    //                 , AGE               = @caseAge
+    //                 , UDF_AppVersion    = NULL
+    //                 , UDF_CaseLink      = CASE WHEN LEFT(RIGHT(@caseNo, 2), 1) = 'N' THEN LEFT(@caseNo, LEN(@caseNo)-2) END
+    //                 , UDF_isChild       = CASE WHEN LEFT(RIGHT(@caseNo, 2), 1) = 'N' THEN 1 ELSE 0 END
+    //                 , hmo_transloa      = @HMO_LOA
+    //                 , hmo_transapp      = @HMO_APPROVALNO
+    //                 , ForAdmission      = 1
+    //                 , ApplicationName   = 'UERMPATIENTREG'
+    //                 , ForORScheduled    = @caseOrSched
+    //                 , Allergies         = @caseAllergies
+    //         `;
 
-            await insertReq.query(insertQuery);
+    //         await insertReq.query(insertQuery);
 
-            const diagnosisReq = new sql.Request(transaction);
-            diagnosisReq.input('caseNo', sql.VarChar, newCaseNo);
-            diagnosisReq.input('caseadmDiagnosis', sql.VarChar, data.caseadmDiagnosis ?? null);
+    //         const diagnosisReq = new sql.Request(transaction);
+    //         diagnosisReq.input('caseNo', sql.VarChar, newCaseNo);
+    //         diagnosisReq.input('caseadmDiagnosis', sql.VarChar, data.caseadmDiagnosis ?? null);
 
-            await diagnosisReq.query(`
-                INSERT INTO dbo.DIAGNOSIS (
-                    CASENO,
-                    ADMISSION
-                )
-                VALUES (
-                    @caseNo,
-                    @caseadmDiagnosis
-                );
-            `);
+    //         await diagnosisReq.query(`
+    //             INSERT INTO dbo.DIAGNOSIS (
+    //                 CASENO,
+    //                 ADMISSION
+    //             )
+    //             VALUES (
+    //                 @caseNo,
+    //                 @caseadmDiagnosis
+    //             );
+    //         `);
 
-            const updateReq = new sql.Request(transaction);
-            updateReq.input('caseNo', sql.VarChar, newCaseNo);
-            updateReq.input('patientNo', sql.VarChar, data.casepatientno ?? null);
+    //         const updateReq = new sql.Request(transaction);
+    //         updateReq.input('caseNo', sql.VarChar, newCaseNo);
+    //         updateReq.input('patientNo', sql.VarChar, data.casepatientno ?? null);
 
-            await updateReq.query(`
-                UPDATE [UERMMMC]..[PATIENTREG]
-                SET 
-                    CASENO = @caseNo,
-                    FORREVIEW = 1
-                WHERE PATIENTNO = @patientNo;
-            `);
+    //         await updateReq.query(`
+    //             UPDATE [UERMMMC]..[PATIENTREG]
+    //             SET 
+    //                 CASENO = @caseNo,
+    //                 FORREVIEW = 1
+    //             WHERE PATIENTNO = @patientNo;
+    //         `);
 
-            await transaction.commit();
+    //         await transaction.commit();
 
-            return {
-                patient_no: data.casepatientno,
-                patient_id: data.patientId,
-                case_no: newCaseNo
-            };
+    //         return {
+    //             patient_no: data.casepatientno,
+    //             patient_id: data.patientId,
+    //             case_no: newCaseNo
+    //         };
 
-        } catch (error) {
-            try {
-                if (transaction) await transaction.rollback();
-            } catch (rollbackError) {
-                console.error("Rollback Error:", rollbackError);
-            }
+    //     } catch (error) {
+    //         try {
+    //             if (transaction) await transaction.rollback();
+    //         } catch (rollbackError) {
+    //             console.error("Rollback Error:", rollbackError);
+    //         }
             
-            console.error("Database Insert Error:", error);
-            throw error;
-        }
-    },
+    //         console.error("Database Insert Error:", error);
+    //         throw error;
+    //     }
+    // },
 
-    admitPatient: async (patientId) => {
+    admitPatient: async (data) => {
         try {
-            const pool = await poolPromise; 
-            
-            const result = await pool.request()
-                .input('pId', sql.Int, patientId)
-                .query(`
-                    UPDATE PATIENTREG 
-                    SET 
-                        ISFORADMISSION = 1,
-                        FORREVIEW = 0
-                    WHERE PATIENTREGID = @pId;
-                `);
+        const pool = await poolPromise; 
+        
+        const result = await pool.request()
+            .input('pId', sql.Int, data.PATIENTREGID)
+            .input('admittingPhysician', sql.VarChar, data.admittingPhysician || null)
+            .input('admittingDepartment', sql.VarChar, data.admittingDepartment || null)
+            .input('attendingPhysician', sql.VarChar, data.attendingPhysician || null)
+            .input('attendingDepartment', sql.VarChar, data.attendingDepartment || null)
+            .query(`
+            UPDATE PATIENTREG 
+            SET 
+                ISFORADMISSION = 1,
+                FORREVIEW = 0,
+                UPDATEDAT = GETDATE(),
+                ADM_PHYSICIAN = @admittingPhysician,
+                ADM_PHYSICIAN_DEPT = @admittingDepartment,
+                ATT_PHYSICIAN = @attendingPhysician,
+                ATT_PHYSICIAN_DEPT = @attendingDepartment
 
-            return result.rowsAffected[0];
+            WHERE PATIENTREGID = @pId;
+            `);
+
+        return result.rowsAffected[0];
 
         } catch (err) {
-            console.error("Model Error (admitPatient):", err);
-            throw err;
+        console.error("Model Error (admitPatient):", err);
+        throw err;
         }
     },
 
     //GET ER LIST
-    getAllErPatients: async () => {
-        try {
-            const pool = await poolPromise; 
+    // getAllErPatients: async () => {
+    //     try {
+    //         const pool = await poolPromise; 
             
-            const result = await pool.request().query(`
-            SELECT 
-                    PR.*,  
+    //         const result = await pool.request().query(`
+    //         SELECT 
+    //                 PR.*,  
                     
-                    (PR.FIRSTNAME + ' ' + ISNULL(PR.MIDDLENAME + ' ', '') + PR.LASTNAME) AS fullName,
-                    FORMAT(PR.BIRTHDATE, 'yyyy-MM-dd') as birthdateStr,
-                    PR.SEX as gender, 
-                    CONCAT_WS(', ', PR.ADDRESSSTREET, PR.ADDRESSBARANGAY, PR.ADDRESSCITY, PR.ADDRESSPROVINCE, PR.ADDRESSREGION) AS addressPresent,
+    //                 (PR.FIRSTNAME + ' ' + ISNULL(PR.MIDDLENAME + ' ', '') + PR.LASTNAME) AS fullName,
+    //                 FORMAT(PR.BIRTHDATE, 'yyyy-MM-dd') as birthdateStr,
+    //                 PR.SEX as gender, 
+    //                 CONCAT_WS(', ', PR.ADDRESSSTREET, PR.ADDRESSBARANGAY, PR.ADDRESSCITY, PR.ADDRESSPROVINCE, PR.ADDRESSREGION) AS addressPresent,
 
-                    C.DATEDIS,
-                    C.DISCHARGE,
-                    C.DISCHARGEBY,
+    //                 C.DATEDIS,
+    //                 C.DISCHARGE,
+    //                 C.DISCHARGEBY,
+    //                 PRC.IS_APPROVED,
 
-                    CASE 
-                        WHEN PR.HMO IS NOT NULL AND LTRIM(RTRIM(PR.HMO)) NOT IN ('', 'N/A') THEN 'HMO'
-                        WHEN PR.INFIRMARY IS NOT NULL AND LTRIM(RTRIM(PR.INFIRMARY)) NOT IN ('', 'N/A') THEN 'Infirmary'
-                        ELSE 'Cash'
-                    END AS paymentType,
+    //                 CASE 
+    //                     WHEN PR.HMO IS NOT NULL AND LTRIM(RTRIM(PR.HMO)) NOT IN ('', 'N/A') THEN 'HMO'
+    //                     WHEN PR.INFIRMARY IS NOT NULL AND LTRIM(RTRIM(PR.INFIRMARY)) NOT IN ('', 'N/A') THEN 'Infirmary'
+    //                     ELSE 'Cash'
+    //                 END AS paymentType,
 
-                    CASE 
-                        WHEN PR.LEVEL = 'EMERGENT' THEN 'High'
-                        WHEN PR.LEVEL = 'URGENT' THEN 'Medium'
-                        WHEN PR.LEVEL = 'NON-URGENT' THEN 'Low'
-                        ELSE 'Unassigned' 
-                    END AS priority
-
-                FROM PATIENTREG PR
+    //                 CASE 
+    //                     WHEN PR.LEVEL = 'EMERGENT' THEN 'High'
+    //                     WHEN PR.LEVEL = 'URGENT' THEN 'Medium'
+    //                     WHEN PR.LEVEL = 'NON-URGENT' THEN 'Low'
+    //                     ELSE 'Unassigned' 
+    //                 END AS priority
+                    
+    //             FROM PATIENTREG PR
                 
-                LEFT JOIN UERMMMC.dbo.CASES C ON PR.PATIENTNO = C.PATIENTNO
+    //             LEFT JOIN UERMMMC.dbo.CASES C ON PR.PATIENTNO = C.PATIENTNO
+    //             LEFT JOIN UERMMMC.dbo.PATIENTREG_CREDIT PRC ON PR.PATIENTNO = PRC.PATIENTNO
                 
-                WHERE 
-                    PR.PATIENTTYPE = 'EMERGENCY' 
-                    AND (PR.ISFORADMISSION IS NULL OR PR.ISFORADMISSION = 1)
-                    AND (
-                        PR.ISRETURNING = 1  
-                        OR 
-                        (
-                            (C.DISCHARGE IN ('N', 'No') OR C.DISCHARGE IS NULL)
-                            AND 
-                            (C.DISCHARGEBY IS NULL OR LTRIM(RTRIM(C.DISCHARGEBY)) = '')
-                        )
-                    )
-                ORDER BY PR.CREATEDAT DESC
-            `);
+    //             WHERE 
+    //                 PR.PATIENTTYPE = 'EMERGENCY' 
+    //                 AND (
+    //                     PR.ISRETURNING = 1  
+    //                     OR 
+    //                     (
+    //                         (C.DISCHARGE IN ('N', 'No') OR C.DISCHARGE IS NULL)
+    //                         AND 
+    //                         (C.DISCHARGEBY IS NULL OR LTRIM(RTRIM(C.DISCHARGEBY)) = '')
+    //                     )
+    //                 )
+    //             ORDER BY PR.CREATEDAT DESC
+    //         `);
 
-            return result.recordset;
+    //         return result.recordset;
 
-        } catch (err) {
-            console.error("Model Error (getAllErPatients):", err);
-            throw err;
-        }
-    },
+    //     } catch (err) {
+    //         console.error("Model Error (getAllErPatients):", err);
+    //         throw err;
+    //     }
+    // },
+
+    getAllErPatients: async () => {
+    try {
+        const pool = await poolPromise; 
+        
+        const result = await pool.request().query(`
+        SELECT 
+            PR.*,  
+            (PR.FIRSTNAME + ' ' + ISNULL(PR.MIDDLENAME + ' ', '') + PR.LASTNAME) AS fullName,
+            CONVERT(VARCHAR(10), PR.BIRTHDATE, 120) as birthdateStr, -- Faster than FORMAT()
+            PR.SEX as gender, 
+            CONCAT_WS(', ', PR.ADDRESSSTREET, PR.ADDRESSBARANGAY, PR.ADDRESSCITY, PR.ADDRESSPROVINCE, PR.ADDRESSREGION) AS addressPresent,
+            C.DATEDIS,
+            C.DISCHARGE,
+            C.DISCHARGEBY,
+            PRC.IS_APPROVED,
+
+            CASE 
+                WHEN PR.HMO IS NOT NULL AND LTRIM(RTRIM(PR.HMO)) NOT IN ('', 'N/A') THEN 'HMO'
+                WHEN PR.INFIRMARY IS NOT NULL AND LTRIM(RTRIM(PR.INFIRMARY)) NOT IN ('', 'N/A') THEN 'Infirmary'
+                ELSE 'Cash'
+            END AS paymentType,
+
+            CASE 
+                WHEN PR.LEVEL = 'EMERGENT' THEN 'High'
+                WHEN PR.LEVEL = 'URGENT' THEN 'Medium'
+                WHEN PR.LEVEL = 'NON-URGENT' THEN 'Low'
+                ELSE 'Unassigned' 
+            END AS priority
+            
+        FROM PATIENTREG PR
+        
+        LEFT JOIN UERMMMC.dbo.CASES C ON PR.PATIENTNO = C.PATIENTNO 
+            AND (C.DISCHARGE IN ('N', 'No') OR C.DISCHARGE IS NULL)
+            AND (C.DISCHARGEBY IS NULL OR LTRIM(RTRIM(C.DISCHARGEBY)) = '')
+
+        LEFT JOIN UERMMMC.dbo.PATIENTREG_CREDIT PRC ON PR.PATIENTNO = PRC.PATIENTNO
+        
+        WHERE 
+            PR.PATIENTTYPE = 'EMERGENCY'
+        ORDER BY PR.CREATEDAT DESC
+        `);
+
+        return result.recordset;
+
+    } catch (err) {
+        console.error("Model Error (getAllErPatients):", err);
+        throw err;
+    }
+},
 
     searchPatients: async (query) => {
         try {
@@ -646,42 +707,51 @@ const ErModel = {
                 .input('search', sql.NVarChar, searchPattern)
                 .input('exactId', sql.Int, exactId)
                 .query(`
-                    SELECT TOP 10 
+                SELECT 
                         PR.*,  
                         (PR.FIRSTNAME + ' ' + ISNULL(PR.MIDDLENAME + ' ', '') + PR.LASTNAME) AS fullName,
-                        FORMAT(PR.BIRTHDATE, 'yyyy-MM-dd') as birthdateStr,
+                        CONVERT(VARCHAR(10), PR.BIRTHDATE, 120) as birthdateStr, 
                         PR.SEX as gender, 
                         CONCAT_WS(', ', PR.ADDRESSSTREET, PR.ADDRESSBARANGAY, PR.ADDRESSCITY, PR.ADDRESSPROVINCE, PR.ADDRESSREGION) AS addressPresent,
-                        
                         C.DATEDIS,
                         C.DISCHARGE,
-                        C.DISCHARGEBY
+                        C.DISCHARGEBY,
+                        PRC.IS_APPROVED,
 
+                        CASE 
+                            WHEN PR.HMO IS NOT NULL AND LTRIM(RTRIM(PR.HMO)) NOT IN ('', 'N/A') THEN 'HMO'
+                            WHEN PR.INFIRMARY IS NOT NULL AND LTRIM(RTRIM(PR.INFIRMARY)) NOT IN ('', 'N/A') THEN 'Infirmary'
+                            ELSE 'Cash'
+                        END AS paymentType,
+
+                        CASE 
+                            WHEN PR.LEVEL = 'EMERGENT' THEN 'High'
+                            WHEN PR.LEVEL = 'URGENT' THEN 'Medium'
+                            WHEN PR.LEVEL = 'NON-URGENT' THEN 'Low'
+                            ELSE 'Unassigned' 
+                        END AS priority
+                        
                     FROM PATIENTREG PR
-                    LEFT JOIN UERMMMC.dbo.CASES C ON PR.PATIENTNO = C.PATIENTNO
+                    
+                    LEFT JOIN UERMMMC.dbo.CASES C ON PR.PATIENTNO = C.PATIENTNO 
+                        AND (C.DISCHARGE IN ('N', 'No') OR C.DISCHARGE IS NULL)
+                        AND (C.DISCHARGEBY IS NULL OR LTRIM(RTRIM(C.DISCHARGEBY)) = '')
 
+                    LEFT JOIN UERMMMC.dbo.PATIENTREG_CREDIT PRC ON PR.PATIENTNO = PRC.PATIENTNO
+                    
                     WHERE 
-                        PR.PATIENTTYPE = 'Emergency' 
-                        AND (PR.ISFORADMISSION IS NULL OR PR.ISFORADMISSION = 0)
-                        AND (
-                            C.DISCHARGE IN ('N', 'No')       
-                            OR C.DISCHARGE IS NULL     
-                        )
-                        AND (
-                            C.DISCHARGEBY IS NULL            
-                            OR LTRIM(RTRIM(C.DISCHARGEBY)) = ''  
-                        )
-                        AND (
-                            PR.LASTNAME LIKE @search 
-                            OR PR.MIDDLENAME LIKE @search
-                            OR PR.FIRSTNAME LIKE @search
-                            OR PR.PATIENTREGID = @exactId
-                            OR (PR.FIRSTNAME + ' ' + PR.LASTNAME) LIKE @search
-                            OR (PR.LASTNAME + ' ' + PR.FIRSTNAME) LIKE @search
-                            OR (PR.LASTNAME + ', ' + PR.FIRSTNAME) LIKE @search
-                        )
-                    ORDER BY PR.LASTNAME, PR.FIRSTNAME
-                `);
+                        PR.PATIENTTYPE = 'EMERGENCY'
+                    AND (
+                        PR.LASTNAME LIKE @search 
+                        OR PR.MIDDLENAME LIKE @search
+                        OR PR.FIRSTNAME LIKE @search
+                        OR PR.PATIENTREGID = @exactId
+                        OR (PR.FIRSTNAME + ' ' + PR.LASTNAME) LIKE @search
+                        OR (PR.LASTNAME + ' ' + PR.FIRSTNAME) LIKE @search
+                        OR (PR.LASTNAME + ', ' + PR.FIRSTNAME) LIKE @search
+                    )
+                ORDER BY PR.LASTNAME, PR.FIRSTNAME
+            `);
                 
             return result.recordset;
 
@@ -692,200 +762,6 @@ const ErModel = {
     },
 
     //populate finance form
-    //dashboard
-    fetchPatientsForFinance: async () => {
-        try {
-            const pool = await poolPromise; 
-            const result = await pool.request().query(`
-            SELECT
-                C.CASENO,
-                C.PATIENTNO, 
-                C.DATEAD, 
-                C.PATIENT_CATEGORY,
-                C.PATIENTTYPE AS patientType,
-                C.CC AS chiefComplaint, 
-                C.LAST_ROOM,
-                PR.HMO AS hmo,
-                PI.SEX AS gender,
-                PI.AGE AS age, 
-                PI.UDF_PHILHEALTHNO AS philhealthNo,
-                PI.ADDRESS AS address,
-                D.ADMISSION AS admdiagnosis,
-                SS.Classification AS ssClass,
-                SS.Validity AS expiration,
-                PRC.IS_APPROVED AS is_approved,
-                CAST(
-                    CASE 
-                        WHEN EXISTS (
-                            SELECT 1 
-                            FROM UERMMMC.dbo.CASES C_CHK 
-                            WHERE C_CHK.PATIENTNO = C.PATIENTNO 
-                            AND C_CHK.DATEAD < C.DATEAD
-                        ) THEN 1 
-                        ELSE 0 
-                    END AS BIT
-                ) AS visitType,
-                
-                (ISNULL(PI.FIRSTNAME, '') + ' ' + ISNULL(PI.MIDDLENAME + ' ', '') + ISNULL(PI.LASTNAME, '')) AS fullName,
-                FORMAT(PI.DBIRTH, 'yyyy-MM-dd') AS birthdateStr,
-                R.TYPE_CODE AS typeCode,
-
-                (
-                    SELECT TOP 1 C_SUB.DATEAD 
-                    FROM UERMMMC.dbo.CASES C_SUB 
-                    WHERE C_SUB.PATIENTNO = C.PATIENTNO
-                    AND C_SUB.isPay = 0
-                    ORDER BY C_SUB.DATEAD DESC
-                ) AS lastAdSer,
-                (
-                    SELECT TOP 1 C_SUB.DATEAD 
-                    FROM UERMMMC.dbo.CASES C_SUB 
-                    WHERE C_SUB.PATIENTNO = C.PATIENTNO
-                    AND C_SUB.isPay = 1
-                    ORDER BY C_SUB.DATEAD DESC
-                ) AS lastAdPay,  
-                (
-                    SELECT COUNT(C_SUB.CASENO) 
-                    FROM UERMMMC.dbo.CASES C_SUB 
-                    INNER JOIN UERMMMC.dbo.ROOMS R_SUB ON C_SUB.LAST_ROOM = R_SUB.ROOMNO
-                    WHERE C_SUB.PATIENTNO = C.PATIENTNO
-                    AND R_SUB.TYPE_CODE = 'SER'
-                ) AS admissionCountSer,
-
-                (
-                    SELECT COUNT(C_SUB.CASENO) 
-                    FROM UERMMMC.dbo.CASES C_SUB 
-                    INNER JOIN UERMMMC.dbo.ROOMS R_SUB ON C_SUB.LAST_ROOM = R_SUB.ROOMNO
-                    WHERE C_SUB.PATIENTNO = C.PATIENTNO
-                    AND R_SUB.TYPE_CODE != 'SER'
-                ) AS admissionCountPay
-                
-            FROM UERMMMC.dbo.CASES C
-            LEFT JOIN UERMMMC.dbo.PATIENTINFO PI 
-                ON C.PATIENTNO = PI.PATIENTNO
-            LEFT JOIN UERMMMC.dbo.PATIENTREG PR 
-                ON PI.PATIENTNO = PR.PATIENTNO
-            LEFT JOIN UERMMMC.dbo.ROOMS R 
-                ON C.LAST_ROOM = R.ROOMNO  
-            LEFT JOIN UERMMMC.dbo.DIAGNOSIS D
-                ON C.CASENO = D.CASENO 
-            LEFT JOIN UERMMMC.dbo.PATIENTREG_CREDIT PRC
-                ON C.CASENO = PRC.CASENO
-
-            OUTER APPLY (
-                SELECT TOP 1 Classification, Validity 
-                FROM UERMHIMS.dbo.SocialServiceClass 
-                WHERE 
-                    RTRIM(PatientNo) = RTRIM(C.PATIENTNO)
-            ) SS
-            WHERE 
-                C.UDF_CaseDept = 'ER'
-                AND C.PATIENTTYPE = 'OPD'
-                AND C.ForAdmission = 1
-                -- AND (PRC.FOR_APPROV = 0 OR PRC.FOR_APPROV IS NULL) 
-                -- AND C.DATEAD >= DATEADD(hour, -24, GETDATE())
-                -- AND PR.FORREVIEW = 1
-                
-            ORDER BY DATEAD DESC
-                `);
-
-            return result.recordset;
-
-
-        } catch (err) {
-            console.error("Model Error (fetchErPatientsForFinance):", err);
-            throw err;
-        }
-    },
-
-    fetchErPatientsForFinanceApproval: async () => {
-    try {
-        const pool = await poolPromise; 
-        const result = await pool.request().query(`
-        SELECT
-            C.CASENO,
-            C.PATIENTNO, 
-            C.DATEAD, 
-            C.PATIENT_CATEGORY,
-            C.PATIENTTYPE AS patientType,
-            C.CC AS chiefComplaint, 
-            C.LAST_ROOM,
-            PI.SEX AS gender,
-            PI.AGE AS age, 
-            PI.UDF_PHILHEALTHNO AS philhealthNo,
-            PI.ADDRESS AS address,
-            SS.Classification AS ssClass,
-            SS.Validity AS expiration,
-            PR.ISRETURNING AS visitType,
-            PRC.IS_APPROVED, 
-            
-            (ISNULL(PI.FIRSTNAME, '') + ' ' + ISNULL(PI.MIDDLENAME + ' ', '') + ISNULL(PI.LASTNAME, '')) AS fullName,
-            FORMAT(PI.DBIRTH, 'yyyy-MM-dd') AS birthdateStr,
-            R.TYPE_CODE AS typeCode,
-
-            (
-                SELECT TOP 1 C_SUB.DATEAD 
-                FROM UERMMMC.dbo.CASES C_SUB 
-                WHERE C_SUB.PATIENTNO = C.PATIENTNO
-                AND C_SUB.isPay = 0
-                ORDER BY C_SUB.DATEAD DESC
-            ) AS lastAdSer,
-            (
-                SELECT TOP 1 C_SUB.DATEAD 
-                FROM UERMMMC.dbo.CASES C_SUB 
-                WHERE C_SUB.PATIENTNO = C.PATIENTNO
-                AND C_SUB.isPay = 1
-                ORDER BY C_SUB.DATEAD DESC
-            ) AS lastAdPay,  
-            (
-                SELECT COUNT(C_SUB.CASENO) 
-                FROM UERMMMC.dbo.CASES C_SUB 
-                INNER JOIN UERMMMC.dbo.ROOMS R_SUB ON C_SUB.LAST_ROOM = R_SUB.ROOMNO
-                WHERE C_SUB.PATIENTNO = C.PATIENTNO
-                AND R_SUB.TYPE_CODE = 'SER'
-            ) AS admissionCountSer,
-
-            (
-                SELECT COUNT(C_SUB.CASENO) 
-                FROM UERMMMC.dbo.CASES C_SUB 
-                INNER JOIN UERMMMC.dbo.ROOMS R_SUB ON C_SUB.LAST_ROOM = R_SUB.ROOMNO
-                WHERE C_SUB.PATIENTNO = C.PATIENTNO
-                AND R_SUB.TYPE_CODE != 'SER'
-            ) AS admissionCountPay
-
-        FROM UERMMMC.dbo.CASES C
-        LEFT JOIN UERMMMC.dbo.PATIENTINFO PI 
-            ON C.PATIENTNO = PI.PATIENTNO
-        LEFT JOIN UERMMMC.dbo.PATIENTREG PR 
-            ON PI.PATIENTNO = PR.PATIENTNO
-        LEFT JOIN UERMMMC.dbo.ROOMS R 
-            ON C.LAST_ROOM = R.ROOMNO   
-
-        LEFT JOIN UERMMMC.dbo.PATIENTREG_CREDIT PRC
-            ON C.CASENO = PRC.CASENO
-
-        OUTER APPLY (
-            SELECT TOP 1 Classification, Validity 
-            FROM UERMHIMS.dbo.SocialServiceClass 
-            WHERE 
-                RTRIM(PatientNo) = RTRIM(C.PATIENTNO)
-        ) SS
-        WHERE C.UDF_CaseDept = 'ER'
-            AND C.PATIENTTYPE = 'OPD'
-            AND C.ForAdmission = 1
-            AND (PRC.FOR_APPROV = 1) 
-            -- AND C.DATEAD >= DATEADD(hour, -24, GETDATE())
-            
-        ORDER BY DATEAD DESC
-            `);
-
-        return result.recordset;;
-
-    } catch (err) {
-        console.error("Model Error (fetchErPatientsForFinanceApproval):", err);
-        throw err;
-    }
-},
 
     getPatientRecords: async (PATIENTNO) => {
         const pool = await poolPromise; 
@@ -931,24 +807,29 @@ const ErModel = {
             return result.recordset;
     },
     
+    //FETCH FOR ADMISSION
     getAdmittedPatients: async () => {
         try {
             const pool = await poolPromise; 
             
             const result = await pool.request().query(`
-                SELECT 
-                    *,  
-                    (FIRSTNAME + ' ' + ISNULL(MIDDLENAME + ' ', '') + LASTNAME) AS fullName,
-                    FORMAT(BIRTHDATE, 'yyyy-MM-dd') as birthdateStr,
-                    SEX as gender, 
-                    CONCAT_WS(', ', ADDRESSSTREET, ADDRESSBARANGAY, ADDRESSCITY, ADDRESSPROVINCE, ADDRESSREGION) AS addressPresent
-                FROM PATIENTREG
-                WHERE 
-                    PATIENTTYPE = 'Emergency' 
-                    AND ISFORADMISSION = '1'
-                    AND FORREVIEW = '0'
-                ORDER BY CREATEDAT DESC
-                
+            SELECT 
+                PR.*, 
+                (PR.FIRSTNAME + ' ' + ISNULL(PR.MIDDLENAME + ' ', '') + PR.LASTNAME) AS fullName,
+                FORMAT(PR.BIRTHDATE, 'yyyy-MM-dd') as birthdateStr,
+                PR.SEX as gender, 
+                CONCAT_WS(', ', PR.ADDRESSSTREET, PR.ADDRESSBARANGAY, PR.ADDRESSCITY, PR.ADDRESSPROVINCE, PR.ADDRESSREGION) AS addressPresent,
+                PRC.IS_APPROVED
+            FROM PATIENTREG PR
+
+            LEFT JOIN UERMMMC.dbo.PATIENTREG_CREDIT PRC ON PR.PATIENTNO = PRC.PATIENTNO
+
+            WHERE 
+                PR.PATIENTTYPE = 'EMERGENCY' 
+                AND PR.ISFORADMISSION = '1'
+                AND PR.FORREVIEW = '0'
+            ORDER BY PR.CREATEDAT DESC 
+                        
             `);
 
             return result.recordset;
