@@ -25,7 +25,7 @@ const routes = [
   {
     path: '/admitting',
     component: () => import('layouts/AdminLayout.vue'),
-    meta: { requiresAuth: true, role: 'ADMITTING SECTION' },
+    meta: { requiresAuth: true, role: 'ADMITTING UNIT' },
     children: [
       { path: '', name: 'admin-dashboard', component: () => import('src/components/AdminPage/AdminDashboard.vue') },
       { path: 'FromERList', name: 'from-er-list', component: () => import('src/components/AdminPage/FromErList.vue') },

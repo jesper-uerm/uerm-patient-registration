@@ -3,7 +3,6 @@
     class="column flex-center q-pa-md"
     :style="{ minHeight: $q.screen.lt.md ? '75vh' : '85vh' }"
   >
-    >
     <div class="column flex-center q-mb-xl">
       <div class="animate-text text-center">
         <div

@@ -77,13 +77,13 @@
           <template v-slot:body-cell-patientType="props">
             <q-td :props="props">
               <q-badge
-                v-if="props.value == 'IPD'"
+                v-if="props.value == 'INPATIENT'"
                 color="blue-6"
                 label="Inpatient"
                 outline
               />
               <q-badge
-                v-else-if="props.value == 'OPD'"
+                v-else-if="props.value == 'EMERGENCY'"
                 color="red-6"
                 label="Emergency Patient"
                 outline
@@ -189,15 +189,16 @@ export default {
           style: "width: 120px; font-weight: bold",
           format: (val) => (Array.isArray(val) ? val[0] : val ? val : "N/A"),
         },
-        {
-          name: "CASENO",
-          label: "Case No.",
-          field: "CASENO",
-          align: "center",
-          sortable: true,
-          style: "width: 120px; font-weight: bold",
-          format: (val) => (val ? val : "N/A"),
-        },
+
+        // {
+        //   name: "CASENO",
+        //   label: "Case No.",
+        //   field: "CASENO",
+        //   align: "center",
+        //   sortable: true,
+        //   style: "width: 120px; font-weight: bold",
+        //   format: (val) => (val ? val : "N/A"),
+        // },
         {
           name: "fullName",
           label: "Name",
@@ -224,12 +225,13 @@ export default {
           style: "width: 120px",
         },
         {
-          name: "DATEAD",
+          name: "CREATEDAT",
           label: "Date Added",
-          field: "DATEAD",
+          field: "CREATEDAT",
           align: "center",
           sortable: true,
-          format: (val) => (val ? date.formatDate(val, "MMM D, YYYY h:mm A") : "-"),
+          format: (val) =>
+            val ? date.formatDate(val.replace("Z", ""), "MMM D, YYYY h:mm A") : "-",
           style: "width: 180px",
         },
       ],

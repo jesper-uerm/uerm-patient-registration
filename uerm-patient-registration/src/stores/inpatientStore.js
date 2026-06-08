@@ -405,6 +405,33 @@ const finalData = {
     }
   },
 
+  // async loadBarangays() {
+  //   const city = this.formData.personalInfo.selectedCity;
+  //   const cityCode = city?.Code || city;
+
+  //   this.formData.personalInfo.selectedBarangay = null;
+  //   this.formData.addressOptions.barangays = [];
+
+  //   if (!cityCode) return;
+  //   this.formData.addressLoading.barangays = true;
+  //   try {
+  //     const res = await fetch(`http://10.107.0.2:3000/api/patients/barangays?search=${encodeURIComponent(cityCode)}`);
+  //     if (!res.ok) throw new Error(`Server error: ${res.status}`);
+  //     const data = await res.json();
+  //     const barangayList = Array.isArray(data) ? data : [];
+  //     this.formData.addressOptions.barangays = barangayList.map(bgy => ({
+  //       Code: bgy.CODE,
+  //       Name: bgy.DESCRIPTION
+  //     }));
+
+  //   } catch (e) {
+  //     console.error("Failed to load barangays from local database:", e);
+  //     this.formData.addressOptions.barangays = [];
+  //   } finally {
+  //     this.formData.addressLoading.barangays = false;
+  //   }
+  // },
+
   async fetchInitialData() {
     this.loading = true;
     try {
@@ -441,6 +468,40 @@ const finalData = {
       this.loading = false;
     }
   },
+
+  async searchErPatients(query) {
+  if (!query || query.length < 2) return;
+
+  this.loading = true;
+  this.searchQuery = query;
+
+  try {
+    const response = await axios.get(`${PATIENT_API_URL}/search-from-er`, {
+      params: { query },
+    });
+
+    this.patientListfromER = response.data;
+    this.hasSearched = true;
+
+    if (this.patientListfromER.length === 0) {
+      Notify.create({
+        type: "info",
+        message: "No records found.",
+        icon: "info",
+        position: "top",
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    Notify.create({
+      type: "negative",
+      message: "Search Failed",
+      position: "top",
+    });
+  } finally {
+    this.loading = false;
+  }
+},
 
   async searchPatients(query) {
     if (!query || query.length < 2) return;

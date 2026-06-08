@@ -1,7 +1,17 @@
 <template>
   <q-form ref="personalInfoTriageRef" @submit.prevent="onNext">
     <div class="text-subtitle2 text-bold q-mb-md">Patient Information:</div>
-    <q-input v-show="false" outlined dense v-model="formData.patientNo"> </q-input>
+    <div class="col-12 q-mb-md">
+      <q-input
+        v-show="formData.patientNo"
+        outlined
+        dense
+        v-model="formData.patientNo"
+        label="Patient No."
+        readonly
+        input-class="text-weight-bold"
+      />
+    </div>
     <div class="row" :class="$q.screen.lt.sm ? 'q-col-gutter-xs' : 'q-col-gutter-sm'">
       <div class="col-12 col-sm-3">
         <q-input

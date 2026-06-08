@@ -7,70 +7,45 @@
         </div>
         <div class="row q-col-gutter-md">
           <div class="col-12 col-sm-3 col-md-3">
-            <q-select
+            <q-input
               outlined
               dense
-              v-model="formData.fnadmPhysician"
-              :options="allDoctors || []"
-              emit-value
-              map-options
-              label-slot
+              v-model="formData.fnAdmPhysician"
+              label="Admitting Physician"
               stack-label
-              lazy-rules
-              :rules="requiredRule"
-              @update:model-value="onDoctorSelected"
-            >
-              <template v-slot:label>
-                Admitting Physician<span class="text-red">*</span>
-              </template>
-              <template v-slot:no-option>
-                <q-item>
-                  <q-item-section class="text-grey"> No doctors found </q-item-section>
-                </q-item>
-              </template>
-            </q-select>
+              readonly
+            />
           </div>
+
           <div class="col-12 col-sm-3 col-md-3">
             <q-input
               outlined
               dense
-              v-model="formData.fnDepartment"
+              v-model="formData.fnAdmPhysicianDept"
               label="Department"
               stack-label
               readonly
             />
           </div>
-          <div class="col-12 col-sm-3 col-md-3">
-            <q-select
-              outlined
-              stack-label
-              dense
-              v-model="formData.fnatnPhysician"
-              :options="allDoctors || []"
-              emit-value
-              map-options
-              label-slot
-              lazy-rules
-              :rules="requiredRule"
-              @update:model-value="onAttendingDoctorSelected"
-            >
-              <template v-slot:label>
-                Admitting Physician<span class="text-red">*</span>
-              </template>
-              <template v-slot:no-option>
-                <q-item>
-                  <q-item-section class="text-grey"> No doctors found </q-item-section>
-                </q-item>
-              </template>
-            </q-select>
-          </div>
+
           <div class="col-12 col-sm-3 col-md-3">
             <q-input
               outlined
-              stack-label
               dense
-              v-model="formData.fncontactatnPhysician"
-              label="Contact No."
+              v-model="formData.fnAttPhysician"
+              label="Attending Physician"
+              stack-label
+              readonly
+            />
+          </div>
+
+          <div class="col-12 col-sm-3 col-md-3">
+            <q-input
+              outlined
+              dense
+              v-model="formData.fnAttPhysicianDept"
+              label="Department"
+              stack-label
               readonly
             />
           </div>
@@ -298,26 +273,6 @@ export default {
 
   methods: {
     ...mapActions(useFinanceStore, ["fetchDoctors"]),
-
-    onDoctorSelected(selectedValue) {
-      const selectedDoctor = this.allDoctors.find((doc) => doc.value === selectedValue);
-
-      if (selectedDoctor) {
-        this.formData.fnDepartment = selectedDoctor.department;
-      } else {
-        this.formData.fnDepartment = "";
-      }
-    },
-
-    onAttendingDoctorSelected(selectedValue) {
-      const selectedDoctor = this.allDoctors.find((doc) => doc.value === selectedValue);
-
-      if (selectedDoctor) {
-        this.formData.fncontactatnPhysician = selectedDoctor.contactNo;
-      } else {
-        this.formData.fncontactatnPhysician = "";
-      }
-    },
 
     onSubmit() {
       this.$emit("submit");

@@ -2,9 +2,17 @@
   <q-form ref="patientDetails" @submit="onNext">
     <div class="text-subtitle1 text-bold q-mb-md">Patient Information:</div>
     <div class="row q-col-gutter-xs">
-      <q-input v-show="false" outlined dense v-model="formData.personalInfo.patientNo">
-      </q-input>
-
+      <div class="col-12 q-mb-md">
+        <q-input
+          v-show="formData.personalInfo.patientNo"
+          outlined
+          dense
+          v-model="formData.personalInfo.patientNo"
+          label="Patient No."
+          readonly
+          input-class="text-weight-bold"
+        />
+      </div>
       <div class="col-12 col-sm-3 col-md-3">
         <q-input
           outlined
@@ -262,6 +270,7 @@
           <template v-slot:label> Province <span class="text-red">*</span> </template>
         </q-select>
       </div>
+
       <div class="col-12 col-sm-3 col-md-3">
         <q-select
           v-model="formData.personalInfo.selectedCity"
@@ -280,34 +289,7 @@
           </template>
         </q-select>
       </div>
-      <!-- <div class="col-12 col-sm-3 col-md-3">
-        <q-select
-          v-model="formData.personalInfo.selectedBarangay"
-          :options="formData.addressOptions.barangays"
-          option-label="DESCRIPTION"
-          option-value="CODE"
-          label-slot
-          use-input
-          fill-input
-          hide-selected
-          :disable="!formData.personalInfo.selectedCity"
-          outlined
-          dense
-          :loading="formData.addressLoading.barangays"
-          @filter="filterBarangays"
-          :rules="[(val) => !!val || 'Required']"
-        >
-          <template v-slot:label> Barangay <span class="text-red">*</span> </template>
 
-          <template v-slot:no-option>
-            <q-item>
-              <q-item-section class="text-grey">
-                Type to search barangays...
-              </q-item-section>
-            </q-item>
-          </template>
-        </q-select>
-      </div> -->
       <div class="col-12 col-sm-3 col-md-3">
         <q-input
           v-model="formData.personalInfo.selectedBarangay"
@@ -437,6 +419,7 @@ export default {
       "loadRegions",
       "loadProvinces",
       "loadCities",
+      "loadBarangays",
       "calculateAge",
     ]),
 
@@ -445,31 +428,6 @@ export default {
       const today = new Date();
       return dateObj < today || "Date must be in the past";
     },
-
-    // async filterBarangays(val, update, abort) {
-    //   if (val.length < 2) {
-    //     abort();
-    //     return;
-    //   }
-    //   update(async () => {
-    //     this.formData.addressLoading.barangays = true;
-    //     try {
-    //       const res = await fetch(
-    //         `http://10.107.0.2:3000/api/patients/barangays?search=${encodeURIComponent(
-    //           val
-    //         )}`
-    //       );
-    //       if (!res.ok) throw new Error(`Server error: ${res.status}`);
-
-    //       const data = await res.json();
-    //       this.formData.addressOptions.barangays = data;
-    //     } catch (e) {
-    //       console.error("Failed to filter barangays:", e);
-    //     } finally {
-    //       this.formData.addressLoading.barangays = false;
-    //     }
-    //   }, 300);
-    // },
 
     updatePermanentAddress() {
       if (this.formData.toggles.sameAsPresent) {

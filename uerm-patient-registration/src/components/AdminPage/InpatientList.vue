@@ -83,12 +83,43 @@
             <q-td :props="props">
               <q-badge
                 v-if="props.value == 1"
-                color="red-6"
-                label="For Approval Credit and Finance"
+                color="green-7"
+                label="Approved by Credit and Finance"
+                outline
+              />
+              <q-badge
+                v-else-if="props.value == 0"
+                color="red-7"
+                label="Disapproved by Credit and Finance"
                 outline
               />
 
-              <q-badge v-else color="green-7" label="Inpatient" outline />
+              <q-badge
+                v-else-if="props.row.ISFORADMISSION == null"
+                color="blue-grey-6"
+                label="For Assessment in Credit"
+                outline
+              />
+
+              <q-badge
+                v-else
+                color="orange-7"
+                label="Pending for Approval in Credit"
+                outline
+              />
+            </q-td>
+          </template>
+
+          <template v-slot:body-cell-ISRETURNING="props">
+            <q-td :props="props">
+              <q-badge
+                v-if="props.value"
+                color="blue-grey-6"
+                label="Returning Patient"
+                outline
+              />
+
+              <q-badge v-else color="blue-6" label="New Patient" outline />
             </q-td>
           </template>
 
@@ -97,13 +128,25 @@
               <q-btn flat round color="grey-7" icon="more_vert">
                 <q-menu cover auto-close>
                   <q-list style="min-width: 150px">
-                    <q-item clickable @click="viewPatient(props.row)">
+                    <q-item
+                      clickable
+                      :disable="!props.row.PATIENTNO"
+                      @click="viewPatient(props.row)"
+                    >
                       <q-item-section avatar>
-                        <q-icon name="las la-clipboard-list" color="blue-10" />
+                        <q-icon name="las la-paper-plane" color="blue-10" />
                       </q-item-section>
-                      <q-item-section>View Patient</q-item-section>
-                    </q-item>
+                      <q-item-section>Send to Credit</q-item-section>
 
+                      <q-tooltip
+                        v-if="!props.row.PATIENTNO"
+                        anchor="bottom middle"
+                        self="bottom middle"
+                        class="bg-red text-white"
+                      >
+                        PATIENTNO IS REQUIRED
+                      </q-tooltip>
+                    </q-item>
                     <q-item
                       clickable
                       :disable="props.row.ISVALIDATED == 1 || props.row.PATIENTNO != null"
@@ -112,7 +155,7 @@
                       <q-item-section avatar>
                         <q-icon name="las la-clipboard-check" color="blue-10" />
                       </q-item-section>
-                      <q-item-section>Validate</q-item-section>
+                      <q-item-section>Create Patient Number</q-item-section>
                     </q-item>
 
                     <q-item clickable @click="handlePrint(props.row)">
@@ -156,7 +199,7 @@
                             <q-item-section avatar>
                               <q-icon name="check" size="xs" />
                             </q-item-section>
-                            <q-item-section>Validate Information</q-item-section>
+                            <q-item-section>Create Patient Number</q-item-section>
                           </q-item>
 
                           <q-item clickable @click="handlePrintConsent(props.row)">
@@ -307,12 +350,12 @@
           <q-btn
             unelevated
             :label="
-              selectedPatient.FORREVIEW
+              selectedPatient.ISFORADMISSION
                 ? 'Already Forwarded'
                 : 'Forward to credit and finance'
             "
-            :color="selectedPatient.FORREVIEW ? 'grey' : 'yellow-10'"
-            :disable="selectedPatient.FORREVIEW"
+            :color="selectedPatient.ISFORADMISSION ? 'grey' : 'yellow-10'"
+            :disable="selectedPatient.ISFORADMISSION"
             icon-right="las la-arrow-up"
             @click="handleSendToCredit(selectedPatient)"
           />
@@ -730,24 +773,12 @@ export default {
 
       columns: [
         {
-          name: "CASENO",
-          label: "CASENO",
-          field: "CASENO",
-          align: "center",
-          sortable: true,
-          style: "width: 120px; font-weight: 600;",
-          headerStyle: "width: 120px;",
-          format: (val) => val || "N/A",
-        },
-
-        {
           name: "PATIENTNO",
           label: "PATIENTNO",
           field: "PATIENTNO",
           align: "center",
           sortable: true,
-          style: "width: 120px; font-weight: 600;",
-          headerStyle: "width: 120px;",
+          style: "font-weight: 600;",
           format: (val) => val || "N/A",
         },
 
@@ -757,8 +788,6 @@ export default {
           field: "fullName",
           align: "center",
           sortable: true,
-          style: "min-width: 220px;",
-          headerStyle: "min-width: 220px;",
         },
 
         {
@@ -766,8 +795,6 @@ export default {
           label: "BIRTHDATE",
           field: "birthdateStr",
           align: "center",
-          style: "width: 150px;",
-          headerStyle: "width: 150px;",
           classes: "text-grey-7",
           format: (val) => (val ? date.formatDate(val, "MMM D, YYYY") : "-"),
         },
@@ -777,15 +804,20 @@ export default {
           label: "ADDRESS",
           field: "addressPresent",
           align: "center",
-          classes: "ellipsis",
-          style: "min-width: 180px; max-width: 350px;",
-          headerStyle: "min-width: 250px;",
+        },
+
+        {
+          name: "ISRETURNING",
+          label: "PATIENT TYPE",
+          field: "ISRETURNING",
+          align: "center",
+          sortable: true,
         },
 
         {
           name: "status",
           label: "STATUS",
-          field: "FORREVIEW",
+          field: "IS_APPROVED",
           align: "center",
           style: "width: 150px;",
           headerStyle: "width: 120px;",

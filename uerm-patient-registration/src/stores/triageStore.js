@@ -28,6 +28,10 @@ export const useTriageStore = defineStore('triage', {
     formData: {
       personalInfoTriageRef: {},
       PatientConsentTriageForm: {},
+      admittingPhysician:"",
+      admittingDepartment:"",
+      attendingPhysician:"",
+      attendingDepartment:"",
       patientSignature: null,
     },
 
@@ -500,37 +504,10 @@ export const useTriageStore = defineStore('triage', {
       }
     },
 
-    async submitCaseNumber(payload) {
-      if (!payload.patientId) {
-        Notify.create({ type: 'negative', message: 'Error: No Patient ID found. Cannot update.' })
-        return
-      }
-
-      this.loading = true
-      try {
-        const response = await axios.post(`${API_URL}/case`, payload)
-        if (response.status === 200) {
-          Notify.create({
-            type: 'positive',
-            message: 'Patient record updated successfully!',
-            position: 'top',
-          })
-          this.caseNumberDialog = false
-          this.fetchAdmitPatients()
-        }
-      } catch (error) {
-        console.error('Update Error:', error)
-        const errMsg = error.response?.data?.message || 'Failed to update record.'
-        Notify.create({ type: 'negative', message: errMsg })
-      } finally {
-        this.loading = false
-      }
-    },
-
-    async admitPatient(patient) {
+    async admitPatient(formData) {
       Loading.show({ message: 'Updating status...' })
       try {
-        await axios.put(`${API_URL}/admit`, { PATIENTREGID: patient.PATIENTREGID })
+        await axios.put(`${API_URL}/admit`, formData)
         Notify.create({
           type: 'positive',
           message: 'Patient updated successfully!',

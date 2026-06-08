@@ -46,7 +46,7 @@
           bordered
           flat
           class="clean-table fit"
-          row-key="CASENO"
+          row-key="PATIENTNO"
           :rows="patientListApproval"
           :columns="columns"
           :loading="loading"
@@ -57,13 +57,13 @@
         >
           <template v-slot:body-cell-PATIENTNO="props">
             <q-td :props="props">
-              <span class="text-grey-8 text-weight-bold">#{{ props.value }}</span>
+              <span class="text-weight-bold">{{ props.value }}</span>
             </q-td>
           </template>
 
           <template v-slot:body-cell-fullName="props">
             <q-td :props="props">
-              <div class="text-weight-medium text-uppercase">{{ props.value }}</div>
+              <div>{{ props.value }}</div>
             </q-td>
           </template>
 
@@ -99,10 +99,7 @@
                     <q-item-label class="text-weight-bold text-blue-10 text-uppercase">
                       {{ props.row.fullName }}
                     </q-item-label>
-                    <q-item-label caption
-                      >Case: {{ props.row.CASENO }} | ID:
-                      {{ props.row.PATIENTNO }}</q-item-label
-                    >
+                    <q-item-label caption> ID: {{ props.row.PATIENTNO }} </q-item-label>
                     <q-item-label caption>
                       Status:
                       <span v-if="props.row.forReview === 0" class="text-red"
@@ -194,7 +191,7 @@
               </div>
               <q-separator />
             </div>
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-6">
               <q-input
                 outlined
                 dense
@@ -203,16 +200,7 @@
                 v-model="patientDetails.fullName"
               />
             </div>
-            <div class="col-12 col-md-4">
-              <q-input
-                outlined
-                dense
-                readonly
-                label="Case No."
-                v-model="patientDetails.CASENO"
-              />
-            </div>
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-6">
               <q-input
                 outlined
                 dense
@@ -228,7 +216,7 @@
               </div>
               <q-separator />
             </div>
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-3">
               <q-input
                 outlined
                 dense
@@ -237,16 +225,16 @@
                 v-model="patientDetails.ADM_PHYSICIAN"
               />
             </div>
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-3">
               <q-input
                 outlined
                 dense
                 readonly
                 label="Department"
-                v-model="patientDetails.DEPARTMENT"
+                v-model="patientDetails.ADM_DEPARTMENT"
               />
             </div>
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-3">
               <q-input
                 outlined
                 dense
@@ -255,7 +243,7 @@
                 v-model="patientDetails.ROOM_ADMISSION"
               />
             </div>
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-3">
               <q-input
                 outlined
                 dense
@@ -265,7 +253,7 @@
               />
             </div>
 
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-6">
               <q-input
                 outlined
                 dense
@@ -274,13 +262,13 @@
                 v-model="patientDetails.ATT_PHYSICIAN"
               />
             </div>
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-6">
               <q-input
                 outlined
                 dense
                 readonly
                 label="Contact Physician"
-                v-model="patientDetails.CONTACT_PHYSICIAN"
+                v-model="patientDetails.ATT_DEPARTMENT"
               />
             </div>
             <div class="col-12 col-md-6">
@@ -655,27 +643,27 @@ export default {
       searchQuery: "",
       detailsDialog: false,
       columns: [
-        // {
-        //   name: "PATIENTNO",
-        //   label: "Patient No.",
-        //   field: "PATIENTNO",
-        //   align: "center",
-        //   sortable: true,
-        //   style: "width: 120px;",
-        //   format: (val) => (Array.isArray(val) ? val[0] : val || "N/A"),
-        // },
         {
-          name: "CASENO",
-          label: "Case No.",
-          field: "CASENO",
+          name: "PATIENTNO",
+          label: "PATIENTNO",
+          field: "PATIENTNO",
           align: "center",
           sortable: true,
           style: "width: 120px; font-weight: bold",
-          format: (val) => val || "N/A",
+          format: (val) => (Array.isArray(val) ? val[0] : val || "N/A"),
         },
+        // {
+        //   name: "CASENO",
+        //   label: "Case No.",
+        //   field: "CASENO",
+        //   align: "center",
+        //   sortable: true,
+        //   style: "width: 120px; font-weight: bold",
+        //   format: (val) => val || "N/A",
+        // },
         {
           name: "fullName",
-          label: "Name",
+          label: "NAME",
           field: "fullName",
           align: "center",
           sortable: true,
@@ -683,7 +671,7 @@ export default {
         },
         {
           name: "birthdateStr",
-          label: "Birthdate",
+          label: "BIRTHDATE",
           field: "birthdateStr",
           align: "center",
           format: (val) => (val ? date.formatDate(val, "MMM D, YYYY") : "-"),
@@ -692,19 +680,20 @@ export default {
         },
         {
           name: "status",
-          label: "Status",
+          label: "STATUS",
           field: "IS_APPROVED",
           align: "center",
           sortable: true,
           style: "width: 120px",
         },
         {
-          name: "DATEAD",
-          label: "Date Added",
-          field: "DATEAD",
+          name: "CREATEDAT",
+          label: "DATE ADDED",
+          field: "CREATEDAT",
           align: "center",
           sortable: true,
-          format: (val) => (val ? date.formatDate(val, "MMM D, YYYY h:mm A") : "-"),
+          format: (val) =>
+            val ? date.formatDate(val.replace("Z", ""), "MMM D, YYYY h:mm A") : "-",
           style: "width: 180px",
         },
       ],
@@ -744,13 +733,13 @@ export default {
     },
 
     async openDetails(row) {
-      if (!row.CASENO) {
-        console.error("No CASENO found for this patient record.");
+      if (!row.PATIENTNO) {
+        console.error("No PATIENTNO found for this patient record.");
         return;
       }
 
       this.detailsDialog = true;
-      await this.fetchPatientDetailsCredit(row.CASENO);
+      await this.fetchPatientDetailsCredit(row.PATIENTNO);
     },
 
     async handleApprove(patient) {
@@ -780,6 +769,6 @@ export default {
 }
 
 .clean-table :deep(tbody tr:hover) {
-  background: #f1f8ff !important; /* Slight blue tint on hover to match theme */
+  background: #f1f8ff !important;
 }
 </style>

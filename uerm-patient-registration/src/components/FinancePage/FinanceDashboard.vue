@@ -147,9 +147,9 @@ export default defineComponent({
     return {
       columns: [
         {
-          name: "caseno",
-          label: "CASE NO",
-          field: "CASENO",
+          name: "patientno",
+          label: "PATIENT NO",
+          field: "PATIENTNO",
           align: "center",
           sortable: true,
           style: "width: 100px",
@@ -163,9 +163,9 @@ export default defineComponent({
         },
         { name: "type", label: "Type", field: "patientType", align: "center" },
         {
-          name: "DATEAD",
-          label: "Date Admitted",
-          field: "DATEAD",
+          name: "CREATEDAT",
+          label: "Date Added",
+          field: "CREATEDAT",
           align: "center",
           format: (val) => (val ? date.formatDate(val, "MMM D, YYYY") : "-"),
         },

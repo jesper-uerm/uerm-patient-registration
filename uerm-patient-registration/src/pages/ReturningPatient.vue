@@ -305,14 +305,13 @@ export default {
 
       this.$q
         .dialog({
-          // title: '<div class="text-center">Select Registration Type</div>',
           message: '<div class="text-center">Choose patient type to continue.</div>',
           html: true,
 
           options: {
             type: "radio",
             model: "INPATIENT",
-            // inline: true,
+
             class: "justify-center",
 
             items: [

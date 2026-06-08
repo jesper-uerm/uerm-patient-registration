@@ -122,6 +122,7 @@
           <q-item-section>Inpatient</q-item-section>
         </q-item>
 
+        <!--
         <q-item
           clickable
           v-ripple
@@ -133,7 +134,7 @@
             <q-icon name="las la-stethoscope" />
           </q-item-section>
           <q-item-section>Outpatient</q-item-section>
-        </q-item>
+        </q-item> -->
 
         <q-separator spaced class="q-mx-md" />
 

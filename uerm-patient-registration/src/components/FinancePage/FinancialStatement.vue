@@ -89,8 +89,7 @@
               :rows="patientRecord"
               :columns="columns"
               row-key="PATIENTNO"
-              hide-pagination
-              :pagination="{ rowsPerPage: 0 }"
+              :pagination="{ rowsPerPage: 10 }"
               separator="horizontal"
               table-header-class="bg-grey-3 text-weight-bold"
               :loading="loading"
@@ -233,6 +232,8 @@ export default {
         });
 
         this.financialDialog = false;
+
+        this.fetchPatientsFinance();
 
         if (this.$parent && this.$parent.fetchPatients) {
           this.$parent.fetchPatients();

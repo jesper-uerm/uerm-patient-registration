@@ -70,19 +70,36 @@
             </q-td>
           </template>
 
-          <template v-slot:body-cell-ISFORADMISSION="props">
+          <template v-slot:body-cell-status="props">
             <q-td :props="props">
               <q-badge
                 v-if="props.value == 1"
-                color="red-6"
-                label="For Admission"
+                color="green-7"
+                label="Approved by Credit and Finance"
+                outline
+              />
+              <q-badge
+                v-else-if="props.value == 0"
+                color="red-7"
+                label="Disapproved by Credit and Finance"
                 outline
               />
 
-              <q-badge v-else color="grey-6" label="Emergency Patient" outline />
+              <q-badge
+                v-else-if="props.row.ISFORADMISSION == null"
+                color="blue-grey-6"
+                label="For Assessment in Credit"
+                outline
+              />
+
+              <q-badge
+                v-else
+                color="orange-7"
+                label="Pending for approval in credit"
+                outline
+              />
             </q-td>
           </template>
-
           <template v-slot:body-cell-addressPresent="props">
             <q-td :props="props" style="max-width: 150px">
               <div class="ellipsis text-grey-7">
@@ -832,13 +849,14 @@ export default defineComponent({
           classes: "text-grey-7",
           style: "width: 180px",
         },
+
         {
-          name: "ISFORADMISSION",
+          name: "status",
           label: "STATUS",
-          field: "ISFORADMISSION",
+          field: "IS_APPROVED",
           align: "center",
-          sortable: true,
-          style: "width: 120px",
+          style: "width: 150px;",
+          headerStyle: "width: 120px;",
         },
 
         {

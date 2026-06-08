@@ -3,14 +3,14 @@
     <q-card class="no-shadow" style="border: 1px solid #e0e0e0; border-radius: 8px">
       <q-card-section class="q-py-md q-px-lg" style="background-color: #004aad">
         <div class="text-h6 text-white text-weight-bold">FROM EMERGENCY ROOM</div>
-        <div class="text-caption text-grey-5">Search inpatient records</div>
+        <div class="text-caption text-grey-5">Search emergency room records</div>
       </q-card-section>
 
       <q-card-section class="q-py-md q-px-lg bg-grey-1">
         <q-input
           outlined
           dense
-          v-model="localSearchQuery"
+          v-model="searchQuery"
           placeholder="Enter Name or ID"
           @keyup.enter="handleSearch"
           debounce="500"
@@ -40,24 +40,16 @@
           bordered
           :rows="patientListfromER"
           :columns="columns"
-          row-key="PATIENTREGID"
+          row-key="PATIENTNO"
           :loading="loading"
+          :filter="searchQuery"
           flat
           virtual-scroll
           :rows-per-page-options="[10]"
           class="clean-table fit"
           header-class="bg-grey-1 text-grey-8 text-weight-bold text-uppercase"
-          @row-click="(evt, row) => $refs.admittingFormRef.openadmittingDialog(row)"
         >
           <template v-slot:body-cell-CASENO="props">
-            <q-td :props="props">
-              <span class="text-weight-bold text-grey-8">
-                {{ props.value || "N/A" }}
-              </span>
-            </q-td>
-          </template>
-
-          <template v-slot:body-cell-PATIENTNO="props">
             <q-td :props="props">
               <span class="text-weight-bold text-grey-8">
                 {{ props.value || "N/A" }}
@@ -82,25 +74,44 @@
             </q-td>
           </template>
 
-          <template v-slot:item="props">
-            <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
-              <q-card flat bordered class="q-pa-sm">
-                <q-item>
-                  <q-item-section avatar>
-                    <q-icon name="account_circle" color="blue-10" size="md" />
-                  </q-item-section>
+          <template v-slot:body-cell-ISRETURNING="props">
+            <q-td :props="props">
+              <q-badge
+                v-if="props.value"
+                color="blue-grey-6"
+                label="Returning Patient"
+                outline
+              />
+              <q-badge v-else color="blue-6" label="New Patient" outline />
+            </q-td>
+          </template>
 
-                  <q-item-section>
-                    <q-item-label class="text-weight-bold text-blue-10">
-                      {{ props.row.fullName }}
-                    </q-item-label>
-                    <q-item-label caption>
-                      ID: {{ props.row.PATIENTREGID }}
-                    </q-item-label>
-                  </q-item-section>
-                </q-item>
-              </q-card>
-            </div>
+          <template v-slot:body-cell-status="props">
+            <q-td :props="props">
+              <q-badge
+                v-if="props.value == 1"
+                color="green-7"
+                label="Approved by Credit and Finance"
+                outline
+              />
+            </q-td>
+          </template>
+
+          <template v-slot:body-cell-actions="props">
+            <q-td :props="props" class="text-center">
+              <q-btn flat round color="grey-7" icon="more_vert">
+                <q-menu cover auto-close>
+                  <q-list style="min-width: 150px">
+                    <q-item clickable>
+                      <q-item-section avatar>
+                        <q-icon name="las la-print" color="green-8" />
+                      </q-item-section>
+                      <q-item-section>Print Record</q-item-section>
+                    </q-item>
+                  </q-list>
+                </q-menu>
+              </q-btn>
+            </q-td>
           </template>
 
           <template v-slot:loading>
@@ -112,11 +123,12 @@
           <template v-slot:no-data>
             <div class="full-width column flex-center text-grey-5 q-pa-xl">
               <q-icon size="4em" name="person_search" class="q-mb-md" />
-              <div class="text-subtitle1" v-if="!hasSearched">
-                Ready to Search Inpatients
-              </div>
-              <div class="text-subtitle1" v-else>
-                No patients found matching "{{ searchQuery }}"
+              <div class="text-subtitle1">
+                {{
+                  searchQuery
+                    ? `No patients found matching "${searchQuery}"`
+                    : "No ER patients found"
+                }}
               </div>
             </div>
           </template>
@@ -139,26 +151,21 @@ export default {
 
   data() {
     return {
+      searchQuery: "",
       columns: [
-        {
-          name: "CASENO",
-          label: "CASENO",
-          field: "CASENO",
-          align: "center",
-          sortable: true,
-        },
         {
           name: "PATIENTNO",
           label: "PATIENTNO",
           field: "PATIENTNO",
           align: "center",
-          sortable: true,
+          style: "font-weight: 600;",
+          format: (val) => val || "N/A",
         },
         {
           name: "fullName",
           label: "NAME",
           field: "fullName",
-          align: "left",
+          align: "center",
           sortable: true,
         },
         {
@@ -169,37 +176,40 @@ export default {
           align: "center",
         },
         {
-          name: "gender",
-          label: "SEX",
-          field: "gender",
-          align: "center",
-        },
-        {
           name: "addressPresent",
           label: "ADDRESS",
           field: "addressPresent",
-          align: "left",
+          align: "center",
+        },
+        {
+          name: "ISRETURNING",
+          label: "PATIENT TYPE",
+          field: "ISRETURNING",
+          align: "center",
+          sortable: true,
+        },
+        {
+          name: "status",
+          label: "STATUS",
+          field: "IS_APPROVED",
+          align: "center",
+          style: "width: 150px;",
+          headerStyle: "width: 120px;",
+        },
+        {
+          name: "actions",
+          label: "Actions",
+          field: "actions",
+          align: "center",
+          style: "width: 140px;",
+          headerStyle: "width: 140px;",
         },
       ],
     };
   },
 
   computed: {
-    ...mapState(useInpatientStore, [
-      "patientListfromER",
-      "loading",
-      "searchQuery",
-      "hasSearched",
-    ]),
-
-    localSearchQuery: {
-      get() {
-        return this.searchQuery;
-      },
-      set(val) {
-        this.useInpatientStore().searchQuery = val;
-      },
-    },
+    ...mapState(useInpatientStore, ["patientListfromER", "loading"]),
   },
 
   mounted() {
@@ -207,25 +217,22 @@ export default {
   },
 
   methods: {
-    ...mapActions(useInpatientStore, ["fetchFromErList", "searchPatients"]),
-
-    useInpatientStore,
+    ...mapActions(useInpatientStore, ["fetchFromErList", "searchErPatients"]),
 
     handleSearch() {
-      if (!this.localSearchQuery) {
+      if (!this.searchQuery) {
         this.fetchFromErList();
         return;
       }
-
-      if (this.localSearchQuery.length < 2) {
+      if (this.searchQuery.length < 2) {
         this.$q.notify({
           type: "warning",
           message: "Please enter at least 2 characters",
+          position: "top",
         });
         return;
       }
-
-      this.searchPatients(this.localSearchQuery);
+      this.searchErPatients(this.searchQuery);
     },
 
     formatDate(val) {

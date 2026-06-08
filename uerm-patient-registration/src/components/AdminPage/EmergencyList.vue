@@ -76,38 +76,55 @@
             </q-td>
           </template>
 
-          <template v-slot:body-cell-ISFORADMISSION="props">
+          <template v-slot:body-cell-status="props">
             <q-td :props="props">
               <q-badge
-                v-if="props.row.REVIEWEDBY !== null && props.row.REVIEWEDBY !== ''"
-                color="orange-6"
-                label="For Approval Credit and Finance"
+                v-if="props.value == 1"
+                color="green-7"
+                label="Approved by Credit and Finance"
+                outline
+              />
+              <q-badge
+                v-else-if="props.value == 0"
+                color="red-7"
+                label="Disapproved by Credit and Finance"
                 outline
               />
 
               <q-badge
-                v-else-if="props.value == 1"
-                color="blue-6"
-                label="For Admission"
+                v-else-if="props.row.ISFORADMISSION == null"
+                color="blue-grey-6"
+                label="For Assessment in Credit"
                 outline
               />
 
               <q-badge
-                v-else-if="props.value == 2"
-                color="green-6"
-                label="Admitted"
+                v-else
+                color="orange-7"
+                label="Pending for approval in credit"
+                outline
+              />
+            </q-td>
+          </template>
+
+          <template v-slot:body-cell-ISRETURNING="props">
+            <q-td :props="props">
+              <q-badge
+                v-if="props.value"
+                color="blue-grey-6"
+                label="Returning Patient"
                 outline
               />
 
-              <q-badge v-else color="red-6" label="Emergency Patient" outline />
+              <q-badge v-else color="green-6" label="New Patient" outline />
             </q-td>
           </template>
 
           <template v-slot:body-cell-addressPresent="props">
             <q-td :props="props" style="max-width: 150px">
               <div class="ellipsis text-grey-7">
-                {{ formData.ADDRESSPRESENT }}
-                <q-tooltip>{{ formData.ADDRESSPRESENT }}</q-tooltip>
+                {{ props.value }}
+                <q-tooltip>{{ props.value }}</q-tooltip>
               </div>
             </q-td>
           </template>
@@ -120,13 +137,22 @@
                   <q-list style="min-width: 170px">
                     <q-item
                       clickable
-                      :disable="props.row.ISFORADMISSION !== null"
+                      :disable="props.row.ISFORADMISSION !== null || !props.row.PATIENTNO"
                       @click="handleAdmit(props.row)"
                     >
                       <q-item-section avatar>
                         <q-icon name="las la-bed" color="blue-10" />
                       </q-item-section>
                       <q-item-section>Admit Patient</q-item-section>
+
+                      <q-tooltip
+                        v-if="!props.row.PATIENTNO"
+                        anchor="bottom middle"
+                        self="bottom middle"
+                        class="bg-red text-white"
+                      >
+                        PATIENTNO IS REQUIRED
+                      </q-tooltip>
                     </q-item>
 
                     <q-item
@@ -137,7 +163,7 @@
                       <q-item-section avatar>
                         <q-icon name="las la-clipboard-check" color="blue-10" />
                       </q-item-section>
-                      <q-item-section>Validate</q-item-section>
+                      <q-item-section>Create Patient Number</q-item-section>
                     </q-item>
 
                     <q-item
@@ -199,7 +225,7 @@
                               />
                             </q-item-section>
                             <q-item-section>
-                              <q-item-label>Validate</q-item-label>
+                              <q-item-label>Create Patient Number</q-item-label>
                               <q-item-label caption v-if="props.row.ISVALIDATED == 1"
                                 >Already Validated</q-item-label
                               >
@@ -874,6 +900,7 @@
                   </template>
                 </q-input>
               </div>
+              <!-- Triage Personnel Signature -->
               <div class="col-12">
                 <div class="text-caption text-center text-grey-8 q-mb-xs">
                   Triage Personnel Signature <span class="text-red">*</span>
@@ -1057,6 +1084,162 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <q-dialog v-model="admitDialog" persistent>
+      <q-card style="min-width: 520px; border-radius: 12px">
+        <q-card-section class="q-pa-md">
+          <div
+            class="q-pa-md rounded-borders q-mb-md"
+            style="background: #f8f9fa; border: 1px solid #e0e0e0"
+          >
+            <div class="row items-center q-mb-md">
+              <div class="col-auto q-mr-md">
+                <div
+                  class="bg-blue-1 text-primary flex flex-center rounded-borders"
+                  style="width: 42px; height: 42px"
+                >
+                  <q-icon name="las la-user" size="26px" />
+                </div>
+              </div>
+              <div class="col">
+                <div
+                  class="text-caption text-grey-6 text-uppercase text-weight-bold"
+                  style="line-height: 1"
+                >
+                  Patient Name
+                </div>
+                <div class="text-subtitle1 text-uppercase" style="line-height: 1.2">
+                  {{ selectedPatient?.fullName || "N/A" }}
+                </div>
+              </div>
+            </div>
+
+            <q-separator class="q-my-md" style="background-color: #e0e0e0" />
+
+            <div class="row items-center q-mb-sm">
+              <div class="col-auto q-mr-sm text-center" style="width: 24px">
+                <q-icon name="las la-id-badge" class="text-grey-5" size="20px" />
+              </div>
+              <div class="col text-grey-7">Patient No.</div>
+              <div class="col-auto text-weight-bold text-dark">
+                {{ selectedPatient?.PATIENTNO || "N/A" }}
+              </div>
+            </div>
+
+            <div class="row items-center">
+              <div class="col-auto q-mr-sm text-center" style="width: 24px">
+                <q-icon name="las la-calendar-day" class="text-grey-5" size="20px" />
+              </div>
+              <div class="col text-grey-7">Birthdate</div>
+              <div class="col-auto text-weight-bold text-dark">
+                {{ selectedPatient?.birthdateStr || "N/A" }}
+              </div>
+            </div>
+          </div>
+
+          <div class="text-subtitle2 text-grey-8 q-mb-md text-weight-bold">
+            Admission Details
+          </div>
+
+          <div class="q-gutter-y-md q-px-xs">
+            <div class="row q-col-gutter-sm">
+              <div class="col-12 col-sm-7">
+                <q-select
+                  outlined
+                  dense
+                  v-model="formData.admittingPhysician"
+                  :options="allDoctors || []"
+                  emit-value
+                  map-options
+                  label-slot
+                  stack-label
+                  lazy-rules
+                  @update:model-value="onDoctorSelected"
+                >
+                  <template v-slot:label>
+                    Admitting Physician<span class="text-red">*</span>
+                  </template>
+                  <template v-slot:no-option>
+                    <q-item>
+                      <q-item-section class="text-grey">
+                        No doctors found
+                      </q-item-section>
+                    </q-item>
+                  </template>
+                </q-select>
+              </div>
+              <div class="col-12 col-sm-5">
+                <q-input
+                  outlined
+                  dense
+                  v-model="formData.admittingDepartment"
+                  label="Department"
+                  stack-label
+                  readonly
+                />
+              </div>
+            </div>
+
+            <div class="row q-col-gutter-sm">
+              <div class="col-12 col-sm-7">
+                <q-select
+                  outlined
+                  stack-label
+                  dense
+                  v-model="formData.attendingPhysician"
+                  :options="allDoctors || []"
+                  emit-value
+                  map-options
+                  label-slot
+                  lazy-rules
+                  @update:model-value="onAttendingDoctorSelected"
+                >
+                  <template v-slot:label>
+                    Attending Physician<span class="text-red">*</span>
+                  </template>
+                  <template v-slot:no-option>
+                    <q-item>
+                      <q-item-section class="text-grey">
+                        No doctors found
+                      </q-item-section>
+                    </q-item>
+                  </template>
+                </q-select>
+              </div>
+
+              <div class="col-12 col-sm-5">
+                <q-input
+                  outlined
+                  dense
+                  v-model="formData.attendingDepartment"
+                  label="Department"
+                  stack-label
+                  readonly
+                />
+              </div>
+            </div>
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="right" class="q-px-md q-pb-md">
+          <q-btn
+            flat
+            label="Cancel"
+            color="grey-7"
+            class="q-px-md text-weight-bold"
+            v-close-popup
+          />
+          <q-btn
+            unelevated
+            label="Confirm & Admit"
+            color="yellow-10"
+            icon-right="las la-check"
+            class="q-px-md text-weight-bold text-white"
+            @click="confirmAdmit"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -1065,6 +1248,7 @@ import { date } from "quasar";
 import { mapState, mapActions, mapWritableState } from "pinia";
 import { useTriageStore } from "src/stores/triageStore";
 import { useAuthStore } from "src/stores/authStore";
+import { useFinanceStore } from "src/stores/financeStore";
 
 import SignaturePad from "src/components/TriageAssessment/SignaturePad.vue";
 import { printEmergencyTreatment } from "src/composables/printEmergencyTreatment";
@@ -1094,6 +1278,7 @@ export default {
       hasError: false,
 
       showDuplicateDialog: false,
+      admitDialog: false,
       duplicateList: [],
       selectedDuplicate: null,
       pendingPatientId: null,
@@ -1147,12 +1332,21 @@ export default {
           style: "width: 180px",
         },
         {
-          name: "ISFORADMISSION",
-          label: "STATUS",
-          field: "ISFORADMISSION",
+          name: "ISRETURNING",
+          label: "PATIENT TYPE",
+          field: "ISRETURNING",
           align: "center",
           sortable: true,
           style: "width: 120px",
+        },
+
+        {
+          name: "status",
+          label: "STATUS",
+          field: "IS_APPROVED",
+          align: "center",
+          style: "width: 150px;",
+          headerStyle: "width: 120px;",
         },
 
         {
@@ -1167,6 +1361,7 @@ export default {
   },
 
   computed: {
+    ...mapState(useFinanceStore, ["allDoctors"]),
     ...mapState(useTriageStore, [
       "patientList",
       "loading",
@@ -1185,6 +1380,7 @@ export default {
   mounted() {
     this.fetchPatients();
     this.formData.personnelTriage = this.fullName;
+    this.fetchDoctors();
   },
 
   watch: {
@@ -1207,6 +1403,7 @@ export default {
       "getPatientFullDetails",
       "linkExistingPatient",
     ]),
+    ...mapActions(useFinanceStore, ["fetchDoctors"]),
 
     resetForm() {
       this.formData.patientId = null;
@@ -1305,90 +1502,17 @@ export default {
     },
 
     handleAdmit(patient) {
-      this.$q
-        .dialog({
-          title: ` `,
-          message: `
-    <div class="q-pa-md rounded-borders" style="background: #f8f9fa; border: 1px solid #e0e0e0;">
+      this.selectedPatient = patient;
 
-      <div class="row items-center q-mb-md">
-        <div class="col-auto q-mr-md">
-          <div class="bg-blue-1 text-primary flex flex-center rounded-borders" style="width: 42px; height: 42px;">
-            <i class="las la-user" style="font-size: 26px;"></i>
-          </div>
-        </div>
-        <div class="col">
-          <div class="text-caption text-grey-6 text-uppercase text-weight-bold" style="line-height: 1;">Patient Name</div>
-          <div class="text-subtitle1 text-uppercase" style="line-height: 1.2;">
-            ${patient.fullName || "N/A"}
-          </div>
-        </div>
-      </div>
+      this.admitDialog = true;
+    },
 
-      <hr style="border: none; height: 1px; background-color: #e0e0e0; margin: 12px 0;" />
+    confirmAdmit() {
+      this.admitDialog = false;
 
-      <div class="row items-center q-mb-sm">
-        <div class="col-auto q-mr-sm" style="width: 24px; text-align: center;">
-          <i class="las la-id-badge text-grey-5" style="font-size: 20px;"></i>
-        </div>
-        <div class="col text-grey-7">Patient No.</div>
-        <div class="col-auto text-weight-bold text-dark">
-          ${patient.PATIENTNO || "N/A"}
-        </div>
-      </div>
+      this.formData.PATIENTREGID = this.selectedPatient.PATIENTREGID;
 
-      <div class="row items-center q-mb-sm">
-        <div class="col-auto q-mr-sm" style="width: 24px; text-align: center;">
-          <i class="las la-calendar-day text-grey-5" style="font-size: 20px;"></i>
-        </div>
-        <div class="col text-grey-7">Birthdate</div>
-        <div class="col-auto text-weight-bold text-dark">
-          ${patient.birthdateStr || "N/A"}
-        </div>
-      </div>
-
-      <div class="row items-center">
-        <div class="col-auto q-mr-sm" style="width: 24px; text-align: center;">
-          <i class="las la-notes-medical text-grey-5" style="font-size: 20px;"></i>
-        </div>
-        <div class="col text-grey-7">Status</div>
-        <div class="col-auto">
-          <span class="bg-orange-1 text-orange-9 text-weight-bold q-px-sm q-py-xs rounded-borders" style="font-size: 11px; border: 1px solid #ffcc80;">
-            REFER TO ADMISSION
-          </span>
-        </div>
-      </div>
-
-    </div>
-
-    <div class="q-mt-lg row items-start text-body2 text-center text-grey-9 bg-grey-2 q-pa-md rounded-borders">
-      <i class="las la-question-circle text-primary q-mr-sm" style="font-size: 22px;"></i>
-      <div class="col text-weight-medium">
-        Are you sure you want to admit this patient?
-      </div>
-    </div>
-  `,
-          html: true,
-          persistent: true,
-          style: "min-width: 450px; border-radius: 12px;",
-          ok: {
-            label: "Proceed to Admit",
-            iconRight: "las la-arrow-right",
-            unelevated: true,
-            color: "yellow-10",
-            class: "q-px-md text-weight-bold rounded-borders",
-            style: "color: white;",
-          },
-          cancel: {
-            label: "Cancel",
-            color: "grey-7",
-            flat: true,
-            class: "q-px-md text-weight-bold",
-          },
-        })
-        .onOk(() => {
-          this.admitPatient(patient);
-        });
+      this.admitPatient(this.formData);
     },
 
     async handlePrint(row) {
@@ -1418,16 +1542,26 @@ export default {
       if (p.SUFFIX) fullName += ` ${p.SUFFIX}`;
       return fullName;
     },
-  },
 
-  onDoctorSelected(selectedValue) {
-    const selectedDoctor = this.allDoctors.find((doc) => doc.value === selectedValue);
+    onDoctorSelected(selectedValue) {
+      const selectedDoctor = this.allDoctors.find((doc) => doc.value === selectedValue);
 
-    if (selectedDoctor) {
-      this.formData.fnDepartment = selectedDoctor.department;
-    } else {
-      this.formData.fnDepartment = "";
-    }
+      if (selectedDoctor) {
+        this.formData.admittingDepartment = selectedDoctor.department;
+      } else {
+        this.formData.admittingDepartment = "";
+      }
+    },
+
+    onAttendingDoctorSelected(selectedValue) {
+      const selectedDoctor = this.allDoctors.find((doc) => doc.value === selectedValue);
+
+      if (selectedDoctor) {
+        this.formData.attendingDepartment = selectedDoctor.department;
+      } else {
+        this.formData.attendingDepartment = "";
+      }
+    },
   },
 };
 </script>

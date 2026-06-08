@@ -82,10 +82,10 @@ export const useFinanceStore = defineStore("finance", {
       fnphNumber: "",
       fnphRemarks: "",
       fnMop: "",
-      fnadmPhysician: "",
-      fnDepartment: "",
-      fnatnPhysician: "",
-      fncontactatnPhysician: "",
+      fnAdmPhysician: "",
+      fnAdmPhysicianDept: "",
+      fnAttPhysician: "",
+      fnAttPhysicianDept: "",
       fnrmAdmission: "",
       fnCost: "",
       fnlengthStay: "",
@@ -108,7 +108,7 @@ export const useFinanceStore = defineStore("finance", {
         const [pieRes, lineRes, listRes] = await Promise.all([
           axios.get(`${DASHBOARD_API_URL}/pie-chart`),
           axios.get(`${DASHBOARD_API_URL}/line-chart`),
-          axios.get(`${API_URL}/finance`),
+          axios.get(`${PATIENT_API_URL}/finance`),
         ]);
 
         this.pieSeries = pieRes.data.series;
@@ -217,6 +217,11 @@ export const useFinanceStore = defineStore("finance", {
           ? new Date(patientData.lastAdPay).toISOString().split('T')[0]
           : null,
 
+        fnAdmPhysician: (patientData.ADM_PHYSICIAN || '').trim().toUpperCase(),
+        fnAdmPhysicianDept: (patientData.ADM_PHYSICIAN_DEPT || '').trim().toUpperCase(),
+        fnAttPhysician: (patientData.ATT_PHYSICIAN || '').trim().toUpperCase(),
+        fnAttPhysicianDept: (patientData.ATT_PHYSICIAN_DEPT || '').trim().toUpperCase(),
+
         fnEvaluatedBY: authStore.fullName || '',
 
       });
@@ -231,13 +236,13 @@ export const useFinanceStore = defineStore("finance", {
     async fetchPatientsFinance() {
       this.loading = true;
       try {
-        const response = await axios.get(`${API_URL}/finance`);
+        const response = await axios.get(`${PATIENT_API_URL}/finance`);
         this.patientList = response.data;
       } catch (error) {
         console.error(error);
         Notify.create({
           type: "negative",
-          message: "Failed to load Review List",
+          message: "Failed to load Finance List",
           position: "top",
         });
       } finally {
@@ -248,7 +253,7 @@ export const useFinanceStore = defineStore("finance", {
     async fetchPatientsFinanceApproval() {
       this.loading = true;
       try {
-        const response = await axios.get(`${API_URL}/financeApproval`);
+        const response = await axios.get(`${PATIENT_API_URL}/financeApproval`);
         this.patientListApproval = response.data;
       } catch (error) {
         console.error(error);
@@ -279,19 +284,19 @@ export const useFinanceStore = defineStore("finance", {
       }
     },
 
-    async fetchPatientDetailsCredit(caseno) {
-      this.detailsLoading = true;
-      this.patientDetails = null;
+    async fetchPatientDetailsCredit(patientno) {
+    this.detailsLoading = true;
+    this.patientDetails = null;
 
-      try {
-      const response = await axios.get(`${PATIENT_API_URL}/assessment-details/${caseno}`);
-        this.patientDetails = response.data;
-      } catch (error) {
-        console.error("Error fetching patient details:", error);
-      } finally {
-        this.detailsLoading = false;
-      }
-    },
+    try {
+      const response = await axios.get(`${PATIENT_API_URL}/assessment-details/${patientno}`);
+      this.patientDetails = response.data;
+    } catch (error) {
+      console.error("Error fetching patient details:", error);
+    } finally {
+      this.detailsLoading = false;
+    }
+  },
 
     viewPatient(row) {
       this.selectedPatient = row;
@@ -336,35 +341,34 @@ export const useFinanceStore = defineStore("finance", {
       }
   },
 
-    async updatePatientDetails() {
-      if (!this.currentPatient?.CASENO || !this.currentPatient?.PATIENTNO) {
-        throw new Error("No patient selected for update.");
-      }
+  async updatePatientDetails() {
+    if (!this.currentPatient?.PATIENTNO) {
+      throw new Error("No patient selected for update.");
+    }
 
-      this.submitting = true;
-      try {
-        const authStore = useAuthStore();
+    this.submitting = true;
+    try {
+      const authStore = useAuthStore();
+      const payload = {
+        patientno: this.currentPatient.PATIENTNO,
+        formData: this.formData,
+        reviewedBy: authStore.fullName || '',
+      };
 
-        const payload = {
-          caseno: this.currentPatient.CASENO,
-          patientno: this.currentPatient.PATIENTNO,
-          formData: this.formData,
-          reviewedBy: authStore.fullName || '',
-        };
+      await axios.put(`${PATIENT_API_URL}/details`, payload);
+      await this.fetchPatientsFinance();
+      return { success: true };
+    } catch (error) {
+      console.error("API Error updating details:", error);
+      return { success: false, error };
+    } finally {
+      this.submitting = false;
+    }
+  },
 
-        await axios.put(`${PATIENT_API_URL}/details`, payload);
-        return { success: true };
-      } catch (error) {
-        console.error("API Error updating details:", error);
-        return { success: false, error };
-      } finally {
-        this.submitting = false;
-      }
-    },
-
-    async approvePatient(patient) {
-    if (!patient || !patient.CASENO) {
-      Notify.create({ type: 'negative', message: 'Case Number is missing.' });
+  async approvePatient(patient) {
+    if (!patient || !patient.PATIENTNO) {
+      Notify.create({ type: 'negative', message: 'Patient Number is missing.' });
       return;
     }
 
@@ -375,7 +379,7 @@ export const useFinanceStore = defineStore("finance", {
 
     try {
       await axios.put(`${PATIENT_API_URL}/approve`, {
-        CASENO: patient.CASENO,
+        PATIENTNO: patient.PATIENTNO,
         approvedBy: userName
       });
 
@@ -394,29 +398,30 @@ export const useFinanceStore = defineStore("finance", {
     }
   },
 
-    async disapprovePatient(patient) {
-      if (!patient || !patient.CASENO) {
-        Notify.create({ type: 'negative', message: 'Case Number is missing.' });
-        return;
-      }
+  async disapprovePatient(patient) {
+    if (!patient || !patient.PATIENTNO) {
+      Notify.create({ type: 'negative', message: 'Patient Number is missing.' });
+      return;
+    }
 
-      Loading.show({ message: 'Updating status...' });
-      try {
-        await axios.put(`${PATIENT_API_URL}/disapprove`, { CASENO: patient.CASENO });
+    Loading.show({ message: 'Updating status...' });
+    try {
+      await axios.put(`${PATIENT_API_URL}/disapprove`, { PATIENTNO: patient.PATIENTNO });
 
-        Notify.create({
-          type: 'warning',
-          message: 'Patient has been declined.',
-          position: 'top',
-        });
+      Notify.create({
+        type: 'warning',
+        message: 'Patient has been declined.',
+        position: 'top',
+      });
 
-        await this.fetchPatientsFinanceApproval();
-      } catch (error) {
-        console.error('Update failed:', error);
-        Notify.create({ type: 'negative', message: 'Failed to update status.', position: 'top' });
-      } finally {
-        Loading.hide();
-      }
-    },
+      await this.fetchPatientsFinanceApproval();
+    } catch (error) {
+      console.error('Update failed:', error);
+      Notify.create({ type: 'negative', message: 'Failed to update status.', position: 'top' });
+    } finally {
+      Loading.hide();
+    }
+  },
+
   },
 });

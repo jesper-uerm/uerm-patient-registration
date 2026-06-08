@@ -109,7 +109,7 @@
                         />
                       </q-item-section>
                       <q-item-section>
-                        <q-item-label>Validate</q-item-label>
+                        <q-item-label>Create Patient Number</q-item-label>
                       </q-item-section>
                     </q-item>
 
@@ -156,7 +156,7 @@
                             <q-item-section avatar>
                               <q-icon name="check" size="xs" />
                             </q-item-section>
-                            <q-item-section>Validate Information</q-item-section>
+                            <q-item-section>Create Patient Number</q-item-section>
                           </q-item>
 
                           <q-item clickable @click="handlePrintConsent(props.row)">
@@ -668,12 +668,7 @@ export default {
           format: (val) => (val ? date.formatDate(val, "MMM D, YYYY") : "-"),
           classes: "text-grey-7",
         },
-        {
-          name: "gender",
-          label: "SEX",
-          field: "gender",
-          align: "center",
-        },
+
         {
           name: "addressPresent",
           label: "ADDRESS",
@@ -681,6 +676,16 @@ export default {
           align: "left",
           classes: "ellipsis",
         },
+
+        {
+          name: "ISRETURNING",
+          label: "PATIENT TYPE",
+          field: "ISRETURNING",
+          align: "center",
+          sortable: true,
+          style: "width: 120px",
+        },
+
         {
           name: "actions",
           label: "ACTION",

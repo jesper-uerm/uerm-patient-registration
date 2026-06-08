@@ -3,6 +3,17 @@
     <div class="text-subtitle1 text-bold q-mb-md">Patient Information:</div>
 
     <div class="row q-col-gutter-sm">
+      <div class="col-12 q-mb-md">
+        <q-input
+          v-show="formData.personalInfoOutpatient.patientNoOutpatient"
+          outlined
+          dense
+          v-model="formData.personalInfoOutpatient.patientNoOutpatient"
+          label="Patient No."
+          readonly
+          input-class="text-weight-bold"
+        />
+      </div>
       <div class="col-12 col-sm-3 col-md-3">
         <q-input
           outlined
@@ -270,7 +281,8 @@
       </div>
     </div>
 
-    <q-stepper-navigation class="text-center">
+    <q-stepper-navigation class="text-center"
+      >l
       <q-btn
         color="blue-10"
         icon-right="arrow_forward"

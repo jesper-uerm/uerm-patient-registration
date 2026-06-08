@@ -62,7 +62,6 @@
     </div>
     <div class="text-caption text-red"></div>
     <q-stepper-navigation
-      class="q-mt-lg"
       :class="
         $q.screen.lt.sm
           ? 'column q-gutter-y-sm items-center'
