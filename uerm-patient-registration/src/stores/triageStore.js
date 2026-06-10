@@ -3,9 +3,9 @@ import axios from 'axios'
 import { Notify, Loading, date } from 'quasar'
 import { useAuthStore } from "src/stores/authStore";
 
-const DASHBOARD_API_URL = 'http://10.107.0.2:3000/api/dashboard'
-const API_URL = 'http://10.107.0.2:3000/api/er'
-const PATIENT_API_URL = 'http://10.107.0.2:3000/api/patients'
+const DASHBOARD_API_URL = 'http://10.107.0.2:3000/patient-reg/dashboard'
+const API_URL = 'http://10.107.0.2:3000/patient-reg/er'
+const PATIENT_API_URL = 'http://10.107.0.2:3000/patient-reg/patients'
 
 export const useTriageStore = defineStore('triage', {
   state: () => ({
@@ -190,14 +190,6 @@ export const useTriageStore = defineStore('triage', {
     },
 
     async searchPatients(query) {
-      if (!query || query.length < 2) {
-        Notify.create({
-          type: 'warning',
-          message: 'Please enter at least 2 characters',
-          position: 'top',
-        })
-        return
-      }
       this.loading = true
       this.searchQuery = query
 
@@ -223,15 +215,6 @@ export const useTriageStore = defineStore('triage', {
     },
 
     async searchPatientsAdmitted(query) {
-      if (!query || query.length < 2) {
-        Notify.create({
-          type: 'warning',
-          message: 'Please enter at least 2 characters',
-          position: 'top',
-        })
-        return
-      }
-
       this.loading = true
       this.searchQuery = query
 
@@ -251,41 +234,6 @@ export const useTriageStore = defineStore('triage', {
         }
       } catch (error) {
         console.error('Search Action Error:', error)
-        Notify.create({ type: 'negative', message: 'Search Failed', position: 'top' })
-      } finally {
-        this.loading = false
-      }
-    },
-
-    async searchPatientList(query) {
-      if (!query || query.length < 2) {
-        Notify.create({
-          type: 'warning',
-          message: 'Please enter at least 2 characters',
-          position: 'top',
-        })
-        return
-      }
-      this.loading = true
-      this.searchQuery = query
-
-      try {
-        const response = await axios.get(`http://10.107.0.2:3000/api/patients/search-finance`, {
-          params: { query },
-        })
-        this.patientList = response.data
-        this.hasSearched = true
-
-        if (this.patientList.length === 0) {
-          Notify.create({
-            type: 'info',
-            message: 'No records found.',
-            icon: 'info',
-            position: 'top',
-          })
-        }
-      } catch (error) {
-        console.error(error)
         Notify.create({ type: 'negative', message: 'Search Failed', position: 'top' })
       } finally {
         this.loading = false
@@ -583,7 +531,7 @@ export const useTriageStore = defineStore('triage', {
 
         payload.addressLoading.regions = true;
         try {
-          const res = await fetch("http://10.107.0.2:3000/api/patients/region");
+          const res = await fetch(`${PATIENT_API_URL}/region`);
           if (!res.ok) throw new Error(`Server error: ${res.status}`);
 
           const data = await res.json();
@@ -619,7 +567,7 @@ export const useTriageStore = defineStore('triage', {
 
         payload.addressLoading.provinces = true;
         try {
-          const res = await fetch(`http://10.107.0.2:3000/api/patients/provinces?regionPrefix=${regionPrefix}`);
+          const res = await fetch(`${PATIENT_API_URL}/provinces?regionPrefix=${regionPrefix}`);
           if (!res.ok) throw new Error(`Server error: ${res.status}`);
 
           const data = await res.json();
@@ -656,7 +604,7 @@ export const useTriageStore = defineStore('triage', {
 
         payload.addressLoading.cities = true;
         try {
-          const res = await fetch(`http://10.107.0.2:3000/api/patients/cities?cityPrefix=${cityPrefix}`);
+          const res = await fetch(`${PATIENT_API_URL}/cities?cityPrefix=${cityPrefix}`);
           if (!res.ok) throw new Error(`Server error: ${res.status}`);
 
           const data = await res.json();

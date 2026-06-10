@@ -601,6 +601,8 @@
             icon-right="las la-share"
             @click="handleValidatePatient(selectedPatient)"
           />
+
+          <q-btn label="TEST DIALOG" @click="testDialog" color="red" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -746,6 +748,162 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <!-- <q-dialog v-model="admitDialog" persistent>
+      <q-card style="min-width: 520px; border-radius: 12px">
+        <q-card-section class="q-pa-md">
+          <div
+            class="q-pa-md rounded-borders q-mb-md"
+            style="background: #f8f9fa; border: 1px solid #e0e0e0"
+          >
+            <div class="row items-center q-mb-md">
+              <div class="col-auto q-mr-md">
+                <div
+                  class="bg-blue-1 text-primary flex flex-center rounded-borders"
+                  style="width: 42px; height: 42px"
+                >
+                  <q-icon name="las la-user" size="26px" />
+                </div>
+              </div>
+              <div class="col">
+                <div
+                  class="text-caption text-grey-6 text-uppercase text-weight-bold"
+                  style="line-height: 1"
+                >
+                  Patient Name
+                </div>
+                <div class="text-subtitle1 text-uppercase" style="line-height: 1.2">
+                  {{ selectedPatient?.fullName || "N/A" }}
+                </div>
+              </div>
+            </div>
+
+            <q-separator class="q-my-md" style="background-color: #e0e0e0" />
+
+            <div class="row items-center q-mb-sm">
+              <div class="col-auto q-mr-sm text-center" style="width: 24px">
+                <q-icon name="las la-id-badge" class="text-grey-5" size="20px" />
+              </div>
+              <div class="col text-grey-7">Patient No.</div>
+              <div class="col-auto text-weight-bold text-dark">
+                {{ selectedPatient?.PATIENTNO || "N/A" }}
+              </div>
+            </div>
+
+            <div class="row items-center">
+              <div class="col-auto q-mr-sm text-center" style="width: 24px">
+                <q-icon name="las la-calendar-day" class="text-grey-5" size="20px" />
+              </div>
+              <div class="col text-grey-7">Birthdate</div>
+              <div class="col-auto text-weight-bold text-dark">
+                {{ selectedPatient?.birthdateStr || "N/A" }}
+              </div>
+            </div>
+          </div>
+
+          <div class="text-subtitle2 text-grey-8 q-mb-md text-weight-bold">
+            Admission Details
+          </div>
+
+          <div class="q-gutter-y-md q-px-xs">
+            <div class="row q-col-gutter-sm">
+              <div class="col-12 col-sm-7">
+                <q-select
+                  outlined
+                  dense
+                  v-model="formData.admittingPhysician"
+                  :options="allDoctors || []"
+                  emit-value
+                  map-options
+                  label-slot
+                  stack-label
+                  lazy-rules
+                  @update:model-value="onDoctorSelected"
+                >
+                  <template v-slot:label>
+                    Admitting Physician<span class="text-red">*</span>
+                  </template>
+                  <template v-slot:no-option>
+                    <q-item>
+                      <q-item-section class="text-grey">
+                        No doctors found
+                      </q-item-section>
+                    </q-item>
+                  </template>
+                </q-select>
+              </div>
+              <div class="col-12 col-sm-5">
+                <q-input
+                  outlined
+                  dense
+                  v-model="formData.admittingDepartment"
+                  label="Department"
+                  stack-label
+                  readonly
+                />
+              </div>
+            </div>
+
+            <div class="row q-col-gutter-sm">
+              <div class="col-12 col-sm-7">
+                <q-select
+                  outlined
+                  stack-label
+                  dense
+                  v-model="formData.attendingPhysician"
+                  :options="allDoctors || []"
+                  emit-value
+                  map-options
+                  label-slot
+                  lazy-rules
+                  @update:model-value="onAttendingDoctorSelected"
+                >
+                  <template v-slot:label>
+                    Attending Physician<span class="text-red">*</span>
+                  </template>
+                  <template v-slot:no-option>
+                    <q-item>
+                      <q-item-section class="text-grey">
+                        No doctors found
+                      </q-item-section>
+                    </q-item>
+                  </template>
+                </q-select>
+              </div>
+
+              <div class="col-12 col-sm-5">
+                <q-input
+                  outlined
+                  dense
+                  v-model="formData.attendingDepartment"
+                  label="Department"
+                  stack-label
+                  readonly
+                />
+              </div>
+            </div>
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="right" class="q-px-md q-pb-md">
+          <q-btn
+            flat
+            label="Cancel"
+            color="grey-7"
+            class="q-px-md text-weight-bold"
+            v-close-popup
+          />
+          <q-btn
+            unelevated
+            label="Confirm & Admit"
+            color="yellow-10"
+            icon-right="las la-check"
+            class="q-px-md text-weight-bold text-white"
+            @click="confirmAdmit"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog> -->
   </q-page>
 </template>
 
@@ -770,6 +928,7 @@ export default {
     return {
       viewDialog: false,
       viewPatientValidationDialog: false,
+      admitDialog: false,
 
       columns: [
         {
@@ -861,7 +1020,7 @@ export default {
         return this.selectedDuplicate;
       },
       set(val) {
-        this.useInpatientStore().selectedDuplicate = val;
+        useInpatientStore().selectedDuplicate = val;
       },
     },
     localShowDuplicateDialog: {
@@ -878,6 +1037,15 @@ export default {
     this.fetchInitialData();
   },
 
+  watch: {
+    showDuplicateDialog(val) {
+      console.log("[WATCH] showDuplicateDialog changed to:", val);
+    },
+    localShowDuplicateDialog(val) {
+      console.log("[WATCH] localShowDuplicateDialog changed to:", val);
+    },
+  },
+
   methods: {
     ...mapActions(useInpatientStore, [
       "fetchInitialData",
@@ -891,17 +1059,27 @@ export default {
 
     useInpatientStore,
 
+    testDialog() {
+      const store = useInpatientStore();
+      store.handleLinkingConflict(
+        [
+          {
+            existingPatientNo: "123456",
+            firstName: "Juan",
+            middleName: "dela",
+            lastName: "Cruz",
+            suffix: null,
+            birthdate: "1983-06-03T00:00:00.000Z",
+            age: 41,
+          },
+        ],
+        "TEST-ID-001"
+      );
+    },
+
     handleSearch() {
       if (this.localSearchQuery === "") {
         this.fetchInitialData();
-        return;
-      }
-      if (this.localSearchQuery.length < 2) {
-        this.$q.notify({
-          type: "warning",
-          message: "Please enter at least 2 characters",
-          position: "top",
-        });
         return;
       }
       this.searchPatients(this.localSearchQuery);
@@ -909,7 +1087,7 @@ export default {
 
     viewPatient(row) {
       this.useInpatientStore().selectedPatient = row;
-      this.viewDialog = true;
+      this.viewDaialog = true;
     },
 
     validatePatient(row) {

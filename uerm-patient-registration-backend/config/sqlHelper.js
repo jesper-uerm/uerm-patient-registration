@@ -20,7 +20,7 @@ const dbConfig = {
 const poolPromise = new sql.ConnectionPool(dbConfig)
     .connect()
     .then(pool => {
-        console.log('✅ Connected to SQL Server');
+        console.log('Connected to SQL Server');
         return pool;
     })
     .catch(err => console.error('❌ Database Connection Failed:', err));

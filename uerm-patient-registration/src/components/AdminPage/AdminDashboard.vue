@@ -326,7 +326,7 @@ export default {
     async loadPieData() {
       try {
         const response = await this.$axios.get(
-          "http://10.107.0.2:3000/api/dashboard/pie-chart"
+          "http://10.107.0.2:3000/patient-reg/dashboard/pie-chart"
         );
 
         this.seriesPie = response.data.series;
@@ -343,7 +343,7 @@ export default {
     async loadTrendData() {
       try {
         const response = await this.$axios.get(
-          "http://10.107.0.2:3000/api/dashboard/line-chart"
+          "http://10.107.0.2:3000/patient-reg/dashboard/line-chart"
         );
 
         this.chartOptions = {
@@ -362,7 +362,7 @@ export default {
     async loadInitialData() {
       this.loading = true;
       try {
-        const response = await axios.get("http://10.107.0.2:3000/api/patients/");
+        const response = await axios.get("http://10.107.0.2:3000/patient-reg/patients");
         this.patientList = response.data;
         const inpatients = this.patientList.filter((p) => p.PATIENTTYPE === "INPATIENT");
         const outpatients = this.patientList.filter(

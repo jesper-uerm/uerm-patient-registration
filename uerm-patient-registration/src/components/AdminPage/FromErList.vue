@@ -171,7 +171,7 @@ export default {
         {
           name: "birthdate",
           label: "BIRTHDATE",
-          field: "birthdate",
+          field: "birthdateStr",
           format: (val) => this.formatDate(val),
           align: "center",
         },
@@ -222,14 +222,6 @@ export default {
     handleSearch() {
       if (!this.searchQuery) {
         this.fetchFromErList();
-        return;
-      }
-      if (this.searchQuery.length < 2) {
-        this.$q.notify({
-          type: "warning",
-          message: "Please enter at least 2 characters",
-          position: "top",
-        });
         return;
       }
       this.searchErPatients(this.searchQuery);

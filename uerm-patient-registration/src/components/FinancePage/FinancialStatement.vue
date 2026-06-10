@@ -233,8 +233,6 @@ export default {
 
         this.financialDialog = false;
 
-        this.fetchPatientsFinance();
-
         if (this.$parent && this.$parent.fetchPatients) {
           this.$parent.fetchPatients();
         }

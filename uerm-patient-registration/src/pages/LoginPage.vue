@@ -151,7 +151,7 @@ export default {
     },
 
     loginRequest() {
-      return axios.post("http://10.107.0.2:3000/api/auth/login", {
+      return axios.post("http://10.107.0.2:3000/patient-reg/auth/login", {
         EmployeeCode: this.EmployeeCode,
         WebPassword: this.WebPassword,
       });

@@ -3,9 +3,9 @@ import axios from "axios";
 import { Notify, Loading } from "quasar";
 import { useAuthStore } from 'src/stores/authStore';
 
-const API_URL = "http://10.107.0.2:3000/api/er";
-const PATIENT_API_URL = "http://10.107.0.2:3000/api/patients";
-const DASHBOARD_API_URL = "http://10.107.0.2:3000/api/dashboard";
+const API_URL = "http://10.107.0.2:3000/patient-reg/er";
+const PATIENT_API_URL = "http://10.107.0.2:3000/patient-reg/patients";
+const DASHBOARD_API_URL = "http://10.107.0.2:3000/patient-reg/dashboard";
 
 export const useFinanceStore = defineStore("finance", {
   state: () => ({

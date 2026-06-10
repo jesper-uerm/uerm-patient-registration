@@ -201,7 +201,7 @@ export function printInpatientInformation() {
               widths: ['30%', '40%', '30%'],
               body: [
                 [{ text: 'FAMILY BACKGROUND', style: 'sectionHeader', fillColor: '#eeeeee', margin: [0, 0, 0, 0], alignment: 'center', colSpan: 3 }, {}, {}],
-                [createCell('Spouse\'s Name', spousename), createCell('Occupation', spouseoccupation), createCell('ontact No.', spousecontact)],
+                [createCell('Spouse\'s Name', spousename), createCell('Occupation', spouseoccupation), createCell('Contact No.', spousecontact)],
                 [createCell('Father\'s Name', fathersname), createCell('Address', fathersaddress), createCell('Contact No.', fathercontactnumber)],
                 [createCell('Mother\'s Name', mothersname), createCell('Address', mothersaddress), createCell('Contact No.', mothercontactnumber)]
               ]

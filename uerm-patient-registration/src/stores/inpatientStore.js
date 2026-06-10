@@ -4,7 +4,7 @@ import { Notify, Loading } from 'quasar';
 import { date } from "quasar";
 
 
-const PATIENT_API_URL = "http://10.107.0.2:3000/api/patients";
+const PATIENT_API_URL = "http://10.107.0.2:3000/patient-reg/patients";
 
 export const useInpatientStore = defineStore("inpatient", {
   state: () => ({
@@ -332,7 +332,7 @@ const finalData = {
     if (this.formData.addressOptions.regions.length > 0) return;
     this.formData.addressLoading.regions = true;
     try {
-      const res = await fetch("http://10.107.0.2:3000/api/patients/region");
+      const res = await fetch("http://10.107.0.2:3000/patient-reg/patients/region");
       if (!res.ok) {
         throw new Error(`Server error: ${res.status}`);
       }
@@ -362,7 +362,7 @@ const finalData = {
 
     this.formData.addressLoading.provinces = true;
     try {
-      const res = await fetch(`http://10.107.0.2:3000/api/patients/provinces?regionPrefix=${regionPrefix}`);
+      const res = await fetch(`http://10.107.0.2:3000/patient-reg/patients/provinces?regionPrefix=${regionPrefix}`);
       if (!res.ok) throw new Error(`Server error: ${res.status}`);
 
       const data = await res.json();
@@ -393,7 +393,7 @@ const finalData = {
 
     this.formData.addressLoading.cities = true;
     try {
-      const res = await fetch(`http://10.107.0.2:3000/api/patients/cities?cityPrefix=${cityPrefix}`);
+      const res = await fetch(`http://10.107.0.2:3000/patient-reg/patients/cities?cityPrefix=${cityPrefix}`);
       if (!res.ok) throw new Error(`Server error: ${res.status}`);
 
       const data = await res.json();
@@ -470,8 +470,6 @@ const finalData = {
   },
 
   async searchErPatients(query) {
-  if (!query || query.length < 2) return;
-
   this.loading = true;
   this.searchQuery = query;
 
@@ -537,37 +535,45 @@ const finalData = {
     }
   },
 
-    async sendDataInformation(patient, isForce = false) {
-    this.loading = true;
-    try {
-      await axios.post(`${PATIENT_API_URL}/send-data`, {
-        PATIENTREGID: patient.PATIENTREGID || patient.patientId,
-        force: isForce,
-      });
+      async sendDataInformation(patient, isForce = false) {
+      this.loading = true;
+      try {
+        await axios.post(`${PATIENT_API_URL}/send-data`, {
+          PATIENTREGID: patient.PATIENTREGID || patient.patientId,
+          force: isForce,
+        });
 
-      Notify.create({ type: "positive", message: "Data sent successfully.", position: "top" });
-      this.viewPatientValidationDialog = false;
-      await this.fetchInitialData();
-      return true;
-    } catch (error) {
-      if (error.response && error.response.status === 409 && !isForce) {
-        this.handleLinkingConflict(error.response.data, patient.PATIENTREGID);
-        throw error;
-      } else {
-        console.error(error);
-        Notify.create({ type: "negative", message: "Failed to send data." });
+        Notify.create({ type: "positive", message: "Data sent successfully.", position: "top" });
+        this.viewPatientValidationDialog = false;
+        await this.fetchInitialData();
+        return true;
+      } catch (error) {
+        console.log("[catch hit]");
+        console.log("[error]:", error);
+        console.log("[error.response]:", error.response);
+        console.log("[error.response?.status]:", error.response?.status);
+        console.log("[error.response?.data]:", error.response?.data);
+      if (error.response?.status === 409 && !isForce) {
+          console.log("[409 raw data]:", JSON.stringify(error.response.data, null, 2));
+          this.handleLinkingConflict(error.response.data, patient.PATIENTREGID || patient.patientId);
+        } else if (error.response?.status === 404) {
+          Notify.create({ type: "negative", message: "Patient not found in Registration records.", position: "top" });
+        } else if (error.response?.status === 400) {
+          Notify.create({ type: "negative", message: "Patient ID is required.", position: "top" });
+        } else {
+          Notify.create({ type: "negative", message: "Failed to send data.", position: "top" });
+        }
         return false;
+      } finally {
+        this.loading = false;
       }
-    } finally {
-      this.loading = false;
-    }
-  },
+    },
 
     handleLinkingConflict(data, originalPatientId) {
-    this.pendingLinkData = { originalId: originalPatientId };
-    this.duplicateList = Array.isArray(data) ? data : [data];
-    this.selectedDuplicate = null;
-    this.showDuplicateDialog = true;
+      this.pendingLinkData = { originalId: originalPatientId };
+      this.duplicateList = Array.isArray(data) ? data : [data];
+      this.selectedDuplicate = null;
+      this.showDuplicateDialog = true;
   },
 
     async linkExistingPatient(patientId, existingPatientNo) {

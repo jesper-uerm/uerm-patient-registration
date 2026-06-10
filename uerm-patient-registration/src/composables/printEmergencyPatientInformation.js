@@ -15,7 +15,7 @@ export function printEmergencyPatientInformation() {
 
   const getSignatureFromAPI = async (patientId) => {
     try {
-      const response = await fetch(`http://10.107.0.2:3000/api/patients/signature/${patientId}`)
+      const response = await fetch(`http://10.107.0.2:3000/patient-reg/patients/signature/${patientId}`)
       if (!response.ok) return null
 
       const data = await response.json()

@@ -267,7 +267,7 @@
                 outlined
                 dense
                 readonly
-                label="Contact Physician"
+                label="Department"
                 v-model="patientDetails.ATT_DEPARTMENT"
               />
             </div>

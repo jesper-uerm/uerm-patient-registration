@@ -206,7 +206,7 @@ export default {
         {
           name: "fullName",
           label: "Patient Name",
-          field: "FULLNAME",
+          field: "fullName",
           align: "center",
           sortable: true,
           style: "padding: 10px 16px;",
@@ -215,7 +215,7 @@ export default {
         {
           name: "birthdate",
           label: "Birthdate",
-          field: "DBIRTH",
+          field: "birthdateStr",
           align: "center",
           format: (val) => (val ? date.formatDate(val, "MMM D, YYYY") : ""),
           style: "padding: 10px 16px;",
@@ -271,7 +271,7 @@ export default {
         if (this.searchQuery.birthdate) params.birthdate = this.searchQuery.birthdate;
 
         const response = await axios.get(
-          `http://10.107.0.2:3000/api/patients/returning`,
+          `http://10.107.0.2:3000/patient-reg/patients/returning`,
           {
             params,
           }
