@@ -283,6 +283,7 @@
           dense
           :loading="formData.addressLoading.cities"
           :rules="[(val) => !!val || 'Required']"
+          @update:model-value="loadBarangays"
         >
           <template v-slot:label>
             City/Municipality <span class="text-red">*</span>
@@ -291,16 +292,27 @@
       </div>
 
       <div class="col-12 col-sm-3 col-md-3">
-        <q-input
+        <q-select
           v-model="formData.personalInfo.selectedBarangay"
+          :options="formData.addressOptions.barangays"
+          option-label="Name"
+          option-value="Code"
+          label-slot
           :disable="!formData.personalInfo.selectedCity"
           outlined
           dense
+          :loading="formData.addressLoading.barangays"
           :rules="[(val) => !!val || 'Required']"
-          label-slot
         >
           <template v-slot:label> Barangay <span class="text-red">*</span> </template>
-        </q-input>
+          <template v-slot:no-option>
+            <q-item>
+              <q-item-section class="text-grey"
+                >No matching barangays found</q-item-section
+              >
+            </q-item>
+          </template>
+        </q-select>
       </div>
     </div>
 
@@ -344,6 +356,93 @@
         @click="onNext"
       />
     </q-stepper-navigation>
+
+    <q-dialog v-model="showExistingWarningDialog" persistent>
+      <q-card style="width: 500px; max-width: 90vw" class="rounded-borders">
+        <q-card-section class="bg-yellow-10 text-white q-pa-md">
+          <div class="row items-center justify-center text-center">
+            <div class="text-subtitle2 text-weight-bold text-uppercase">
+              <q-icon name="las la-exclamation-triangle" class="q-mr-xs" size="xs" />
+              Existing Patient Found
+            </div>
+            <q-btn
+              unelevated
+              flat
+              round
+              dense
+              icon="las la-times"
+              class="absolute-right q-mr-md"
+              v-close-popup
+            />
+          </div>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-section class="q-pa-lg">
+          <div class="text-caption text-grey-8 text-center q-mb-lg">
+            A patient with the same name and birthdate already exists in the system.
+            Please use the <strong>Returning Patient</strong> option instead.
+          </div>
+
+          <q-list
+            bordered
+            separator
+            class="rounded-borders q-mb-md"
+            v-if="existingRecord"
+          >
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="las la-id-card" color="blue-6" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label caption>Patient No.</q-item-label>
+                <q-item-label class="text-caption1 text-bold">
+                  {{ existingRecord.PATIENTNO }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="las la-user" color="blue-6" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label caption>Full Name</q-item-label>
+                <q-item-label class="text-caption1 text-bold">
+                  {{ existingRecord.LASTNAME }},
+                  {{ existingRecord.FIRSTNAME }}
+                  {{ existingRecord.MIDDLENAME }}
+                  {{ existingRecord.SUFFIX }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="las la-birthday-cake" color="blue-6" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label caption>Birthdate</q-item-label>
+                <q-item-label class="text-caption1 text-bold">
+                  {{ formatDate(existingRecord.DBIRTH) }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-card-section>
+
+        <q-separator />
+        <!-- <q-card-actions align="center" class="bg-grey-1 q-pa-md">
+          <q-btn
+            unelevated
+            label="Returning Patient Form"
+            color="red-8"
+            icon-right="las la-times"
+            v-close-popup
+          />
+        </q-card-actions> -->
+      </q-card>
+    </q-dialog>
   </q-form>
 </template>
 
@@ -351,6 +450,9 @@
 import { mapWritableState, mapActions } from "pinia";
 import { useInpatientStore } from "src/stores/inpatientStore";
 import { date } from "quasar";
+import axios from "axios";
+
+const PATIENT_API_URL = "http://10.107.0.2:3000/patient-reg/patients";
 
 export default {
   name: "PatientDetailsInpatient",
@@ -364,6 +466,8 @@ export default {
 
   data() {
     return {
+      showExistingWarningDialog: false,
+      existingRecord: null,
       civilStatusOptions: ["Single", "Married", "Widowed", "Separated", "Divorced"],
       religionOptions: ["Catholic", "Christian", "Islam", "Iglesia ni Cristo", "Others"],
     };
@@ -420,8 +524,19 @@ export default {
       "loadProvinces",
       "loadCities",
       "loadBarangays",
+      "loadBarangays",
       "calculateAge",
     ]),
+
+    formatDate(date) {
+      if (!date) return "N/A";
+      return new Date(date).toLocaleDateString("en-PH", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        timeZone: "Asia/Manila",
+      });
+    },
 
     isDateInPast(dateString) {
       const dateObj = new Date(dateString);
@@ -445,14 +560,55 @@ export default {
       }
     },
 
-    async onNext() {
-      const valid = await this.$refs.patientDetails.validate();
+    // async onNext() {
+    //   const valid = await this.$refs.patientDetails.validate();
 
-      if (valid) {
-        console.log("Form is valid", this.formData.personalInfo);
-        this.$emit("next");
-      } else {
-        console.log("Form has errors");
+    //   if (valid) {
+    //     console.log("Form is valid", this.formData.personalInfo);
+    //     this.$emit("next");
+    //   } else {
+    //     console.log("Form has errors");
+    //   }
+    // },
+
+    async onNext() {
+      const isFormValid = await this.$refs.patientDetails.validate();
+
+      if (!isFormValid) {
+        this.$q.notify({
+          type: "warning",
+          message: "Please complete the form.",
+          position: "top",
+        });
+        return;
+      }
+
+      if (this.formData.personalInfo.patientNo) {
+        this.$emit("next", this.formData);
+        return;
+      }
+
+      try {
+        const res = await axios.post(`${PATIENT_API_URL}/check-records`, {
+          firstName: this.formData.personalInfo.firstName,
+          lastName: this.formData.personalInfo.lastName,
+          birthdate: this.formData.personalInfo.birthdate.replaceAll("/", "-"),
+        });
+
+        if (res.status === 200) {
+          this.$emit("next", this.formData);
+        }
+      } catch (error) {
+        if (error.response?.status === 409) {
+          this.existingRecord = error.response.data.match;
+          this.showExistingWarningDialog = true;
+        } else {
+          this.$q.notify({
+            type: "negative",
+            message: "Failed to check for duplicates. Please try again.",
+            position: "top",
+          });
+        }
       }
     },
   },

@@ -601,8 +601,6 @@
             icon-right="las la-share"
             @click="handleValidatePatient(selectedPatient)"
           />
-
-          <q-btn label="TEST DIALOG" @click="testDialog" color="red" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -1009,7 +1007,7 @@ export default {
 
     localSearchQuery: {
       get() {
-        return this.searchQuery;
+        return this.useInpatientStore().searchQuery;
       },
       set(val) {
         this.useInpatientStore().searchQuery = val;
@@ -1017,15 +1015,15 @@ export default {
     },
     localSelectedDuplicate: {
       get() {
-        return this.selectedDuplicate;
+        return this.useInpatientStore().selectedDuplicate;
       },
       set(val) {
-        useInpatientStore().selectedDuplicate = val;
+        this.useInpatientStore().selectedDuplicate = val;
       },
     },
     localShowDuplicateDialog: {
       get() {
-        return this.showDuplicateDialog;
+        return this.useInpatientStore().showDuplicateDialog;
       },
       set(val) {
         this.useInpatientStore().showDuplicateDialog = val;
@@ -1035,15 +1033,6 @@ export default {
 
   mounted() {
     this.fetchInitialData();
-  },
-
-  watch: {
-    showDuplicateDialog(val) {
-      console.log("[WATCH] showDuplicateDialog changed to:", val);
-    },
-    localShowDuplicateDialog(val) {
-      console.log("[WATCH] localShowDuplicateDialog changed to:", val);
-    },
   },
 
   methods: {
@@ -1059,24 +1048,6 @@ export default {
 
     useInpatientStore,
 
-    testDialog() {
-      const store = useInpatientStore();
-      store.handleLinkingConflict(
-        [
-          {
-            existingPatientNo: "123456",
-            firstName: "Juan",
-            middleName: "dela",
-            lastName: "Cruz",
-            suffix: null,
-            birthdate: "1983-06-03T00:00:00.000Z",
-            age: 41,
-          },
-        ],
-        "TEST-ID-001"
-      );
-    },
-
     handleSearch() {
       if (this.localSearchQuery === "") {
         this.fetchInitialData();
@@ -1087,7 +1058,7 @@ export default {
 
     viewPatient(row) {
       this.useInpatientStore().selectedPatient = row;
-      this.viewDaialog = true;
+      this.viewDialog = true;
     },
 
     validatePatient(row) {
@@ -1108,27 +1079,28 @@ export default {
     },
 
     async confirmLinkPatient() {
-      if (!this.selectedDuplicate || !this.pendingLinkData) return;
+      if (!this.localSelectedDuplicate || !this.pendingLinkData) return;
 
       try {
-        this.localShowDuplicateDialog = false;
-
         const res = await this.linkExistingPatient(
           this.pendingLinkData.originalId,
-          this.selectedDuplicate.existingPatientNo
+          this.localSelectedDuplicate.existingPatientNo
         );
 
-        this.viewPatientValidationDialog = false;
-
-        this.$q.notify({
-          type: "positive",
-          message: res?.message || "Patient linked successfully!",
-          position: "top",
-        });
+        if (res) {
+          this.localShowDuplicateDialog = false;
+          this.viewPatientValidationDialog = false;
+          this.$q.notify({
+            type: "positive",
+            message: res?.message || "Patient linked successfully!",
+            position: "top",
+          });
+        }
       } catch (error) {
         this.$q.notify({
           type: "negative",
           message: error?.response?.data?.message || error.message || "Linking failed",
+          position: "top",
         });
       }
     },

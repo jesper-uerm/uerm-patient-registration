@@ -103,6 +103,7 @@
 import axios from "axios";
 import { QSpinnerIos } from "quasar";
 import { useAuthStore } from "src/stores/authStore";
+import { jwtDecode } from "jwt-decode";
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -158,7 +159,9 @@ export default {
     },
 
     handleLoginSuccess(data) {
-      this.authStore.saveLoginData(data.user);
+      const decodedToken = jwtDecode(data.accessToken);
+      console.log(decodedToken);
+      this.authStore.saveLoginData(data.accessToken, decodedToken);
     },
 
     async showLoginLoading() {

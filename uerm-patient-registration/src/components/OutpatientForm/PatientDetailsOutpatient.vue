@@ -160,12 +160,22 @@
 
     <div class="row q-col-gutter-sm">
       <div class="col-12 col-sm-3 col-md-3">
-        <q-input
+        <q-select
           outlined
           dense
           v-model="formData.personalInfoOutpatient.hmoOutpatient"
+          :options="hmo || []"
+          emit-value
+          map-options
           label="HMO"
-        />
+          stack-label
+        >
+          <template v-slot:no-option>
+            <q-item>
+              <q-item-section class="text-grey"> No HMO found </q-item-section>
+            </q-item>
+          </template>
+        </q-select>
       </div>
 
       <div class="col-12 col-sm-3 col-md-3">
@@ -249,7 +259,7 @@
         </q-select>
       </div>
 
-      <div class="col-12 col-sm-3 col-md-3">
+      <!-- <div class="col-12 col-sm-3 col-md-3">
         <q-select
           v-model="formData.personalInfoOutpatient.selectedCityOutpatient"
           :options="cityList"
@@ -265,9 +275,9 @@
             City / Municipality <span class="text-red">*</span>
           </template>
         </q-select>
-      </div>
+      </div> -->
 
-      <div class="col-12 col-sm-3 col-md-3">
+      <!-- <div class="col-12 col-sm-3 col-md-3">
         <q-input
           v-model="formData.personalInfoOutpatient.selectedBarangayOutpatient"
           :disable="!formData.personalInfoOutpatient.selectedCityOutpatient"
@@ -278,11 +288,54 @@
         >
           <template v-slot:label> Barangay <span class="text-red">*</span> </template>
         </q-input>
+      </div> -->
+
+      <div class="col-12 col-sm-3 col-md-3">
+        <q-select
+          v-model="formData.personalInfoOutpatient.selectedCityOutpatient"
+          :options="cityList"
+          option-label="Name"
+          option-value="Code"
+          label-slot
+          :disable="!formData.personalInfoOutpatient.selectedProvinceOutpatient"
+          outlined
+          dense
+          :loading="loadingCities"
+          :rules="[(val) => !!val || 'Required']"
+          @update:model-value="loadBarangays"
+        >
+          <template v-slot:label>
+            City/Municipality <span class="text-red">*</span>
+          </template>
+        </q-select>
+      </div>
+
+      <div class="col-12 col-sm-3 col-md-3">
+        <q-select
+          v-model="formData.personalInfoOutpatient.selectedBarangayOutpatient"
+          :options="barangayList"
+          option-label="Name"
+          option-value="Code"
+          label-slot
+          :disable="!formData.personalInfoOutpatient.selectedCityOutpatient"
+          outlined
+          dense
+          :loading="loadingBarangays"
+          :rules="[(val) => !!val || 'Required']"
+        >
+          <template v-slot:label> Barangay <span class="text-red">*</span> </template>
+          <template v-slot:no-option>
+            <q-item>
+              <q-item-section class="text-grey"
+                >No matching barangays found</q-item-section
+              >
+            </q-item>
+          </template>
+        </q-select>
       </div>
     </div>
 
-    <q-stepper-navigation class="text-center"
-      >l
+    <q-stepper-navigation class="text-center">
       <q-btn
         color="blue-10"
         icon-right="arrow_forward"
@@ -331,11 +384,12 @@ export default {
   },
 
   computed: {
-    ...mapWritableState(useOutpatientStore, ["formData", "sameAsPresent"]),
+    ...mapWritableState(useOutpatientStore, ["formData", "sameAsPresent", "hmo"]),
   },
 
   mounted() {
     this.loadRegions();
+    this.fetchHmo();
   },
 
   watch: {
@@ -379,7 +433,7 @@ export default {
   },
 
   methods: {
-    ...mapActions(useOutpatientStore, ["calculateAge"]),
+    ...mapActions(useOutpatientStore, ["calculateAge", "fetchHmo"]),
 
     async validate() {
       return await this.$refs.personalInfoOutpatient.validate();
@@ -404,7 +458,7 @@ export default {
       if (this.regionList && this.regionList.length > 0) return;
       this.loadingRegions = true;
       try {
-        const res = await fetch("http://10.107.0.2:3000/api/patients/region");
+        const res = await fetch("http://10.107.0.2:3000/patient-reg/patients/region");
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
 
         this.regionList = await res.json();
@@ -433,7 +487,7 @@ export default {
       this.loadingProvinces = true;
       try {
         const res = await fetch(
-          `http://10.107.0.2:3000/api/patients/provinces?regionPrefix=${regionPrefix}`
+          `http://10.107.0.2:3000/patient-reg/patients/provinces?regionPrefix=${regionPrefix}`
         );
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
 
@@ -466,7 +520,7 @@ export default {
       this.loadingCities = true;
       try {
         const res = await fetch(
-          `http://10.107.0.2:3000/api/patients/cities?cityPrefix=${cityPrefix}`
+          `http://10.107.0.2:3000/patient-reg/patients/cities?cityPrefix=${cityPrefix}`
         );
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
 
@@ -475,6 +529,89 @@ export default {
         console.error("Failed to load cities:", e);
       } finally {
         this.loadingCities = false;
+      }
+    },
+
+    async loadBarangays() {
+      const city = this.formData.personalInfoOutpatient.selectedCityOutpatient;
+      const cityName = city?.Name || city?.NAME || city?.name;
+      const region = this.formData.personalInfoOutpatient.selectedRegionOutpatient;
+
+      const rawRegionCode =
+        typeof region === "string"
+          ? region
+          : region?.CODE || region?.Code || region?.code;
+
+      const regionCode = rawRegionCode ? rawRegionCode.padEnd(9, "0") : null;
+
+      if (!cityName) return;
+
+      this.formData.personalInfoOutpatient.selectedBarangayOutpatient = null;
+      this.barangayList = [];
+      this.loadingBarangays = true;
+
+      try {
+        const normalize = (str) =>
+          str
+            .toUpperCase()
+            .replace(/^CITY OF\s+/i, "")
+            .replace(/\s+/g, " ")
+            .trim();
+
+        const allCitiesRes = await fetch(
+          `https://psgc.gitlab.io/api/cities-municipalities/`
+        );
+
+        if (!allCitiesRes.ok) throw new Error(`PSGC error: ${allCitiesRes.status}`);
+
+        const allCities = await allCitiesRes.json();
+        const normalizedCityName = normalize(cityName);
+
+        const regionFiltered = regionCode
+          ? allCities.filter((c) => c.regionCode === regionCode)
+          : allCities;
+
+        let match = regionFiltered.find((c) => normalize(c.name) === normalizedCityName);
+
+        if (!match) {
+          const stripped = normalizedCityName.replace(/\s+CITY$/i, "").trim();
+          match = regionFiltered.find(
+            (c) =>
+              normalize(c.name)
+                .replace(/\s+CITY$/i, "")
+                .trim() === stripped
+          );
+        }
+
+        if (!match) {
+          match = allCities.find((c) => normalize(c.name) === normalizedCityName);
+        }
+
+        if (!match) {
+          console.warn("No PSGC match found for city:", cityName);
+          this.barangayList = [];
+          return;
+        }
+
+        const barangayRes = await fetch(
+          `https://psgc.gitlab.io/api/cities-municipalities/${match.code}/barangays/`
+        );
+
+        if (!barangayRes.ok)
+          throw new Error(`PSGC barangay error: ${barangayRes.status}`);
+
+        const data = await barangayRes.json();
+        this.barangayList = data
+          .map((b) => ({
+            Code: b.code,
+            Name: b.name,
+          }))
+          .sort((a, b) => a.Name.localeCompare(b.Name));
+      } catch (e) {
+        console.error("Barangay load error:", e);
+        this.barangayList = [];
+      } finally {
+        this.loadingBarangays = false;
       }
     },
   },

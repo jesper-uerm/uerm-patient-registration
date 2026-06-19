@@ -4,7 +4,7 @@ import { Notify } from "quasar";
 import { date } from "quasar";
 
 
-const PATIENT_API_URL = "http://10.107.0.2:3000/api/patients";
+const PATIENT_API_URL = "http://10.107.0.2:3000/patient-reg/patients";
 
 export const useOutpatientStore = defineStore("outpatient", {
   state: () => ({
@@ -17,6 +17,7 @@ export const useOutpatientStore = defineStore("outpatient", {
 
     duplicateList: [],
     allDoctors: [],
+    hmo: [],
 
     showDuplicateDialog: false,
     pendingLinkData: null,
@@ -70,6 +71,25 @@ export const useOutpatientStore = defineStore("outpatient", {
   }),
 
   actions: {
+
+    async fetchHmo() {
+      if (this.hmo?.length > 0) return
+
+      try {
+        const response = await axios.get(`${PATIENT_API_URL}/hmo`)
+        if (Array.isArray(response.data)) {
+          this.hmo = response.data.map((hmo) => ({
+            label: (hmo.label || '').toUpperCase(),
+            value: hmo.value,
+          }))
+        } else {
+          this.hmo = []
+        }
+      } catch (error) {
+        console.error('API Error fetching HMO:', error)
+        this.hmo = []
+      }
+    },
 
     async fetchInitialData() {
       this.loading = true;

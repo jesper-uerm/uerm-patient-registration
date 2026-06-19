@@ -206,7 +206,10 @@ export default {
       };
 
       try {
-        await axios.post("http://10.107.0.2:3000/api/patients/register", finalData);
+        await axios.post(
+          "http://10.107.0.2:3000/patient-reg/patients/register",
+          finalData
+        );
 
         this.resetForm();
 

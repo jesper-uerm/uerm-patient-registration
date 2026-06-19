@@ -19,6 +19,7 @@
     "apexcharts": "^5.3.6",
     "axios": "^1.13.2",
     "bcryptjs": "^3.0.3",
+    "jwt-decode": "^4.0.0",
     "md5": "^2.3.0",
     "pdfmake": "^0.3.0",
     "pinia": "^3.0.1",

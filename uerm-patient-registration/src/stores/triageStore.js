@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
+import { api } from 'boot/axios'
 import { Notify, Loading, date } from 'quasar'
-import { useAuthStore } from "src/stores/authStore";
+import { useAuthStore } from "src/stores/authStore.js";
 
 const DASHBOARD_API_URL = 'http://10.107.0.2:3000/patient-reg/dashboard'
 const API_URL = 'http://10.107.0.2:3000/patient-reg/er'
@@ -53,7 +53,7 @@ export const useTriageStore = defineStore('triage', {
       if (this.hmo?.length > 0) return
 
       try {
-        const response = await axios.get(`${PATIENT_API_URL}/hmo`)
+        const response = await api.get(`${PATIENT_API_URL}/hmo`)
         if (Array.isArray(response.data)) {
           this.hmo = response.data.map((hmo) => ({
             label: (hmo.label || '').toUpperCase(),
@@ -72,11 +72,11 @@ export const useTriageStore = defineStore('triage', {
       this.loading = true
       try {
         const [pieRes, lineRes, statsRes, listRes] = await Promise.all([
-          axios.get(`${DASHBOARD_API_URL}/pie-chart`),
-          axios.get(`${DASHBOARD_API_URL}/line-chart`),
-          axios.get(`${DASHBOARD_API_URL}/stats`),
+          api.get(`${DASHBOARD_API_URL}/pie-chart`),
+          api.get(`${DASHBOARD_API_URL}/line-chart`),
+          api.get(`${DASHBOARD_API_URL}/stats`),
 
-          axios.get(`${API_URL}/patients`, {
+          api.get(`${API_URL}/patients`, {
             params: { type: 'Emergency' },
           }),
         ])
@@ -101,7 +101,7 @@ export const useTriageStore = defineStore('triage', {
     async fetchPatients() {
       this.loading = true
       try {
-        const response = await axios.get(`${API_URL}/patients`)
+        const response = await api.get(`${API_URL}/patients`)
         this.patientList = response.data
       } catch (error) {
         console.error(error)
@@ -118,7 +118,7 @@ export const useTriageStore = defineStore('triage', {
     async fetchPatientsFinance() {
       this.loading = true
       try {
-        const response = await axios.get(`${API_URL}/review`)
+        const response = await api.get(`${API_URL}/review`)
         this.patientList = response.data
       } catch (error) {
         console.error(error)
@@ -131,7 +131,7 @@ export const useTriageStore = defineStore('triage', {
     async fetchAdmitPatients() {
       this.loading = true
       try {
-        const response = await axios.get(`${API_URL}/admitted`)
+        const response = await api.get(`${API_URL}/admitted`)
         this.patientList = response.data
       } catch (error) {
         console.error(error)
@@ -149,7 +149,7 @@ export const useTriageStore = defineStore('triage', {
       if (this.serviceType?.length > 0) return;
 
       try {
-        const response = await axios.get(`${PATIENT_API_URL}/service`);
+        const response = await api.get(`${PATIENT_API_URL}/service`);
 
         if (Array.isArray(response.data)) {
         this.serviceType = response.data
@@ -171,7 +171,7 @@ export const useTriageStore = defineStore('triage', {
       if (this.department?.length > 0) return;
 
       try {
-        const response = await axios.get(`${PATIENT_API_URL}/department`);
+        const response = await api.get(`${PATIENT_API_URL}/department`);
 
         if (Array.isArray(response.data)) {
         this.department = response.data
@@ -194,7 +194,7 @@ export const useTriageStore = defineStore('triage', {
       this.searchQuery = query
 
       try {
-        const response = await axios.get(`${API_URL}/search`, { params: { query } })
+        const response = await api.get(`${API_URL}/search`, { params: { query } })
         this.patientList = response.data
         this.hasSearched = true
 
@@ -219,7 +219,7 @@ export const useTriageStore = defineStore('triage', {
       this.searchQuery = query
 
       try {
-        const response = await axios.get(`${API_URL}/search-admitted`, { params: { query } })
+        const response = await api.get(`${API_URL}/search-admitted`, { params: { query } })
 
         this.patientList = response.data
         this.hasSearched = true
@@ -388,7 +388,7 @@ export const useTriageStore = defineStore('triage', {
       }
 
       try {
-        await axios.post(`${API_URL}/triage`, finalData)
+        await api.post(`${API_URL}/triage`, finalData)
 
         this.formData.patientSignature = null
 
@@ -427,7 +427,7 @@ export const useTriageStore = defineStore('triage', {
 
       this.loading = true
       try {
-        const response = await axios.put(`${API_URL}/triage`, requestData)
+        const response = await api.put(`${API_URL}/triage`, requestData)
         if (response.status === 200) {
           Notify.create({
             type: 'positive',
@@ -455,7 +455,7 @@ export const useTriageStore = defineStore('triage', {
     async admitPatient(formData) {
       Loading.show({ message: 'Updating status...' })
       try {
-        await axios.put(`${API_URL}/admit`, formData)
+        await api.put(`${API_URL}/admit`, formData)
         Notify.create({
           type: 'positive',
           message: 'Patient updated successfully!',
@@ -473,7 +473,7 @@ export const useTriageStore = defineStore('triage', {
     async sendDataInformation(patient, isForce = false) {
       this.loading = true
       try {
-        await axios.post(`${PATIENT_API_URL}/send-data`, {
+        await api.post(`${PATIENT_API_URL}/send-data`, {
           PATIENTREGID: patient.PATIENTREGID,
           force: isForce,
         })
@@ -496,7 +496,7 @@ export const useTriageStore = defineStore('triage', {
     async linkExistingPatient(patientId, existingPatientNo) {
       this.loading = true
       try {
-        await axios.post(`${PATIENT_API_URL}/link`, {
+        await api.post(`${PATIENT_API_URL}/link`, {
           PATIENTREGID: patientId,
           patientno: existingPatientNo,
         })
@@ -513,7 +513,7 @@ export const useTriageStore = defineStore('triage', {
 
     async getPatientFullDetails(id) {
       try {
-        const response = await axios.get(`${PATIENT_API_URL}/${id}`)
+        const response = await api.get(`${PATIENT_API_URL}/${id}`)
         return { ...response.data, patientId: id }
       } catch (error) {
         console.error('Print Error:', error)
@@ -588,64 +588,118 @@ export const useTriageStore = defineStore('triage', {
       },
 
     async loadCities(payload) {
-        if (!payload) return;
+      if (!payload) return;
 
-        const province = payload.selectedProvince;
-        const provinceCode = province?.Code || province?.code || province?.PROVCODE || province?.CODE;
+      const province = payload.selectedProvince;
+      const provinceCode = province?.Code || province?.code || province?.PROVCODE || province?.CODE;
 
-        if (!provinceCode || provinceCode === "130000000" || provinceCode === "NCR") return;
+      if (!provinceCode || provinceCode === "130000000" || provinceCode === "NCR") return;
 
-        payload.selectedCity = null;
-        payload.selectedBarangay = null;
-        payload.addressOptions.cities = [];
-        payload.addressOptions.barangays = [];
+      payload.selectedCity = null;
+      payload.selectedBarangay = null;
+      payload.addressOptions.cities = [];
+      payload.addressOptions.barangays = [];
 
-        const cityPrefix = provinceCode.substring(0, 4);
+      const cityPrefix = provinceCode.substring(0, 4);
 
-        payload.addressLoading.cities = true;
-        try {
-          const res = await fetch(`${PATIENT_API_URL}/cities?cityPrefix=${cityPrefix}`);
-          if (!res.ok) throw new Error(`Server error: ${res.status}`);
+      payload.addressLoading.cities = true;
+      try {
+        const res = await fetch(
+          `${PATIENT_API_URL}/cities?cityPrefix=${cityPrefix}&provinceCode=${provinceCode}`
+        );
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
 
-          const data = await res.json();
-          payload.addressOptions.cities = data.sort((a, b) => {
-            const nameA = a.Name || a.NAME || a.name || "";
-            const nameB = b.Name || b.NAME || b.name || "";
-            return nameA.localeCompare(nameB);
-          });
-        } catch (e) {
-          console.error("Failed to load cities:", e);
-        } finally {
-          payload.addressLoading.cities = false;
+        const data = await res.json();
+        payload.addressOptions.cities = data
+          .map((c) => ({
+            Code: c.Code || c.CODE || c.code,
+            Name: c.Name || c.NAME || c.name || "",
+            PSGCCode: c.Code || c.CODE || c.code,
+          }))
+          .sort((a, b) => a.Name.localeCompare(b.Name));
+
+      } catch (e) {
+        console.error("Failed to load cities:", e);
+      } finally {
+        payload.addressLoading.cities = false;
+      }
+    },
+
+    async loadBarangays(payload) {
+      if (!payload) return;
+
+      const city = payload.selectedCity;
+      const cityName = city?.Name || city?.NAME || city?.name;
+      const region = payload.selectedRegion;
+      const rawRegionCode = typeof region === "string"
+        ? region
+        : region?.CODE || region?.Code || region?.code;
+
+      const regionCode = rawRegionCode
+        ? rawRegionCode.padEnd(9, "0")
+        : null;
+
+      if (!cityName) return;
+
+      payload.selectedBarangay = null;
+      payload.addressOptions.barangays = [];
+      payload.addressLoading.barangays = true;
+
+      try {
+        const normalize = (str) =>
+          str
+            .toUpperCase()
+            .replace(/^CITY OF\s+/i, "")
+            .replace(/\s+/g, " ")
+            .trim();
+
+        const allCitiesRes = await fetch(
+          `https://psgc.gitlab.io/api/cities-municipalities/`
+        );
+
+        if (!allCitiesRes.ok) throw new Error(`PSGC error: ${allCitiesRes.status}`);
+        const allCities = await allCitiesRes.json();
+        const normalizedCityName = normalize(cityName);
+        const regionFiltered = regionCode
+          ? allCities.filter((c) => c.regionCode === regionCode)
+          : allCities;
+        console.log("Region Filtered Count:", regionFiltered.length);
+        let match = regionFiltered.find(
+          (c) => normalize(c.name) === normalizedCityName
+        );
+        if (!match) {
+          const stripped = normalizedCityName.replace(/\s+CITY$/i, "").trim();
+          match = regionFiltered.find(
+            (c) => normalize(c.name).replace(/\s+CITY$/i, "").trim() === stripped
+          );
         }
-      },
-
-      // async loadBarangays(payload) {
-      //   if (!payload) return;
-
-      //   const city = payload.selectedCity;
-      //   const cityCode = city?.Code || city?.code || city?.CITYMUNCODE || city?.CODE;
-      //   if (!cityCode) return;
-
-      //   payload.selectedBarangay = null;
-      //   payload.addressOptions.barangays = [];
-
-      //   payload.addressLoading.barangays = true;
-      //   try {
-      //     const res = await fetch(`http://10.107.0.2:3000/api/patients/barangays?cityCode=${cityCode}`);
-      //     if (!res.ok) throw new Error(`Server error: ${res.status}`);
-
-      //     const data = await res.json();
-      //     payload.addressOptions.barangays = data.sort((a, b) => {
-      //       const nameA = a.Name || a.NAME || a.name || "";
-      //       const nameB = b.Name || b.NAME || b.name || "";
-      //       return nameA.localeCompare(nameB);
-      //     });
-      //   } catch (e) {
-      //     console.error("Failed to load barangays:", e);
-      //   } finally {
-      //     payload.addressLoading.barangays = false;
-      //   }
-      // }
+        if (!match) {
+          match = allCities.find(
+            (c) => normalize(c.name) === normalizedCityName
+          );
+        }
+        if (!match) {
+          console.warn("No PSGC match found for city:", cityName);
+          payload.addressOptions.barangays = [];
+          return;
+        }
+        const barangayRes = await fetch(
+          `https://psgc.gitlab.io/api/cities-municipalities/${match.code}/barangays/`
+        );
+        if (!barangayRes.ok) throw new Error(`PSGC barangay error: ${barangayRes.status}`);
+        const data = await barangayRes.json();
+        payload.addressOptions.barangays = data
+          .map((b) => ({
+            Code: b.code,
+            Name: b.name,
+          }))
+          .sort((a, b) => a.Name.localeCompare(b.Name));
+      } catch (e) {
+        console.error("Barangay load error:", e);
+        payload.addressOptions.barangays = [];
+      } finally {
+        payload.addressLoading.barangays = false;
+      }
+    },
   },
 })

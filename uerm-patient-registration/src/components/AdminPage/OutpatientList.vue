@@ -85,16 +85,42 @@
             </q-td>
           </template>
 
+          <template v-slot:body-cell-ISRETURNING="props">
+            <q-td :props="props">
+              <q-badge
+                v-if="props.value"
+                color="blue-grey-6"
+                label="Returning Patient"
+                outline
+              />
+
+              <q-badge v-else color="blue-6" label="New Patient" outline />
+            </q-td>
+          </template>
+
           <template v-slot:body-cell-actions="props">
             <q-td :props="props" class="text-center">
               <q-btn flat round color="grey-7" icon="more_vert">
                 <q-menu cover auto-close>
                   <q-list style="min-width: 150px">
-                    <q-item clickable @click="viewPatient(props.row)">
+                    <q-item
+                      clickable
+                      :disable="!props.row.PATIENTNO"
+                      @click="viewPatient(props.row)"
+                    >
                       <q-item-section avatar>
-                        <q-icon name="las la-clipboard-list" color="blue-10" />
+                        <q-icon name="las la-paper-plane" color="blue-10" />
                       </q-item-section>
-                      <q-item-section>View Patient</q-item-section>
+                      <q-item-section>Send to Credit</q-item-section>
+
+                      <q-tooltip
+                        v-if="!props.row.PATIENTNO"
+                        anchor="bottom middle"
+                        self="bottom middle"
+                        class="bg-red text-white"
+                      >
+                        PATIENTNO IS REQUIRED
+                      </q-tooltip>
                     </q-item>
 
                     <q-item
@@ -268,7 +294,7 @@
               <q-item-section>
                 <q-item-label caption>Birthdate</q-item-label>
                 <q-item-label class="text-body1">
-                  {{ formatDate(selectedPatient.BIRTHDATE) }}
+                  {{ formatDate(selectedPatient.birthdateStr) }}
                 </q-item-label>
               </q-item-section>
             </q-item>

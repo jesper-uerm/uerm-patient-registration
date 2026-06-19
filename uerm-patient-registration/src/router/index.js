@@ -14,25 +14,30 @@ export default route(function () {
   Router.beforeEach((to, from, next) => {
     const authStore = useAuthStore()
 
-    if (to.meta.requiresAuth) {
+    if (!to.meta.requiresAuth) {
+      return next()
+    }
 
-      if (!authStore.username) {
-        Notify.create({ type: 'warning', message: 'Please login to access this page.' })
-        return next('/login')
-      }
+    if (!authStore.isAuthenticated) {
+      authStore.restoreFromCookie()
+    }
 
+    if (!authStore.isAuthenticated) {
+      Notify.create({ type: 'warning', message: 'Please login to access this page.' })
+      return next('/login')
+    }
+
+    const requiredRole = to.meta.role
+
+    if (requiredRole) {
       const userRole = authStore.role.toUpperCase()
-      const requiredRole = to.meta.role
-
-      if (requiredRole && !userRole.includes(requiredRole)) {
+      if (!userRole.includes(requiredRole)) {
         Notify.create({ type: 'negative', message: 'Access Denied: You do not have permission for this section.' })
         return next('/login')
       }
-
-      next()
-    } else {
-      next()
     }
+
+    next()
   })
 
   return Router

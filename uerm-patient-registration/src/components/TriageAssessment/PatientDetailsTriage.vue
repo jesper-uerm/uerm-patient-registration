@@ -180,7 +180,7 @@
         </q-input>
       </div>
 
-      <div class="col-12 col-sm-3 col-md-3">
+      <!-- <div class="col-12 col-sm-3 col-md-3">
         <q-select
           v-model="formData.selectedRegion"
           :options="formData.addressOptions.regions"
@@ -235,7 +235,7 @@
         </q-select>
       </div>
 
-      <!-- <div class="col-12 col-sm-3 col-md-3">
+      <div class="col-12 col-sm-3 col-md-3">
         <q-select
           v-model="formData.selectedBarangay"
           :options="formData.addressOptions.barangays"
@@ -252,7 +252,7 @@
         </q-select>
       </div> -->
 
-      <div class="col-12 col-sm-3 col-md-3">
+      <!-- <div class="col-12 col-sm-3 col-md-3">
         <q-input
           v-model="formData.selectedBarangay"
           label-slot
@@ -264,8 +264,89 @@
         >
           <template v-slot:label> Barangay <span class="text-red">*</span> </template>
         </q-input>
+      </div> -->
+
+      <div class="col-12 col-sm-3 col-md-3">
+        <q-select
+          v-model="formData.selectedRegion"
+          :options="formData.addressOptions.regions"
+          option-label="NAME"
+          option-value="CODE"
+          label-slot
+          outlined
+          dense
+          :loading="formData.addressLoading.regions"
+          @update:model-value="handleLoadProvinces"
+          lazy-rules
+          :rules="[(val) => !!val || 'Required']"
+        >
+          <template v-slot:label> Region <span class="text-red">*</span> </template>
+        </q-select>
+      </div>
+
+      <div class="col-12 col-sm-3 col-md-3">
+        <q-select
+          v-model="formData.selectedProvince"
+          :options="formData.addressOptions.provinces"
+          option-label="Name"
+          option-value="Code"
+          label-slot
+          :disable="!formData.selectedRegion"
+          outlined
+          dense
+          :loading="formData.addressLoading.provinces"
+          @update:model-value="handleLoadCities"
+          :rules="[(val) => !!val || 'Required']"
+        >
+          <template v-slot:label> Province <span class="text-red">*</span> </template>
+        </q-select>
+      </div>
+
+      <div class="col-12 col-sm-3 col-md-3">
+        <q-select
+          v-model="formData.selectedCity"
+          :options="formData.addressOptions.cities"
+          option-label="Name"
+          option-value="Code"
+          label-slot
+          :disable="!formData.selectedProvince"
+          outlined
+          dense
+          :loading="formData.addressLoading.cities"
+          :rules="[(val) => !!val || 'Required']"
+          @update:model-value="handleLoadBarangays"
+        >
+          <template v-slot:label>
+            City/Municipality <span class="text-red">*</span>
+          </template>
+        </q-select>
+      </div>
+
+      <div class="col-12 col-sm-3 col-md-3">
+        <q-select
+          v-model="formData.selectedBarangay"
+          :options="formData.addressOptions.barangays"
+          option-label="Name"
+          option-value="Code"
+          label-slot
+          :disable="!formData.selectedCity"
+          outlined
+          dense
+          :loading="formData.addressLoading.barangays"
+          :rules="[(val) => !!val || 'Required']"
+        >
+          <template v-slot:label> Barangay <span class="text-red">*</span> </template>
+          <template v-slot:no-option>
+            <q-item>
+              <q-item-section class="text-grey"
+                >No matching barangays found</q-item-section
+              >
+            </q-item>
+          </template>
+        </q-select>
       </div>
     </div>
+
     <q-stepper-navigation class="text-center" :class="$q.screen.lt.sm ? '' : 'q-mt-xs'">
       <q-btn
         unelevated
@@ -276,6 +357,93 @@
         @click="onNext"
       />
     </q-stepper-navigation>
+
+    <q-dialog v-model="showExistingWarningDialog" persistent>
+      <q-card style="width: 500px; max-width: 90vw" class="rounded-borders">
+        <q-card-section class="bg-yellow-10 text-white q-pa-md">
+          <div class="row items-center justify-center text-center">
+            <div class="text-subtitle2 text-weight-bold text-uppercase">
+              <q-icon name="las la-exclamation-triangle" class="q-mr-xs" size="xs" />
+              Existing Patient Found
+            </div>
+            <q-btn
+              unelevated
+              flat
+              round
+              dense
+              icon="las la-times"
+              class="absolute-right q-mr-md"
+              v-close-popup
+            />
+          </div>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-section class="q-pa-lg">
+          <div class="text-caption text-grey-8 text-center q-mb-lg">
+            A patient with the same name and birthdate already exists in the system.
+            Please use the <strong>Returning Patient</strong> option instead.
+          </div>
+
+          <q-list
+            bordered
+            separator
+            class="rounded-borders q-mb-md"
+            v-if="existingRecord"
+          >
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="las la-id-card" color="blue-6" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label caption>Patient No.</q-item-label>
+                <q-item-label class="text-caption1 text-bold">
+                  {{ existingRecord.PATIENTNO }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="las la-user" color="blue-6" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label caption>Full Name</q-item-label>
+                <q-item-label class="text-caption1 text-bold">
+                  {{ existingRecord.LASTNAME }},
+                  {{ existingRecord.FIRSTNAME }}
+                  {{ existingRecord.MIDDLENAME }}
+                  {{ existingRecord.SUFFIX }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="las la-birthday-cake" color="blue-6" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label caption>Birthdate</q-item-label>
+                <q-item-label class="text-caption1 text-bold">
+                  {{ formatDate(existingRecord.DBIRTH) }}
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-card-section>
+
+        <q-separator />
+        <!-- <q-card-actions align="center" class="bg-grey-1 q-pa-md">
+          <q-btn
+            unelevated
+            label="Returning Patient Form"
+            color="red-8"
+            icon-right="las la-times"
+            v-close-popup
+          />
+        </q-card-actions> -->
+      </q-card>
+    </q-dialog>
   </q-form>
 </template>
 
@@ -283,6 +451,9 @@
 import { mapWritableState, mapActions } from "pinia";
 import { useTriageStore } from "../../stores/triageStore";
 import { date } from "quasar";
+import axios from "axios";
+
+const PATIENT_API_URL = "http://10.107.0.2:3000/patient-reg/patients";
 
 export default {
   name: "PatientDetailsTriage",
@@ -298,6 +469,8 @@ export default {
 
   data() {
     return {
+      showExistingWarningDialog: false,
+      existingRecord: null,
       formData: {
         lastNameTriage: "",
         firstNameTriage: "",
@@ -320,14 +493,14 @@ export default {
           regions: [],
           provinces: [],
           cities: [],
-          // barangays: [],
+          barangays: [],
         },
 
         addressLoading: {
           regions: false,
           provinces: false,
           cities: false,
-          // barangays: false,
+          barangays: false,
         },
       },
     };
@@ -414,33 +587,78 @@ export default {
   },
 
   methods: {
+    formatDate(date) {
+      if (!date) return "N/A";
+      return new Date(date).toLocaleDateString("en-PH", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        timeZone: "Asia/Manila",
+      });
+    },
+
     ...mapActions(useTriageStore, [
       "fetchHmo",
       "loadRegions",
       "loadProvinces",
       "loadCities",
-      // "loadBarangays",
+      "loadBarangays",
     ]),
 
     async handleLoadRegions() {
       await this.loadRegions(this.formData);
     },
 
-    handleLoadProvinces() {
-      this.loadProvinces(this.formData);
+    async handleLoadProvinces() {
+      await this.loadProvinces(this.formData);
     },
 
-    handleLoadCities() {
-      this.loadCities(this.formData);
+    async handleLoadCities() {
+      await this.loadCities(this.formData);
+    },
+
+    async handleLoadBarangays() {
+      await this.loadBarangays(this.formData);
     },
 
     async onNext() {
       const isFormValid = await this.$refs.personalInfoTriageRef.validate();
 
-      if (isFormValid) {
+      if (!isFormValid) {
+        this.$q.notify({
+          type: "warning",
+          message: "Please complete the form.",
+          position: "top",
+        });
+        return;
+      }
+
+      if (this.formData.patientNo) {
         this.$emit("next", this.formData);
-      } else {
-        this.$q.notify({ type: "warning", message: "Please complete the form." });
+        return;
+      }
+
+      try {
+        const res = await axios.post(`${PATIENT_API_URL}/check-records`, {
+          firstName: this.formData.firstNameTriage,
+          lastName: this.formData.lastNameTriage,
+          birthdate: this.formData.birthdateTriage.replaceAll("/", "-"),
+        });
+
+        if (res.status === 200) {
+          this.$emit("next", this.formData);
+        }
+      } catch (error) {
+        if (error.response?.status === 409) {
+          this.existingRecord = error.response.data.match;
+          this.showExistingWarningDialog = true;
+        } else {
+          this.$q.notify({
+            type: "negative",
+            message: "Failed to check for duplicates. Please try again.",
+            position: "top",
+          });
+        }
       }
     },
   },
