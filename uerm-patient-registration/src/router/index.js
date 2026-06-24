@@ -23,8 +23,12 @@ export default route(function () {
     }
 
     if (!authStore.isAuthenticated) {
-      Notify.create({ type: 'warning', message: 'Please login to access this page.' })
-      return next('/login')
+    Notify.create({
+      type: 'warning',
+      message: 'Access token expired. Please log in again.',
+      position:'top',
+    });
+    return next('/login')
     }
 
     const requiredRole = to.meta.role

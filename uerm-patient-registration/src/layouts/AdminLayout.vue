@@ -99,7 +99,7 @@
         <q-item
           clickable
           v-ripple
-          to="/admitting/FromErList"
+          to="/admitting/fromerlist"
           active-class="active-link"
           class="q-mx-sm rounded-borders q-mb-xs"
         >
@@ -112,7 +112,7 @@
         <q-item
           clickable
           v-ripple
-          to="/admitting/InpatientList"
+          to="/admitting/inpatientlist"
           active-class="active-link"
           class="q-mx-sm rounded-borders q-mb-xs"
         >
@@ -122,11 +122,10 @@
           <q-item-section>Inpatient</q-item-section>
         </q-item>
 
-        <!--
         <q-item
           clickable
           v-ripple
-          to="/admitting/OutpatientList"
+          to="/admitting/outpatienlList"
           active-class="active-link"
           class="q-mx-sm rounded-borders q-mb-xs"
         >
@@ -134,7 +133,7 @@
             <q-icon name="las la-stethoscope" />
           </q-item-section>
           <q-item-section>Outpatient</q-item-section>
-        </q-item> -->
+        </q-item>
 
         <q-separator spaced class="q-mx-md" />
 

@@ -30,9 +30,9 @@ export const useAuthStore = defineStore('auth', {
 
       Cookies.set(TOKEN_COOKIE, token, {
         sameSite: 'Strict',
-        secure: process.env.APP_ENV !== 'dev'
+        secure: process.env.NODE_ENV !== 'dev'
       });
-      console.log(process.env.APP_ENV)
+      console.log(process.env.NODE_ENV)
     },
 
     restoreFromCookie() {

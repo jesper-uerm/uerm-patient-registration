@@ -435,14 +435,20 @@
         <!-- <q-card-actions align="center" class="bg-grey-1 q-pa-md">
           <q-btn
             unelevated
-            label="Returning Patient Form"
-            color="red-8"
-            icon-right="las la-times"
+            label="Open Returning Patient Form"
+            color="blue-10"
             v-close-popup
           />
         </q-card-actions> -->
       </q-card>
     </q-dialog>
+    <!-- <ReturningPatient
+      ref="showSearchDialog"
+      module="INPATIENT"
+      @open-inpatient="handleOpenInpatient"
+      @open-outpatient="handleOpenOutpatient"
+      @open-triage="handleOpenTriage"
+    /> -->
   </q-form>
 </template>
 
@@ -450,13 +456,16 @@
 import { mapWritableState, mapActions } from "pinia";
 import { useInpatientStore } from "src/stores/inpatientStore";
 import { date } from "quasar";
+// import ReturningPatient from "pages/ReturningPatient.vue";
 import axios from "axios";
 
 const PATIENT_API_URL = "http://10.107.0.2:3000/patient-reg/patients";
 
 export default {
   name: "PatientDetailsInpatient",
-
+  // components: {
+  //   ReturningPatient,
+  // },
   props: {
     prefillPatient: {
       type: Object,
@@ -602,6 +611,7 @@ export default {
         if (error.response?.status === 409) {
           this.existingRecord = error.response.data.match;
           this.showExistingWarningDialog = true;
+          this.patientDetails = false;
         } else {
           this.$q.notify({
             type: "negative",
@@ -611,6 +621,10 @@ export default {
         }
       }
     },
+    // openReturningPatientDialog() {
+    //   this.showExistingWarningDialog = false;
+    //   this.$refs.showSearchDialog.show();
+    // },
   },
 };
 </script>

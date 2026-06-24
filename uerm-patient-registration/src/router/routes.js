@@ -28,9 +28,9 @@ const routes = [
     meta: { requiresAuth: true, role: 'ADMITTING UNIT' },
     children: [
       { path: '', name: 'admin-dashboard', component: () => import('src/components/AdminPage/AdminDashboard.vue') },
-      { path: 'FromERList', name: 'from-er-list', component: () => import('src/components/AdminPage/FromErList.vue') },
-      { path: 'InpatientList', name: 'in-patient-list', component: () => import('src/components/AdminPage/InpatientList.vue') },
-      { path: 'OutpatientList', name: 'out-patient-list', component: () => import('src/components/AdminPage/OutpatientList.vue') }
+      { path: 'fromerlist', name: 'from-er-list', component: () => import('src/components/AdminPage/FromErList.vue') },
+      { path: 'inpatientlist', name: 'in-patient-list', component: () => import('src/components/AdminPage/InpatientList.vue') },
+      { path: 'outpatienlList', name: 'out-patient-list', component: () => import('src/components/AdminPage/OutpatientList.vue') }
     ]
   },
 
@@ -40,8 +40,8 @@ const routes = [
     meta: { requiresAuth: true, role: 'EMERGENCY ROOM' },
     children: [
       { path: '', name: 'er-dashboard', component: () => import('src/components/AdminPage/AdminErDashboard.vue') },
-      { path: 'EmergencyList', name: 'emergency-patient-list', component: () => import('src/components/AdminPage/EmergencyList.vue') },
-      { path: 'ForAdmissionER', name: 'for-admission-list', component: () => import('src/components/AdminPage/ForAdmissionER.vue') }
+      { path: 'emergencylist', name: 'emergency-patient-list', component: () => import('src/components/AdminPage/EmergencyList.vue') },
+      { path: 'foradmissioner', name: 'for-admission-list', component: () => import('src/components/AdminPage/ForAdmissionER.vue') }
     ]
   },
 
@@ -51,8 +51,9 @@ const routes = [
     meta: { requiresAuth: true, role: 'HOSPITAL FINANCE AND OPERATIONS' },
     children: [
       { path: '', name: 'finance-dashboard', component: () => import('src/components/FinancePage/FinanceDashboard.vue') },
-      { path: 'PatientList', name: 'finance-patient-list', component: () => import('src/components/FinancePage/PatientList.vue') },
-      { path: 'PatientListApproval', name: 'finance-patient-list-approval', component: () => import('src/components/FinancePage/PatientListApproval.vue') }
+      { path: 'patientlist', name: 'finance-patient-list', component: () => import('src/components/FinancePage/PatientList.vue') },
+      { path: 'patientlistapproval', name: 'finance-patient-list-approval', component: () => import('src/components/FinancePage/PatientListApproval.vue') },
+      { path: 'patientlistrecords', name: 'finance-patient-list-records', component: () => import('src/components/FinancePage/PatientListRecords.vue') }
 
     ]
   },

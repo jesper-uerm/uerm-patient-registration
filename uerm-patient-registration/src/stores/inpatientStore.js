@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
+import { api } from 'boot/axios'
 import { Notify, Loading } from 'quasar'
 import { date } from 'quasar'
 
@@ -96,6 +96,8 @@ export const useInpatientStore = defineStore('inpatient', {
 
       consent: {
         signature: null,
+        admittingOfficerSignature: null,
+        admittingOfficerName: null,
       },
 
       addressOptions: {
@@ -241,6 +243,7 @@ export const useInpatientStore = defineStore('inpatient', {
 
         consent: {
           signature: null,
+          // admittingOfficerSignature: null,
         },
 
         addressOptions: {
@@ -276,12 +279,13 @@ export const useInpatientStore = defineStore('inpatient', {
         ...this.formData.consent,
 
         signature: this.formData.consent?.signature,
+        admittingOfficerSignature: this.formData.consent?.admittingOfficerSignature,
 
         patientType: 'INPATIENT',
       }
 
       try {
-        await axios.post(`${PATIENT_API_URL}/register`, finalData)
+        await api.post(`${PATIENT_API_URL}/register`, finalData)
 
         this.resetForm()
 
@@ -500,7 +504,7 @@ export const useInpatientStore = defineStore('inpatient', {
     async fetchInitialData() {
       this.loading = true
       try {
-        const response = await axios.get(`${PATIENT_API_URL}/inpatient`)
+        const response = await api.get(`${PATIENT_API_URL}/inpatient`)
         this.patientList = response.data
         this.hasSearched = false
       } catch (error) {
@@ -519,7 +523,7 @@ export const useInpatientStore = defineStore('inpatient', {
     async fetchFromErList() {
       this.loading = true
       try {
-        const response = await axios.get(`${PATIENT_API_URL}/for-admission`)
+        const response = await api.get(`${PATIENT_API_URL}/for-admission`)
         this.patientListfromER = response.data
         this.hasSearched = false
       } catch (error) {
@@ -539,7 +543,7 @@ export const useInpatientStore = defineStore('inpatient', {
       this.searchQuery = query
 
       try {
-        const response = await axios.get(`${PATIENT_API_URL}/search-from-er`, {
+        const response = await api.get(`${PATIENT_API_URL}/search-from-er`, {
           params: { query },
         })
 
@@ -573,7 +577,7 @@ export const useInpatientStore = defineStore('inpatient', {
       this.searchQuery = query
 
       try {
-        const response = await axios.get(`${PATIENT_API_URL}/search-inpatient`, {
+        const response = await api.get(`${PATIENT_API_URL}/search-inpatient`, {
           params: { query },
         })
 
@@ -603,7 +607,7 @@ export const useInpatientStore = defineStore('inpatient', {
     async sendDataInformation(patient, isForce = false) {
       this.loading = true
       try {
-          await axios.post(`${PATIENT_API_URL}/send-data`, {
+          await api.post(`${PATIENT_API_URL}/send-data`, {
           PATIENTREGID: patient.PATIENTREGID || patient.patientId,
           force: isForce,
         })
@@ -641,7 +645,7 @@ export const useInpatientStore = defineStore('inpatient', {
     async linkExistingPatient(patientId, existingPatientNo) {
       this.loading = true;
       try {
-        const res = await axios.post(`${PATIENT_API_URL}/link`, {
+        const res = await api.post(`${PATIENT_API_URL}/link`, {
           PATIENTREGID: patientId,
           patientno: existingPatientNo,
         });
@@ -666,7 +670,7 @@ export const useInpatientStore = defineStore('inpatient', {
         const payload = { PATIENTREGID: patientId }
         console.log('Sending Payload:', payload)
 
-        await axios.post(`${PATIENT_API_URL}/send-to-credit`, payload)
+        await api.post(`${PATIENT_API_URL}/send-to-credit`, payload)
 
         Notify.create({
           type: 'positive',
@@ -690,7 +694,7 @@ export const useInpatientStore = defineStore('inpatient', {
     async fetchFullPatientData(id) {
       this.loading = true
       try {
-        const response = await axios.get(`${PATIENT_API_URL}/${id}`)
+        const response = await api.get(`${PATIENT_API_URL}/${id}`)
         return { ...response.data, patientId: id }
       } catch (error) {
         console.error('Print Error:', error)
@@ -739,7 +743,7 @@ export const useInpatientStore = defineStore('inpatient', {
       if (this.allRooms?.length > 0) return
 
       try {
-        const response = await axios.get(`${PATIENT_API_URL}/rooms`)
+        const response = await api.get(`${PATIENT_API_URL}/rooms`)
 
         if (Array.isArray(response.data)) {
           this.allRooms = response.data.map((room) => ({

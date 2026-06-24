@@ -1,9 +1,9 @@
 import { defineStore } from "pinia";
-import axios from "axios";
+import { api } from 'boot/axios'
 import { Notify, Loading } from "quasar";
 import { useAuthStore } from 'src/stores/authStore';
 
-const API_URL = "http://10.107.0.2:3000/patient-reg/er";
+const ER_API_URL = "http://10.107.0.2:3000/patient-reg/er";
 const PATIENT_API_URL = "http://10.107.0.2:3000/patient-reg/patients";
 const DASHBOARD_API_URL = "http://10.107.0.2:3000/patient-reg/dashboard";
 
@@ -11,14 +11,16 @@ export const useFinanceStore = defineStore("finance", {
   state: () => ({
     patientList: [],
     patientListApproval: [],
+    patientListRecords: [],
     patientRecord: [],
     loading: false,
     hasSearched: false,
     selectedPatient: {},
     viewDialog: false,
 
+    forApprovalCount: 0,
     approvedCount: 0,
-    declinedCount: 0,
+    disapprovedCount: 0,
 
     patientDetails: null,
     detailsLoading: false,
@@ -105,21 +107,23 @@ export const useFinanceStore = defineStore("finance", {
     async fetchFinanceDashboardData() {
       this.loading = true;
       try {
-        const [pieRes, lineRes, listRes] = await Promise.all([
-          axios.get(`${DASHBOARD_API_URL}/pie-chart`),
-          axios.get(`${DASHBOARD_API_URL}/line-chart`),
-          axios.get(`${PATIENT_API_URL}/finance`),
+        const [pieRes, lineRes, listRes, statsRes] = await Promise.all([
+          api.get(`${DASHBOARD_API_URL}/pie-chart`),
+          api.get(`${DASHBOARD_API_URL}/line-chart`),
+          api.get(`${PATIENT_API_URL}/finance`),
+          api.get(`${DASHBOARD_API_URL}/stats`),
         ]);
 
-        this.pieSeries = pieRes.data.series;
-        this.pieLabels = pieRes.data.labels;
-        this.lineSeries = lineRes.data.series;
-        this.lineCategories = lineRes.data.categories;
+        this.pieSeries = pieRes.data.series
+        this.pieLabels = pieRes.data.labels
+        this.lineSeries = lineRes.data.series
+        this.lineCategories = lineRes.data.categories
 
-        this.patientList = listRes.data;
+        this.patientList = listRes.data
 
-        this.approvedCount = this.patientList.filter((p) => p.is_approved === true).length;
-        this.declinedCount = this.patientList.filter((p) => p.is_approved === false).length;
+        this.forApprovalCount = statsRes.data.forApprovalCount
+        this.approvedCount = statsRes.data.approvedCount
+        this.disapprovedCount = statsRes.data.disapprovedCount
 
       } catch (error) {
         console.error('Finance Dashboard Fetch Error:', error);
@@ -132,7 +136,7 @@ export const useFinanceStore = defineStore("finance", {
       if (this.allDoctors?.length > 0) return;
 
       try {
-        const response = await axios.get(`${PATIENT_API_URL}/doctors`);
+        const response = await api.get(`${PATIENT_API_URL}/doctors`);
 
         if (Array.isArray(response.data)) {
           this.allDoctors = response.data.map(doc => ({
@@ -154,7 +158,7 @@ export const useFinanceStore = defineStore("finance", {
       if (this.hmo?.length > 0) return;
 
       try {
-        const response = await axios.get(`${PATIENT_API_URL}/hmo`);
+        const response = await api.get(`${PATIENT_API_URL}/hmo`);
 
         if (Array.isArray(response.data)) {
           this.hmo = response.data.map(hmo => ({
@@ -236,7 +240,7 @@ export const useFinanceStore = defineStore("finance", {
     async fetchPatientsFinance() {
       this.loading = true;
       try {
-        const response = await axios.get(`${PATIENT_API_URL}/finance`);
+        const response = await api.get(`${PATIENT_API_URL}/finance`);
         this.patientList = response.data;
       } catch (error) {
         console.error(error);
@@ -253,8 +257,27 @@ export const useFinanceStore = defineStore("finance", {
     async fetchPatientsFinanceApproval() {
       this.loading = true;
       try {
-        const response = await axios.get(`${PATIENT_API_URL}/financeApproval`);
+        const response = await api.get(`${PATIENT_API_URL}/financeApproval`);
         this.patientListApproval = response.data;
+      } catch (error) {
+        console.error(error);
+        Notify.create({
+          type: "negative",
+          message: "Failed to load Review List",
+          position: "top",
+        });
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    //list records
+    async fetchPatientsFinanceRecords() {
+      this.loading = true;
+      try {
+        //change financerecords
+        const response = await api.get(`${PATIENT_API_URL}/financeRecords`);
+        this.patientListRecords = response.data;
       } catch (error) {
         console.error(error);
         Notify.create({
@@ -270,7 +293,7 @@ export const useFinanceStore = defineStore("finance", {
     async fetchPatientRecords(PATIENTNO) {
       this.loading = true;
       try {
-      const response = await axios.get(`${API_URL}/${PATIENTNO}/records`);
+      const response = await api.get(`${ER_API_URL}/${PATIENTNO}/records`);
         this.patientRecord = response.data;
       } catch (error) {
         console.error(error);
@@ -289,7 +312,7 @@ export const useFinanceStore = defineStore("finance", {
     this.patientDetails = null;
 
     try {
-      const response = await axios.get(`${PATIENT_API_URL}/assessment-details/${patientno}`);
+      const response = await api.get(`${PATIENT_API_URL}/assessment-details/${patientno}`);
       this.patientDetails = response.data;
     } catch (error) {
       console.error("Error fetching patient details:", error);
@@ -310,7 +333,7 @@ export const useFinanceStore = defineStore("finance", {
       this.patientList = [];
 
       try {
-          const response = await axios.get(`${PATIENT_API_URL}/search-finance`, {
+          const response = await api.get(`${PATIENT_API_URL}/search-finance`, {
             params: { query },
           });
 
@@ -329,11 +352,30 @@ export const useFinanceStore = defineStore("finance", {
       this.patientListApproval = [];
 
       try {
-          const response = await axios.get(`${PATIENT_API_URL}/search-finance-approval`, {
+          const response = await api.get(`${PATIENT_API_URL}/search-finance-approval`, {
             params: { query },
           });
 
           this.patientListApproval = response.data;
+      } catch (error) {
+          console.error("Search failed:", error);
+      } finally {
+          this.loading = false;
+      }
+  },
+
+    async searchPatientListRecords(query) {
+      this.loading = true;
+      this.hasSearched = true;
+
+      this.patientListRecords = [];
+
+      try {
+          const response = await api.get(`${PATIENT_API_URL}/search-finance-records`, {
+            params: { query },
+          });
+
+          this.patientListRecords = response.data;
       } catch (error) {
           console.error("Search failed:", error);
       } finally {
@@ -355,7 +397,7 @@ export const useFinanceStore = defineStore("finance", {
         reviewedBy: authStore.fullName || '',
       };
 
-      await axios.put(`${PATIENT_API_URL}/details`, payload);
+      await api.put(`${PATIENT_API_URL}/details`, payload);
       await this.fetchPatientsFinance();
       return { success: true };
     } catch (error) {
@@ -378,7 +420,7 @@ export const useFinanceStore = defineStore("finance", {
     Loading.show({ message: 'Updating status...' });
 
     try {
-      await axios.put(`${PATIENT_API_URL}/approve`, {
+      await api.put(`${PATIENT_API_URL}/approve`, {
         PATIENTNO: patient.PATIENTNO,
         approvedBy: userName
       });
@@ -406,7 +448,7 @@ export const useFinanceStore = defineStore("finance", {
 
     Loading.show({ message: 'Updating status...' });
     try {
-      await axios.put(`${PATIENT_API_URL}/disapprove`, { PATIENTNO: patient.PATIENTNO });
+      await api.put(`${PATIENT_API_URL}/disapprove`, { PATIENTNO: patient.PATIENTNO });
 
       Notify.create({
         type: 'warning',

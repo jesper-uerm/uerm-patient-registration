@@ -13,18 +13,24 @@ export function printEmergencyPatientInformation() {
     })
   }
 
-  const getSignatureFromAPI = async (patientId) => {
-    try {
-      const response = await fetch(`http://10.107.0.2:3000/patient-reg/patients/signature/${patientId}`)
-      if (!response.ok) return null
+const getSignatureFromAPI = async (patientId) => {
+  try {
+    const response = await fetch(`http://10.107.0.2:3000/patient-reg/patients/signature/${patientId}`)
 
-      const data = await response.json()
-      return data && data.signature ? data.signature : null
-    } catch (error) {
-      console.warn('Failed to fetch signature:', error)
-      return null
+
+    if (!response.ok) return { patientSignature: null, personnelSignature: null }
+
+    const data = await response.json()
+
+    return {
+      patientSignature: data?.patientSignature ?? null,
+      personnelSignature: data?.personnelSignature ?? null,
     }
+  } catch (error) {
+    console.warn('Failed to fetch signatures:', error)
+    return { patientSignature: null, personnelSignature: null }
   }
+}
 
   const getBase64ImageFromURL = (url) => {
     return new Promise((resolve) => {
@@ -87,8 +93,10 @@ export function printEmergencyPatientInformation() {
         return null
       }
 
-      const patientSigData = processSignature(patient.eSignature)
-      const personnelSigData = processSignature(patient.personnelSignature)
+      const { patientSignature, personnelSignature } = await getSignatureFromAPI(patient.PATIENTREGID)
+
+      const patientSigData = processSignature(patientSignature)
+      const personnelSigData = processSignature(personnelSignature)
 
       const getSignatureImage = (sigData) => {
         return sigData
@@ -180,7 +188,6 @@ export function printEmergencyPatientInformation() {
       const remarks = (patient.REMARKS || '-').toUpperCase()
 
       const personnelName = patient.PERSONNEL || patient.PERSONNEL_NAME || 'Triage Officer'
-      const signatureData = await getSignatureFromAPI(patient.patientId || patient.id)
       const createdAt = patient.CREATEDAT
         ? new Date(patient.CREATEDAT)
             .toLocaleDateString('en-US', {
@@ -898,9 +905,9 @@ export function printEmergencyPatientInformation() {
                     height: 60,
                     alignment: 'center',
                     stack: [
-                      signatureData
+                      patientSigData
                         ? {
-                            image: signatureData,
+                            image: patientSigData   ,
                             fit: [150, 60],
                             alignment: 'center',
                           }

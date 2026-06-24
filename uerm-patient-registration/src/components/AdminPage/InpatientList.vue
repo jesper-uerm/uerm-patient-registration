@@ -104,7 +104,7 @@
               <q-badge
                 v-else
                 color="orange-7"
-                label="Pending for Approval in Credit"
+                label="Pending Approval in Credit"
                 outline
               />
             </q-td>

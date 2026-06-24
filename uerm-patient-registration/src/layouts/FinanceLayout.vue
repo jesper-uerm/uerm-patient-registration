@@ -99,27 +99,40 @@
         <q-item
           clickable
           v-ripple
-          to="/finance/PatientList"
+          to="/finance/patientlist"
           active-class="active-link"
           class="q-mx-sm rounded-borders q-mb-xs"
         >
           <q-item-section avatar>
-            <q-icon name="las la-clipboard-list" />
+            <q-icon name="las la-list-alt" />
           </q-item-section>
-          <q-item-section>Assessment</q-item-section>
+          <q-item-section>For Assessment</q-item-section>
         </q-item>
 
         <q-item
           clickable
           v-ripple
-          to="/finance/PatientListApproval"
+          to="/finance/patientlistapproval"
           active-class="active-link"
           class="q-mx-sm rounded-borders q-mb-xs"
         >
           <q-item-section avatar>
-            <q-icon name="las la-file-invoice-dollar" />
+            <q-icon name="las la-check-circle" />
           </q-item-section>
-          <q-item-section>Approval</q-item-section>
+          <q-item-section>For Approval</q-item-section>
+        </q-item>
+
+        <q-item
+          clickable
+          v-ripple
+          to="/finance/patientlistrecords"
+          active-class="active-link"
+          class="q-mx-sm rounded-borders q-mb-xs"
+        >
+          <q-item-section avatar>
+            <q-icon name="las la-bars" />
+          </q-item-section>
+          <q-item-section>Asessment Logs</q-item-section>
         </q-item>
 
         <q-separator spaced class="q-mx-md" />

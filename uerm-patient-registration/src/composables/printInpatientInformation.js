@@ -11,6 +11,24 @@ export function printInpatientInformation() {
     });
   };
 
+  const getSignatureFromAPI = async (patientId) => {
+    try {
+      const response = await fetch(`http://10.107.0.2:3000/patient-reg/patients/signature/${patientId}`)
+
+      if (!response.ok) return { patientSignature: null, personnelSignature: null }
+
+      const data = await response.json()
+
+      return {
+        patientSignature: data?.patientSignature ?? null,
+        personnelSignature: data?.personnelSignature ?? null,
+      }
+    } catch (error) {
+      console.warn('Failed to fetch signatures:', error)
+      return { patientSignature: null, personnelSignature: null }
+    }
+  }
+
   const getBase64ImageFromURL = (url) => {
     return new Promise((resolve) => {
       const img = new Image();
@@ -50,34 +68,30 @@ export function printInpatientInformation() {
       const rightLogo = await getBase64ImageFromURL('src/assets/uerm-logo.png');
       const leftLogo = await getBase64ImageFromURL('src/assets/uerm-logo-white.png');
 
-
-      let signatureData = null;
-
-      if (patient.eSignature) {
-        let rawSig = patient.eSignature;
-        let finalSigString = '';
-
+      const processSignature = (rawSig) => {
+        if (!rawSig) return null
+        let finalSigString = ''
 
         if (typeof rawSig === 'object' && rawSig.type === 'Buffer' && Array.isArray(rawSig.data)) {
           const binaryString = new Uint8Array(rawSig.data).reduce(
             (data, byte) => data + String.fromCharCode(byte),
-            ''
-          );
-          finalSigString = window.btoa(binaryString);
-        }
-
-        else if (typeof rawSig === 'string') {
-          finalSigString = rawSig;
+            '',
+          )
+          finalSigString = window.btoa(binaryString)
+        } else if (typeof rawSig === 'string') {
+          finalSigString = rawSig
         }
 
         if (finalSigString) {
-          if (finalSigString.startsWith('data:image')) {
-            signatureData = finalSigString;
-          } else {
-            signatureData = `data:image/png;base64,${finalSigString}`;
-          }
+          return finalSigString.startsWith('data:image')
+            ? finalSigString
+            : `data:image/png;base64,${finalSigString}`
         }
+        return null
       }
+
+      const { patientSignature } = await getSignatureFromAPI(patient.PATIENTREGID)
+      const signatureData = processSignature(patientSignature)
 
       const getLogoColumn = (imgData, align) => {
         if (imgData) {

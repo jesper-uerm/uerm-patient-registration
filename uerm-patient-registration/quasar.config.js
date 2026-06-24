@@ -41,8 +41,8 @@ export default defineConfig((ctx) => {
         node: 'node20'
       },
 
-            env: {
-        APP_ENV: ctx.dev ? 'dev' : 'prod'
+        //     env: {
+        // APP_ENV: ctx.dev ? 'dev' : 'prod'
       },
 
       vueRouterMode: 'hash', // available values: 'hash', 'history'

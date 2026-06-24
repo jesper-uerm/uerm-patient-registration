@@ -88,6 +88,12 @@
                 label="Emergency Patient"
                 outline
               />
+              <q-badge
+                v-if="props.value == 'OUTPATIENT'"
+                color="blue-grey-6"
+                label="Outpatient"
+                outline
+              />
             </q-td>
           </template>
 
@@ -182,7 +188,7 @@ export default {
       columns: [
         {
           name: "PATIENTNO",
-          label: "Patient No.",
+          label: "PATIENTNO",
           field: "PATIENTNO",
           align: "center",
           sortable: true,
@@ -201,7 +207,7 @@ export default {
         // },
         {
           name: "fullName",
-          label: "Name",
+          label: "NAME",
           field: "fullName",
           align: "center",
           sortable: true,
@@ -209,7 +215,7 @@ export default {
         },
         {
           name: "birthdateStr",
-          label: "Birthdate",
+          label: "BIRTHDATE",
           field: "birthdateStr",
           align: "center",
           format: (val) => (val ? date.formatDate(val, "MMM D, YYYY") : "-"),
@@ -218,7 +224,7 @@ export default {
         },
         {
           name: "patientType",
-          label: "Patient Type",
+          label: "PATIENT TYPE",
           field: "patientType",
           align: "center",
           sortable: true,
@@ -226,7 +232,7 @@ export default {
         },
         {
           name: "CREATEDAT",
-          label: "Date Added",
+          label: "DATE ADDED",
           field: "CREATEDAT",
           align: "center",
           sortable: true,

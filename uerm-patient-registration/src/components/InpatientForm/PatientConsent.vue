@@ -41,7 +41,7 @@
         </div>
       </div>
 
-      <div class="col-12 items-center">
+      <div class="col-12 col-md-6 items-center">
         <div class="text-caption text-center text-grey-8 q-mb-xs">
           Patient / Relative Signature <span class="text-red">*</span>
         </div>
@@ -54,6 +54,30 @@
         >
           <q-icon name="warning" class="q-mr-xs" />
           Signature is required to proceed.
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6 items-center">
+        <div class="text-caption text-center text-grey-8 q-mb-xs">
+          AIS Personnel Name/Signature <span class="text-red">*</span>
+        </div>
+
+        <q-input
+          v-if="!formData.consent.admittingOfficerSignature"
+          v-model="formData.consent.admittingOfficerName"
+          outlined
+          dense
+          class="q-mb-sm"
+        />
+
+        <SignaturePad v-model="formData.consent.admittingOfficerSignature" />
+
+        <div
+          v-if="hasOfficerError"
+          class="col-12 text-center text-negative text-caption q-mt-sm"
+        >
+          <q-icon name="warning" class="q-mr-xs" />
+          Admitting officer name and signature are required.
         </div>
       </div>
     </div>
@@ -94,6 +118,7 @@ export default {
   data() {
     return {
       hasError: false,
+      hasOfficerError: false,
     };
   },
 
@@ -108,9 +133,19 @@ export default {
       const signature = this.formData.consent.signature;
       const isSignatureValid = !!signature && signature.length > 0;
 
-      this.hasError = !isSignatureValid;
+      const officerName = this.formData.consent.admittingOfficerName;
+      const isOfficerNameValid = !!officerName?.trim();
 
-      return isFormValid && isSignatureValid;
+      const admittingOfficerSignature = this.formData.consent.admittingOfficerSignature;
+      const isOfficerSignatureValid =
+        !!admittingOfficerSignature && admittingOfficerSignature.length > 0;
+
+      this.hasError = !isSignatureValid;
+      this.hasOfficerError = !isOfficerNameValid || !isOfficerSignatureValid;
+
+      return (
+        isFormValid && isSignatureValid && isOfficerNameValid && isOfficerSignatureValid
+      );
     },
 
     async trySubmit() {

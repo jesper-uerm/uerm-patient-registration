@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import axios from "axios";
+import { api } from 'boot/axios'
 import { Notify } from "quasar";
 import { date } from "quasar";
 
@@ -76,7 +76,7 @@ export const useOutpatientStore = defineStore("outpatient", {
       if (this.hmo?.length > 0) return
 
       try {
-        const response = await axios.get(`${PATIENT_API_URL}/hmo`)
+        const response = await api.get(`${PATIENT_API_URL}/hmo`)
         if (Array.isArray(response.data)) {
           this.hmo = response.data.map((hmo) => ({
             label: (hmo.label || '').toUpperCase(),
@@ -94,7 +94,7 @@ export const useOutpatientStore = defineStore("outpatient", {
     async fetchInitialData() {
       this.loading = true;
       try {
-        const response = await axios.get(`${PATIENT_API_URL}/outpatient`);
+        const response = await api.get(`${PATIENT_API_URL}/outpatient`);
         this.patientList = response.data;
         this.hasSearched = false;
       } catch (error) {
@@ -116,7 +116,7 @@ export const useOutpatientStore = defineStore("outpatient", {
       this.searchQuery = query;
 
       try {
-        const response = await axios.get(`${PATIENT_API_URL}/search-outpatient`, {
+        const response = await api.get(`${PATIENT_API_URL}/search-outpatient`, {
           params: { query },
         });
 
@@ -147,7 +147,7 @@ export const useOutpatientStore = defineStore("outpatient", {
       if (this.allDoctors?.length > 0) return;
 
       try {
-        const response = await axios.get(`${PATIENT_API_URL}/doctors`);
+        const response = await api.get(`${PATIENT_API_URL}/doctors`);
 
         if (Array.isArray(response.data)) {
           this.allDoctors = response.data.map(doc => ({
@@ -168,7 +168,7 @@ export const useOutpatientStore = defineStore("outpatient", {
     async sendDataInformation(patient, isForce = false) {
       this.loading = true;
       try {
-        await axios.post(`${PATIENT_API_URL}/send-data`, {
+        await api.post(`${PATIENT_API_URL}/send-data`, {
           PATIENTREGID: patient.PATIENTREGID || patient.patientId,
           force: isForce,
         });
@@ -202,7 +202,7 @@ export const useOutpatientStore = defineStore("outpatient", {
 
       this.loading = true;
       try {
-        await axios.post(`${PATIENT_API_URL}/link`, {
+        await api.post(`${PATIENT_API_URL}/link`, {
           PATIENTREGID: this.pendingLinkData.originalId,
           patientno: this.selectedDuplicate.existingPatientNo,
         });
@@ -229,7 +229,7 @@ export const useOutpatientStore = defineStore("outpatient", {
     async sendToCredit(patientId) {
       if (!patientId) return;
       try {
-        await axios.post(`${PATIENT_API_URL}/send-to-credit`, { PATIENTREGID: patientId });
+        await api.post(`${PATIENT_API_URL}/send-to-credit`, { PATIENTREGID: patientId });
         Notify.create({
           type: "positive",
           message: "Successfully sent to Credit for review.",
@@ -247,7 +247,7 @@ export const useOutpatientStore = defineStore("outpatient", {
     async fetchFullPatientData(id) {
       this.loading = true;
       try {
-        const response = await axios.get(`${PATIENT_API_URL}/${id}`);
+        const response = await api.get(`${PATIENT_API_URL}/${id}`);
         return { ...response.data, patientId: id };
       } catch (error) {
         console.error("Fetch Error:", error);

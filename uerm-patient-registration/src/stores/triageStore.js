@@ -87,7 +87,6 @@ export const useTriageStore = defineStore('triage', {
         this.lineCategories = lineRes.data.categories
 
         this.forAdmissionCount = statsRes.data.forAdmission
-        this.outpatientCount = statsRes.data.outpatient
         this.erpatientCount = statsRes.data.emergency
 
         this.patientListDashboard = listRes.data
@@ -297,10 +296,6 @@ export const useTriageStore = defineStore('triage', {
       }
 
       this.localSignature = null
-
-      if (this.$refs.personalInfoTriage) {
-        this.$refs.personalInfoTriage.resetValidation()
-      }
 
       this.hasError = false
     },
@@ -663,7 +658,6 @@ export const useTriageStore = defineStore('triage', {
         const regionFiltered = regionCode
           ? allCities.filter((c) => c.regionCode === regionCode)
           : allCities;
-        console.log("Region Filtered Count:", regionFiltered.length);
         let match = regionFiltered.find(
           (c) => normalize(c.name) === normalizedCityName
         );
