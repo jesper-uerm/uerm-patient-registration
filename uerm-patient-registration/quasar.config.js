@@ -3,7 +3,7 @@
 
 import { defineConfig } from '#q-app/wrappers'
 
-export default defineConfig((ctx) => {
+export default defineConfig(() => {
   return {
     // https://v2.quasar.dev/quasar-cli-vite/prefetch-feature
     // preFetch: true,
@@ -41,9 +41,9 @@ export default defineConfig((ctx) => {
         node: 'node20'
       },
 
-        //     env: {
-        // APP_ENV: ctx.dev ? 'dev' : 'prod'
-      },
+      //       env: {
+      //   APP_ENV: ctx.dev ? 'dev' : 'prod'
+      // },
 
       vueRouterMode: 'hash', // available values: 'hash', 'history'
       // vueRouterBase,

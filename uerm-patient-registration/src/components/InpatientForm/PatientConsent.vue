@@ -68,6 +68,7 @@
           outlined
           dense
           class="q-mb-sm"
+          input-class="text-center"
         />
 
         <SignaturePad v-model="formData.consent.admittingOfficerSignature" />

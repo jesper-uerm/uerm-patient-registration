@@ -336,12 +336,12 @@
           <q-btn
             unelevated
             :label="
-              selectedPatient.FORREVIEW
+              selectedPatient.ISFORADMISSION
                 ? 'Already Forwarded'
                 : 'Forward to credit and finance'
             "
-            :color="selectedPatient.FORREVIEW ? 'grey' : 'yellow-10'"
-            :disable="selectedPatient.FORREVIEW"
+            :color="selectedPatient.ISFORADMISSION ? 'grey' : 'yellow-10'"
+            :disable="selectedPatient.ISFORADMISSION"
             icon-right="las la-arrow-up"
             @click="handleSendToCredit(selectedPatient)"
           />

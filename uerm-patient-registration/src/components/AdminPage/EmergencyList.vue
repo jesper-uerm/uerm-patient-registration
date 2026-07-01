@@ -1350,6 +1350,16 @@ export default {
         },
 
         {
+          name: "datead",
+          label: "DATE ADDED",
+          field: "CREATEDAT",
+          align: "center",
+          format: (val) => (val ? date.formatDate(val, "MMM D, YYYY") : "-"),
+          classes: "text-grey-7",
+          style: "width: 180px",
+        },
+
+        {
           name: "actions",
           label: "ACTIONS",
           field: "actions",

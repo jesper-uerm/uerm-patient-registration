@@ -113,9 +113,22 @@
         </div>
         <div class="row q-col-gutter-xs q-mb-md">
           <div class="col-12 col-sm-6 col-md-6">
-            <div class="col-12 col-sm-6 col-md-6">
-              <q-input outlined dense v-model="formData.fnHmo" label="HMO" stack-label />
-            </div>
+            <q-select
+              outlined
+              dense
+              v-model="formData.fnHmo"
+              :options="hmo || []"
+              emit-value
+              map-options
+              label="HMO"
+              stack-label
+            >
+              <template v-slot:no-option>
+                <q-item>
+                  <q-item-section class="text-grey"> No HMO found </q-item-section>
+                </q-item>
+              </template>
+            </q-select>
           </div>
           <div class="col-12 col-sm-6 col-md-6">
             <q-select

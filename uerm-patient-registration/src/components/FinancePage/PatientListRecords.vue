@@ -645,22 +645,22 @@ export default {
       columns: [
         {
           name: "PATIENTNO",
-          label: "PATIENTNO",
+          label: "PATIENT NO.",
           field: "PATIENTNO",
           align: "center",
           sortable: true,
           style: "width: 120px; font-weight: bold",
           format: (val) => (Array.isArray(val) ? val[0] : val || "N/A"),
         },
-        // {
-        //   name: "CASENO",
-        //   label: "Case No.",
-        //   field: "CASENO",
-        //   align: "center",
-        //   sortable: true,
-        //   style: "width: 120px; font-weight: bold",
-        //   format: (val) => val || "N/A",
-        // },
+        {
+          name: "CASENO",
+          label: "CASENO NO.",
+          field: "CASENO",
+          align: "center",
+          sortable: true,
+          style: "width: 120px; font-weight: bold",
+          format: (val) => val || "N/A",
+        },
         {
           name: "fullName",
           label: "NAME",
@@ -692,8 +692,21 @@ export default {
           field: "CREATEDAT",
           align: "center",
           sortable: true,
-          format: (val) =>
-            val ? date.formatDate(val.replace("Z", ""), "MMM D, YYYY h:mm A") : "-",
+          format: (val) => {
+            if (!val) return "-";
+            const d = new Date(val);
+            return date.formatDate(
+              Date.UTC(
+                d.getUTCFullYear(),
+                d.getUTCMonth(),
+                d.getUTCDate(),
+                d.getUTCHours(),
+                d.getUTCMinutes(),
+                d.getUTCSeconds()
+              ),
+              "MMM D, YYYY h:mm A"
+            );
+          },
           style: "width: 180px",
         },
       ],

@@ -132,7 +132,7 @@
           <q-item-section avatar>
             <q-icon name="las la-bars" />
           </q-item-section>
-          <q-item-section>Asessment Logs</q-item-section>
+          <q-item-section>Asessment Records</q-item-section>
         </q-item>
 
         <q-separator spaced class="q-mx-md" />

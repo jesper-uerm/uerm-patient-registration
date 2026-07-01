@@ -4,7 +4,7 @@ import { Notify, Loading, date } from 'quasar'
 import { useAuthStore } from "src/stores/authStore.js";
 
 const DASHBOARD_API_URL = 'http://10.107.0.2:3000/patient-reg/dashboard'
-const API_URL = 'http://10.107.0.2:3000/patient-reg/er'
+const ER_API_URL = 'http://10.107.0.2:3000/patient-reg/er'
 const PATIENT_API_URL = 'http://10.107.0.2:3000/patient-reg/patients'
 
 export const useTriageStore = defineStore('triage', {
@@ -76,7 +76,7 @@ export const useTriageStore = defineStore('triage', {
           api.get(`${DASHBOARD_API_URL}/line-chart`),
           api.get(`${DASHBOARD_API_URL}/stats`),
 
-          api.get(`${API_URL}/patients`, {
+          api.get(`${ER_API_URL}/patients`, {
             params: { type: 'Emergency' },
           }),
         ])
@@ -100,7 +100,7 @@ export const useTriageStore = defineStore('triage', {
     async fetchPatients() {
       this.loading = true
       try {
-        const response = await api.get(`${API_URL}/patients`)
+        const response = await api.get(`${ER_API_URL}/patients`)
         this.patientList = response.data
       } catch (error) {
         console.error(error)
@@ -117,7 +117,7 @@ export const useTriageStore = defineStore('triage', {
     async fetchPatientsFinance() {
       this.loading = true
       try {
-        const response = await api.get(`${API_URL}/review`)
+        const response = await api.get(`${ER_API_URL}/review`)
         this.patientList = response.data
       } catch (error) {
         console.error(error)
@@ -130,7 +130,7 @@ export const useTriageStore = defineStore('triage', {
     async fetchAdmitPatients() {
       this.loading = true
       try {
-        const response = await api.get(`${API_URL}/admitted`)
+        const response = await api.get(`${ER_API_URL}/admitted`)
         this.patientList = response.data
       } catch (error) {
         console.error(error)
@@ -193,7 +193,7 @@ export const useTriageStore = defineStore('triage', {
       this.searchQuery = query
 
       try {
-        const response = await api.get(`${API_URL}/search`, { params: { query } })
+        const response = await api.get(`${ER_API_URL}/search`, { params: { query } })
         this.patientList = response.data
         this.hasSearched = true
 
@@ -218,7 +218,7 @@ export const useTriageStore = defineStore('triage', {
       this.searchQuery = query
 
       try {
-        const response = await api.get(`${API_URL}/search-admitted`, { params: { query } })
+        const response = await api.get(`${ER_API_URL}/search-admitted`, { params: { query } })
 
         this.patientList = response.data
         this.hasSearched = true
@@ -383,7 +383,7 @@ export const useTriageStore = defineStore('triage', {
       }
 
       try {
-        await api.post(`${API_URL}/triage`, finalData)
+        await api.post(`${ER_API_URL}/triage`, finalData)
 
         this.formData.patientSignature = null
 
@@ -422,7 +422,7 @@ export const useTriageStore = defineStore('triage', {
 
       this.loading = true
       try {
-        const response = await api.put(`${API_URL}/triage`, requestData)
+        const response = await api.put(`${ER_API_URL}/triage`, requestData)
         if (response.status === 200) {
           Notify.create({
             type: 'positive',
@@ -450,7 +450,7 @@ export const useTriageStore = defineStore('triage', {
     async admitPatient(formData) {
       Loading.show({ message: 'Updating status...' })
       try {
-        await api.put(`${API_URL}/admit`, formData)
+        await api.put(`${ER_API_URL}/admit`, formData)
         Notify.create({
           type: 'positive',
           message: 'Patient updated successfully!',
